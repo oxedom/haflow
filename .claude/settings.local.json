@@ -5,7 +5,9 @@
       "Bash(pnpm approve-builds:*)",
       "Bash(pnpm --filter ralphy build)",
       "Bash(pnpm --filter ralphy test:*)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm --filter cli test)"
     ]
   },
   "enabledPlugins": {

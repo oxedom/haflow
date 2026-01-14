@@ -1,7 +1,11 @@
 {
   "name": "ralphy",
+  "private": true,
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "build": "pnpm --filter=@ralphy/shared --filter=@ralphy/backend --filter=@ralphy/cli build"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oxedom/ralphy.git"
@@ -10,7 +14,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.28.0",
   "pnpm": {
     "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
   }
