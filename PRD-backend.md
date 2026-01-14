@@ -25,20 +25,7 @@ Backend REST API server for Ralphy - a central hub for managing Claude Code miss
 | `/vitest.workspace.ts` | Vitest workspace config |
 | Update `/pnpm-workspace.yaml` | Define package locations |
 
-### Root package.json Scripts
-```json
-{
-  "scripts": {
-    "build": "pnpm -r build",
-    "dev": "pnpm -r --parallel dev",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "lint": "eslint packages/*/src --ext .ts",
-    "clean": "pnpm -r clean"
-  }
-}
-```
+
 
 ### vitest.workspace.ts
 ```typescript
