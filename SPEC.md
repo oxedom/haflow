@@ -80,7 +80,7 @@ backend
 - server.ts (Central Hub)
 - orchestrator.ts
 - db.sqlite (Registry of linked projects)
-frontend/vue (The Dashboard)
+frontend/React 19 Vite (The Control pannel)
 
 # Files created in a target repo
 .ralphy
