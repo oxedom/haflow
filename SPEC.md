@@ -37,9 +37,9 @@ https://github.com/browsh-org/browsh
 # Resources:
 https://looking4offswitch.github.io/blog/2026/01/04/ralph-wiggum-claude-code/
 https://granda.org/en/2026/01/02/claude-code-on-the-go/
-https://github.com/BloopAI/vibe-kanban
+https://github.com/BloopAI/vibe-kanban (Kabanboard)
 https://github.com/omnara-ai/omnara
-Kabanboard
+
 
 # Concepts
 Missions: (Draft, Preparing PRD -> Review PRD -> Ready, In progress, Completed Success, Completed Failed (Blocked))
@@ -72,10 +72,7 @@ Visit localhost:PORT
 Select "My App" from project list
 Start Mission
 
-**Mobile Flow**
-Visit localhost:PORT frontend via tailscale port to client
-Select "My App" from project list
-Start Mission
+
 
 # Files of repo (The Ralphy Tool)
 backend
@@ -95,18 +92,4 @@ missions/
 -- PRD.md
 config.ts (frontend port, backend port)
 
-## Draft
 
-# Wireframe layout
-- Create Mission (Dialog with PRD markdown input)
-- List of rendered accordions all closed (badge of status)
-- Accordion item: Play/Stop, Time running, View Task, Container ID, State (Dialog with progress.txt, prd.json)
-https://granda.org/en/2026/01/02/claude-code-on-the-go/
-# Facts
-This will be a server
-Server can execute commands via terminal
-Each mission instance Sandbox/Container will be on the current machine
-# Problem:
-We want to lauch CC from our phones
-Use as many tokens as we can
-Human in the loop + Context Switching
