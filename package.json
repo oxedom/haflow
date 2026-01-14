@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter=@ralphy/shared --filter=@ralphy/backend --filter=@ralphy/cli build"
+    "build": "pnpm --filter=@ralphy/shared --filter=@ralphy/backend --filter=ralphy build"
   },
   "repository": {
     "type": "git",

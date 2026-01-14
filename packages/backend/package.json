@@ -2,6 +2,24 @@
   "name": "@ralphy/backend",
   "version": "0.0.1",
   "type": "module",
+  "description": "Backend server for Ralphy - multi-project Claude Code orchestrator",
+  "author": "oxedom",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxedom/ralphy.git",
+    "directory": "packages/backend"
+  },
+  "bugs": {
+    "url": "https://github.com/oxedom/ralphy/issues"
+  },
+  "homepage": "https://github.com/oxedom/ralphy#readme",
+  "keywords": [
+    "ralphy",
+    "claude",
+    "backend",
+    "server"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -10,12 +28,19 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@ralphy/shared": "workspace:*",
@@ -36,5 +61,8 @@
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

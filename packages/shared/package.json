@@ -2,6 +2,26 @@
   "name": "@ralphy/shared",
   "version": "0.0.1",
   "type": "module",
+  "description": "Shared utilities for Ralphy - multi-project Claude Code orchestrator",
+  "author": "oxedom",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxedom/ralphy.git",
+    "directory": "packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/oxedom/ralphy/issues"
+  },
+  "homepage": "https://github.com/oxedom/ralphy#readme",
+  "keywords": [
+    "ralphy",
+    "claude",
+    "shared"
+  ],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -10,14 +30,21 @@
       "import": "./dist/index.js"
     }
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
