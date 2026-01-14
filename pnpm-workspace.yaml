@@ -1,5 +1,4 @@
 packages:
   - packages/shared
-  - packages/frontend
   - packages/backend
   - packages/cli

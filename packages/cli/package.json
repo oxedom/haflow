@@ -2,17 +2,51 @@
   "name": "ralphy",
   "version": "0.0.1",
   "type": "module",
+  "description": "Central hub CLI for managing Claude Code missions across multiple projects",
+  "author": "oxedom",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxedom/ralphy.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/oxedom/ralphy/issues"
+  },
+  "homepage": "https://github.com/oxedom/ralphy#readme",
+  "keywords": [
+    "ralphy",
+    "claude",
+    "claude-code",
+    "cli",
+    "ai",
+    "orchestrator",
+    "missions"
+  ],
   "bin": {
     "ralphy": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@ralphy/shared": "workspace:*",
@@ -28,5 +62,8 @@
     "@types/uuid": "^9.0.7",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

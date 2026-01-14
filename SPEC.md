@@ -64,7 +64,7 @@ Missions: (Draft, Preparing PRD -> Review PRD -> Ready, In progress, Completed S
 `cd ~/dev/my-app`
 `ralphy link`
 
-**Start**
+**Start** (running backend and frontend server)
 ralphy start (local fe, local be)
 
 # Desktop flow
