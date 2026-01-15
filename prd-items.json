@@ -377,7 +377,7 @@
       "sanitizeBranchName() replaces spaces with hyphens, removes special chars",
       "sanitizeBranchName('Add User Auth!') returns 'add-user-auth'"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.VALIDATORS",
