@@ -3,3 +3,4 @@
 export * from './utils/errors';
 export * from './utils/id';
 export * from './database';
+export * from './database/repositories/projects';

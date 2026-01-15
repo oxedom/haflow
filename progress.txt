@@ -212,3 +212,41 @@
 - Database and schema are now complete and ready for repository implementations
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - All DB features (IMPL.DB.INIT and IMPL.DB.SCHEMA) are now complete
+
+---
+
+### 2026-01-15 - IMPL.REPO.PROJECTS Complete
+
+**What was done:**
+- Created `packages/backend/src/database/repositories/projects.ts` with ProjectRepository class
+- Implemented all CRUD methods: create(), findById(), findByPath(), findAll(), update(), delete()
+- Used prepared statements for all database operations
+- create() generates UUID with 'proj_' prefix using generateId('proj')
+- findAll() includes missionsCount via LEFT JOIN with missions table
+- delete() throws error if project has active missions (non-terminal states)
+- Exported interfaces: Project, ProjectWithMissionsCount, CreateProjectData, UpdateProjectData
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/database/repositories/projects.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - create() generates UUID with 'proj_' prefix using generateId('proj')
+  - create() returns full project object with timestamps
+  - findAll() includes missionsCount via LEFT JOIN with missions table
+  - delete() throws if project has active missions (state NOT IN completed states)
+
+**Next recommended priority:**
+- IMPL.REPO.MISSIONS - MissionRepository class (depends on state machine which is done)
+- IMPL.REPO.TASKS - TaskRepository class (depends on missions repo)
+- IMPL.REPO.AUDIT - AuditRepository class (standalone, no dependencies)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- Repository uses the database singleton pattern from IMPL.DB.INIT
+- All repository features can now be implemented in any order

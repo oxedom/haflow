@@ -36,7 +36,7 @@
       "findAll() includes missionsCount via LEFT JOIN with missions table",
       "delete() throws if project has active missions (state NOT IN completed states)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.REPO.MISSIONS",
