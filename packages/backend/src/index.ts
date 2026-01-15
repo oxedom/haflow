@@ -1,5 +1,5 @@
-// Backend entry point - to be implemented in IMPL.INDEX
-// Export utilities for now
+// Backend module exports
+// The actual server entry point is in main.ts
 export * from './utils/errors';
 export * from './utils/id';
 export * from './utils/sanitize';

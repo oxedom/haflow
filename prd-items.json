@@ -330,15 +330,15 @@
     "id": "IMPL.INDEX",
     "category": "Server",
     "skills": ["typescript"],
-    "description": "Create entry point in packages/backend/src/index.ts - Initialize database, run recovery, start server",
+    "description": "Create entry point in packages/backend/src/main.ts - Initialize database, run recovery, start server",
     "steps_to_verify": [
       "import { initializeDatabase } from './database'",
       "import { runRecovery } from './services/recovery'",
-      "import { createServer } from './server'",
+      "import { createApp } from './server'",
       "async main(): await initializeDatabase(); await runRecovery(); app.listen(PORT, HOST)",
       "Handle SIGTERM/SIGINT for graceful shutdown"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.CONFIG",

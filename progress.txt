@@ -1177,3 +1177,48 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - Server is now complete and ready for IMPL.INDEX to create the entry point
 - The `createApp()` factory function allows for testing with isolated app instances
+
+---
+
+### 2026-01-15 - IMPL.INDEX Complete
+
+**What was done:**
+- Created `packages/backend/src/main.ts` as the entry point for the backend server
+- Implemented `main()` function that initializes database, runs recovery, and starts server
+- Uses `initializeDatabase()` from database module
+- Uses `runRecovery()` from services/recovery to handle missions that were in progress
+- Uses `createApp()` from server module to create Express application
+- Server listens on PORT and HOST from config (defaults: 3000, 127.0.0.1)
+- Implemented graceful shutdown handler for SIGTERM and SIGINT signals
+- Shutdown cleanly closes HTTP server, cleans up orchestrator, log manager, SSE manager, and database
+- Added error handlers for uncaughtException and unhandledRejection
+- Updated package.json with `bin` entry pointing to `./dist/main.js`
+- Updated package.json scripts: `dev` uses main.ts, `start` uses dist/main.js
+
+**Files created:**
+- `packages/backend/src/main.ts`
+
+**Files modified:**
+- `packages/backend/package.json` (added bin entry, updated dev/start scripts)
+- `packages/backend/src/index.ts` (updated comment)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - import { initializeDatabase } from './database'
+  - import { runRecovery } from './services/recovery'
+  - import { createApp } from './server'
+  - async main(): await initializeDatabase(); await runRecovery(); app.listen(PORT, HOST)
+  - Handle SIGTERM/SIGINT for graceful shutdown
+
+**Next recommended priority:**
+- IMPL.TEST.SETUP - Test setup (foundational for all test features)
+- IMPL.TEST.REPO.PROJECTS - ProjectRepository tests
+- IMPL.TEST.REPO.MISSIONS - MissionRepository tests
+- The Server layer is now complete! All non-test features are implemented.
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- The backend server is now fully runnable via `pnpm --filter @ralphy/backend dev` or `pnpm --filter @ralphy/backend start`
+- Entry point is in main.ts (separate from index.ts which handles exports)
+- All Server features (IMPL.SERVER, IMPL.INDEX) are now complete!
