@@ -526,3 +526,41 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - All utility features (IMPL.ERRORS, IMPL.UTILS.ID, IMPL.UTILS.SANITIZE, IMPL.VALIDATORS) are now complete!
 - Validators are ready for use in IMPL.MW.VALIDATION and all route implementations
+
+---
+
+### 2026-01-15 - IMPL.MW.AUTH Complete
+
+**What was done:**
+- Created `packages/backend/src/middleware/auth.ts` with authentication middleware
+- Implemented `authMiddleware` function that checks Authorization header for Bearer token
+- Uses `timingSafeEqual` from crypto module for secure token comparison (prevents timing attacks)
+- Skips authentication for `/health` endpoint
+- If `RALPHY_API_TOKEN` is not set in config, allows all requests (open mode)
+- Returns 401 with `{ error: 'Unauthorized' }` on invalid/missing token
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/middleware/auth.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - `import { timingSafeEqual } from 'crypto'` used
+  - Extracts token from 'Bearer <token>' header format
+  - If RALPHY_API_TOKEN not set, allows all requests
+  - Uses `timingSafeEqual(Buffer.from(token), Buffer.from(expected))`
+  - Returns 401 with `{ error: 'Unauthorized' }` on failure
+
+**Next recommended priority:**
+- IMPL.MW.VALIDATION - Validation middleware factory (uses validators already implemented)
+- IMPL.MW.ERROR - Error handler middleware (uses errors already implemented)
+- These complete the Middleware layer and unblock IMPL.SERVER
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- Auth middleware is ready for use in IMPL.SERVER
+- The middleware handles edge cases: missing header, wrong format, wrong token length

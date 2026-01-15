@@ -11,3 +11,4 @@ export * from './database/repositories/missions';
 export * from './database/repositories/tasks';
 export * from './database/repositories/processes';
 export * from './database/repositories/audit';
+export * from './middleware/auth';

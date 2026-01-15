@@ -226,7 +226,7 @@
       "Use timingSafeEqual(Buffer.from(token), Buffer.from(expected))",
       "Return 401 with { error: 'Unauthorized' } on failure"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.MW.VALIDATION",
