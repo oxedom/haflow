@@ -290,3 +290,43 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - MissionRepository integrates with the state machine validation from @ralphy/shared
 - All Database repository features (PROJECTS, MISSIONS) are complete; TASKS, PROCESSES, AUDIT remain
+
+---
+
+### 2026-01-15 - IMPL.REPO.TASKS Complete
+
+**What was done:**
+- Created `packages/backend/src/database/repositories/tasks.ts` with TaskRepository class
+- Implemented createMany(missionId, tasks[]) that inserts tasks with order_num from array index
+- Implemented create() for single task creation
+- Implemented findById(), findByMission(), findByStatus()
+- Implemented updateStatus() that sets started_at on 'in_progress', completed_at on terminal states
+- Implemented update(), delete(), deleteByMission(), getNextPending() helper methods
+- JSON fields (agents, skills) are properly serialized with JSON.stringify() and deserialized with JSON.parse()
+- Used database transaction for batch inserts in createMany()
+- Exported interfaces: Task, CreateTaskData, UpdateTaskData
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/database/repositories/tasks.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - createMany() inserts tasks with order_num from array index (0-based)
+  - agents and skills fields stored as JSON.stringify()
+  - findByMission() returns tasks ordered by order_num ASC
+  - updateStatus() sets started_at on 'in_progress', completed_at on terminal states (completed, failed, skipped)
+
+**Next recommended priority:**
+- IMPL.REPO.PROCESSES - ProcessRepository class (manages spawned subprocesses and Docker containers)
+- IMPL.REPO.AUDIT - AuditRepository class (logs significant events)
+- These complete the database layer; then Services layer can begin
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- TaskRepository follows the same patterns as other repositories (prepared statements, singleton DB)
+- All Database repository features except PROCESSES and AUDIT are now complete

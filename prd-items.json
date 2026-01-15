@@ -63,7 +63,7 @@
       "findByMission() returns tasks ordered by order_num ASC",
       "updateStatus() sets started_at on 'in_progress', completed_at on terminal states"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.REPO.PROCESSES",
