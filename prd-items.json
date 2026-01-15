@@ -1,0 +1,521 @@
+[
+  {
+    "id": "IMPL.DB.INIT",
+    "category": "Database",
+    "skills": ["typescript", "sqlite", "better-sqlite3"],
+    "description": "Create database initialization in packages/backend/src/database/index.ts - Initialize better-sqlite3 connection, execute PRAGMA statements (journal_mode=WAL, synchronous=NORMAL, foreign_keys=ON), call schema initialization",
+    "steps_to_verify": [
+      "import Database from 'better-sqlite3' works",
+      "db.pragma('journal_mode = WAL') executes without error",
+      "Database file created at ~/.ralphy/ralphy.sqlite",
+      "getDatabase() returns singleton instance"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.DB.SCHEMA",
+    "category": "Database",
+    "skills": ["typescript", "sqlite"],
+    "description": "Create schema DDL in packages/backend/src/database/schema.ts - Export SCHEMA_SQL constant with all CREATE TABLE IF NOT EXISTS statements and indexes, export initSchema(db) function that calls db.exec(SCHEMA_SQL)",
+    "steps_to_verify": [
+      "projects table has: id TEXT PRIMARY KEY, name TEXT NOT NULL, path TEXT NOT NULL UNIQUE, is_active INTEGER DEFAULT 1, config TEXT, created_at TEXT, updated_at TEXT",
+      "missions table has foreign key to projects with ON DELETE CASCADE",
+      "All indexes created: idx_projects_path, idx_missions_project, idx_missions_state, etc.",
+      "initSchema() is idempotent (can run multiple times)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.REPO.PROJECTS",
+    "category": "Database",
+    "skills": ["typescript", "sqlite"],
+    "description": "Create ProjectRepository class in packages/backend/src/database/repositories/projects.ts - Implement create(data), findById(id), findByPath(path), findAll(), update(id, data), delete(id) using prepared statements",
+    "steps_to_verify": [
+      "create() generates UUID with 'proj_' prefix using generateId('proj')",
+      "create() returns full project object with timestamps",
+      "findAll() includes missionsCount via LEFT JOIN with missions table",
+      "delete() throws if project has active missions (state NOT IN completed states)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.REPO.MISSIONS",
+    "category": "Database",
+    "skills": ["typescript", "sqlite"],
+    "description": "Create MissionRepository class in packages/backend/src/database/repositories/missions.ts - Implement CRUD plus updateState(id, newState) that validates state transitions before updating",
+    "steps_to_verify": [
+      "create() generates UUID with 'mission_' prefix",
+      "updateState() calls isValidTransition(currentState, newState) before update",
+      "updateState() throws InvalidStateTransitionError on invalid transition",
+      "findByProject(projectId) returns missions for a project",
+      "findByStates(states[]) returns missions in any of given states"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.REPO.TASKS",
+    "category": "Database",
+    "skills": ["typescript", "sqlite"],
+    "description": "Create TaskRepository class in packages/backend/src/database/repositories/tasks.ts - Implement createMany(missionId, tasks[]), findByMission(missionId), updateStatus(id, status)",
+    "steps_to_verify": [
+      "createMany() inserts tasks with order_num from array index",
+      "agents and skills fields stored as JSON.stringify()",
+      "findByMission() returns tasks ordered by order_num ASC",
+      "updateStatus() sets started_at on 'in_progress', completed_at on terminal states"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.REPO.PROCESSES",
+    "category": "Database",
+    "skills": ["typescript", "sqlite"],
+    "description": "Create ProcessRepository class in packages/backend/src/database/repositories/processes.ts - Implement create(), updateStatus(), updatePid(), updateContainerId(), findRunning(), findByMission()",
+    "steps_to_verify": [
+      "create() accepts type, command, cwd, missionId",
+      "updateStatus() handles 'running', 'success', 'error', 'canceled'",
+      "findRunning() returns processes with status='running'",
+      "updateHeartbeat() updates heartbeat_at timestamp"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.REPO.AUDIT",
+    "category": "Database",
+    "skills": ["typescript", "sqlite"],
+    "description": "Create AuditRepository class in packages/backend/src/database/repositories/audit.ts - Implement log(event, entityType, entityId, details) that inserts audit entries",
+    "steps_to_verify": [
+      "log() generates UUID, stores details as JSON string",
+      "findByEntity(type, id) returns audit trail for entity",
+      "findByTimeRange(start, end) supports time-based queries",
+      "Details object is properly serialized/deserialized"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TYPES.ENUMS",
+    "category": "Types",
+    "skills": ["typescript"],
+    "description": "Create state enums in packages/shared/src/index.ts - Export MissionState, TaskStatus, ProcessStatus, LogLevel enums matching PRD state machine",
+    "steps_to_verify": [
+      "MissionState has: DRAFT, GENERATING_PRD, PRD_REVIEW, PREPARING_TASKS, TASKS_REVIEW, IN_PROGRESS, COMPLETED_SUCCESS, COMPLETED_FAILED",
+      "TaskStatus has: PENDING, IN_PROGRESS, COMPLETED, FAILED, SKIPPED",
+      "ProcessStatus has: QUEUED, RUNNING, SUCCESS, ERROR, CANCELED",
+      "Enums use string values matching database column values"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TYPES.STATE_MACHINE",
+    "category": "Types",
+    "skills": ["typescript"],
+    "description": "Create state transition validator in packages/shared/src/state-machine.ts - Export VALID_TRANSITIONS map and isValidTransition(from, to) function",
+    "steps_to_verify": [
+      "VALID_TRANSITIONS maps each state to array of valid next states",
+      "draft -> generating_prd is valid",
+      "prd_review -> generating_prd (reject) and preparing_tasks (approve) are valid",
+      "isValidTransition returns boolean"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SVC.ORCHESTRATOR",
+    "category": "Services",
+    "skills": ["typescript", "child-process", "events"],
+    "description": "Create Orchestrator class in packages/backend/src/services/orchestrator.ts - Extend EventEmitter, implement spawnLocal(opts), kill(processId), singleton via getOrchestrator()",
+    "steps_to_verify": [
+      "spawnLocal() uses spawn() with { stdio: 'pipe', detached: true }",
+      "Stores ChildProcess in Map<string, ChildProcess>",
+      "Pipes stdout/stderr to emit('output', { processId, stream, data })",
+      "On exit, emits ('exit', { processId, code })",
+      "kill() uses tree-kill package to kill process tree"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SVC.DOCKER",
+    "category": "Services",
+    "skills": ["typescript", "dockerode"],
+    "description": "Create DockerManager class in packages/backend/src/services/docker-manager.ts - Implement createContainer(opts), exec(containerId, cmd), attachLogs(containerId), stop(containerId), remove(containerId)",
+    "steps_to_verify": [
+      "import Docker from 'dockerode' and create instance",
+      "createContainer() sets HostConfig with Memory, CpuPeriod, CpuQuota, PidsLimit, Init, Binds",
+      "createContainer() sets Labels with 'ralphy.mission' and 'ralphy.managed'",
+      "exec() creates exec instance and starts it, returns stream",
+      "attachLogs() calls container.logs({ follow: true, stdout: true, stderr: true })"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SVC.GIT",
+    "category": "Services",
+    "skills": ["typescript", "child-process", "git"],
+    "description": "Create GitManager class in packages/backend/src/services/git-manager.ts - Implement createWorktree(projectPath, missionName), createBranch(worktreePath, branchName), commit(worktreePath, message), push(worktreePath)",
+    "steps_to_verify": [
+      "createWorktree() runs: git worktree add <path> -b <branch>",
+      "Branch naming: ralphy/feature/<sanitized-mission-name>",
+      "commit() runs: git add . && git commit -m '<message>'",
+      "push() runs: git push -u origin <branch>",
+      "All commands use execa or spawn with proper error handling"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SVC.LOG_MANAGER",
+    "category": "Services",
+    "skills": ["typescript", "streams", "fs"],
+    "description": "Create LogManager class in packages/backend/src/services/log-manager.ts - Implement createLogStream(processId), write(processId, data), getLogPath(processId), maintain ring buffer per process",
+    "steps_to_verify": [
+      "createLogStream() creates WriteStream at ~/.ralphy/logs/missions/<missionId>/<processId>.log",
+      "write() writes to file stream and pushes to ring buffer",
+      "Ring buffer is Map<string, string[]> holding last 100 lines",
+      "getRecentLines(processId) returns ring buffer contents"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SVC.SSE",
+    "category": "Services",
+    "skills": ["typescript", "express", "sse"],
+    "description": "Create SSEManager class in packages/backend/src/services/sse-manager.ts - Implement addClient(processId, res), removeClient(processId, res), broadcast(processId, eventId, data)",
+    "steps_to_verify": [
+      "clients stored as Map<string, Set<Response>>",
+      "addClient() sets headers: Content-Type: text/event-stream, Cache-Control: no-cache, Connection: keep-alive",
+      "addClient() writes 'retry: 10000\\n\\n' immediately",
+      "broadcast() writes 'id: ${eventId}\\ndata: ${data}\\n\\n' to all clients",
+      "removeClient() deletes from Set on req.on('close')"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SVC.MISSION_EXECUTOR",
+    "category": "Services",
+    "skills": ["typescript", "orchestration"],
+    "description": "Create MissionExecutor class in packages/backend/src/services/mission-executor.ts - Implement start(missionId), approvePRD(missionId), rejectPRD(missionId, notes), approveTasks(missionId), rejectTasks(missionId, notes), cancel(missionId)",
+    "steps_to_verify": [
+      "start() creates worktree, transitions to generating_prd, spawns Claude process",
+      "approvePRD() transitions from prd_review to preparing_tasks, spawns task generation",
+      "rejectPRD() stores notes in revision, increments prd_iterations, regenerates",
+      "approveTasks() creates Docker container, transitions to in_progress, executes tasks",
+      "cancel() sends SIGTERM, waits 10s, sends SIGKILL, updates state"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SVC.RECOVERY",
+    "category": "Services",
+    "skills": ["typescript", "docker", "sqlite"],
+    "description": "Create runRecovery() function in packages/backend/src/services/recovery.ts - Query missions in running states, check Docker containers, reattach or mark failed",
+    "steps_to_verify": [
+      "Query: SELECT * FROM missions WHERE state IN ('generating_prd', 'preparing_tasks', 'in_progress')",
+      "For each mission, query associated processes with status='running'",
+      "If container_id exists, call docker.getContainer(id).inspect()",
+      "If container running, reattach logs via dockerManager.attachLogs()",
+      "If container exited or not found, mark process as failed, update mission state"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.MW.AUTH",
+    "category": "Middleware",
+    "skills": ["typescript", "express", "crypto"],
+    "description": "Create authMiddleware in packages/backend/src/middleware/auth.ts - Check Authorization header, compare token using timingSafeEqual, skip for /health",
+    "steps_to_verify": [
+      "import { timingSafeEqual } from 'crypto'",
+      "Extract token from 'Bearer <token>' header",
+      "If RALPHY_API_TOKEN not set, allow all requests",
+      "Use timingSafeEqual(Buffer.from(token), Buffer.from(expected))",
+      "Return 401 with { error: 'Unauthorized' } on failure"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.MW.VALIDATION",
+    "category": "Middleware",
+    "skills": ["typescript", "express", "zod"],
+    "description": "Create validateBody(schema) middleware factory in packages/backend/src/middleware/validation.ts - Parse req.body with Zod schema, attach parsed data or throw ValidationError",
+    "steps_to_verify": [
+      "import { ZodSchema, ZodError } from 'zod'",
+      "Return (req, res, next) => { try { req.body = schema.parse(req.body); next() } catch (e) { throw new ValidationError(e) } }",
+      "ValidationError class extends Error with issues property",
+      "Middleware can be used as: router.post('/', validateBody(CreateProjectSchema), handler)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.MW.ERROR",
+    "category": "Middleware",
+    "skills": ["typescript", "express"],
+    "description": "Create errorHandler middleware in packages/backend/src/middleware/error-handler.ts - Catch all errors, return appropriate HTTP status and JSON body",
+    "steps_to_verify": [
+      "Signature: (err, req, res, next) => void (4 params for Express error handler)",
+      "ValidationError -> 400 with { error: 'Validation failed', details: err.issues }",
+      "NotFoundError -> 404 with { error: err.message }",
+      "InvalidStateTransitionError -> 409",
+      "Unknown errors -> 500 with { error: 'Internal server error' }, log with pino"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.ROUTES.PROJECTS",
+    "category": "Routes",
+    "skills": ["typescript", "express", "zod"],
+    "description": "Create projects router in packages/backend/src/routes/projects.ts - Implement POST /, GET /, GET /:id, PATCH /:id, DELETE /:id",
+    "steps_to_verify": [
+      "POST / validates body with CreateProjectSchema (path: string, name: string)",
+      "POST / calls fs.existsSync(path) and validates .git exists",
+      "GET / returns projectRepo.findAll() with missionsCount",
+      "DELETE /:id calls projectRepo.delete() which throws on active missions",
+      "Export as projectsRouter"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.ROUTES.MISSIONS",
+    "category": "Routes",
+    "skills": ["typescript", "express", "zod"],
+    "description": "Create missions router in packages/backend/src/routes/missions.ts - Implement CRUD plus action endpoints for start, approve, reject, cancel",
+    "steps_to_verify": [
+      "POST / creates mission with state='draft'",
+      "POST /:id/start calls missionExecutor.start(id)",
+      "POST /:id/prd/approve calls missionExecutor.approvePRD(id)",
+      "POST /:id/prd/reject validates { notes: string } body, calls missionExecutor.rejectPRD(id, notes)",
+      "POST /:id/cancel calls missionExecutor.cancel(id)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.ROUTES.PROCESSES",
+    "category": "Routes",
+    "skills": ["typescript", "express", "sse"],
+    "description": "Create processes router in packages/backend/src/routes/processes.ts - Implement GET /, GET /:id, GET /:id/logs, GET /:id/logs/stream (SSE), POST /:id/signal",
+    "steps_to_verify": [
+      "GET /:id/logs reads log file and returns content",
+      "GET /:id/logs/stream sets SSE headers, calls sseManager.addClient()",
+      "GET /:id/logs/stream sends ring buffer contents immediately",
+      "GET /:id/logs/stream handles Last-Event-Id header for resumption",
+      "POST /:id/signal accepts { signal: 'SIGTERM' | 'SIGKILL' }"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.ROUTES.HEALTH",
+    "category": "Routes",
+    "skills": ["typescript", "express"],
+    "description": "Create health router in packages/backend/src/routes/health.ts - Implement GET /health that checks database and Docker connectivity",
+    "steps_to_verify": [
+      "Run db.prepare('SELECT 1').get() to verify database",
+      "Run docker.ping() to verify Docker daemon",
+      "Return { status: 'healthy', database: 'ok', docker: 'ok' }",
+      "On failure, return { status: 'unhealthy', ... } with 503 status"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.SERVER",
+    "category": "Server",
+    "skills": ["typescript", "express"],
+    "description": "Create Express app in packages/backend/src/server.ts - Configure middleware (helmet, cors, json, auth), mount routes, add error handler",
+    "steps_to_verify": [
+      "app.use(helmet()) for security headers",
+      "app.use(cors()) for CORS support",
+      "app.use(express.json()) for body parsing",
+      "app.use('/health', healthRouter) before auth middleware",
+      "app.use(authMiddleware) after health",
+      "app.use('/api', routes) for all API routes",
+      "app.use(errorHandler) at the end"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.INDEX",
+    "category": "Server",
+    "skills": ["typescript"],
+    "description": "Create entry point in packages/backend/src/index.ts - Initialize database, run recovery, start server",
+    "steps_to_verify": [
+      "import { initializeDatabase } from './database'",
+      "import { runRecovery } from './services/recovery'",
+      "import { createServer } from './server'",
+      "async main(): await initializeDatabase(); await runRecovery(); app.listen(PORT, HOST)",
+      "Handle SIGTERM/SIGINT for graceful shutdown"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.CONFIG",
+    "category": "Configuration",
+    "skills": ["typescript", "zod"],
+    "description": "Create config loader in packages/backend/src/config.ts - Load from process.env, validate with Zod, export config object",
+    "steps_to_verify": [
+      "Define ConfigSchema with z.object({ PORT: z.coerce.number().default(3000), ... })",
+      "RALPHY_HOME defaults to path.join(os.homedir(), '.ralphy')",
+      "HOST defaults to '127.0.0.1'",
+      "LOG_LEVEL defaults to 'info'",
+      "Export validated config object"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.UTILS.ID",
+    "category": "Utilities",
+    "skills": ["typescript", "uuid"],
+    "description": "Create ID generator in packages/backend/src/utils/id.ts - Export generateId(prefix) that returns prefixed UUID",
+    "steps_to_verify": [
+      "import { v4 as uuidv4 } from 'uuid'",
+      "generateId('proj') returns 'proj_<uuid>'",
+      "generateId('mission') returns 'mission_<uuid>'",
+      "UUID is lowercase without hyphens or full UUID format"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.UTILS.SANITIZE",
+    "category": "Utilities",
+    "skills": ["typescript"],
+    "description": "Create sanitization utilities in packages/backend/src/utils/sanitize.ts - Export sanitizeEnvForLogging(env), sanitizeBranchName(name)",
+    "steps_to_verify": [
+      "sanitizeEnvForLogging() replaces values for CLAUDE_API_KEY, GITHUB_TOKEN, RALPHY_API_TOKEN with '<REDACTED>'",
+      "sanitizeBranchName() replaces spaces with hyphens, removes special chars",
+      "sanitizeBranchName('Add User Auth!') returns 'add-user-auth'"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.VALIDATORS",
+    "category": "Utilities",
+    "skills": ["typescript", "zod"],
+    "description": "Create Zod schemas in packages/backend/src/utils/validators.ts - Export schemas for all API request bodies",
+    "steps_to_verify": [
+      "CreateProjectSchema = z.object({ path: z.string().min(1), name: z.string().min(1) })",
+      "CreateMissionSchema = z.object({ projectId: z.string(), featureName: z.string(), description: z.string(), draft: z.string() })",
+      "RejectSchema = z.object({ notes: z.string().min(1) })",
+      "SignalSchema = z.object({ signal: z.enum(['SIGTERM', 'SIGKILL']) })"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.ERRORS",
+    "category": "Utilities",
+    "skills": ["typescript"],
+    "description": "Create custom error classes in packages/backend/src/utils/errors.ts - Export NotFoundError, ValidationError, InvalidStateTransitionError",
+    "steps_to_verify": [
+      "class NotFoundError extends Error { constructor(resource: string, id: string) }",
+      "class ValidationError extends Error { issues: ZodIssue[] }",
+      "class InvalidStateTransitionError extends Error { from: string; to: string }",
+      "All errors have proper name property for instanceof checks"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.DOCKER.CONTAINER_OPTS",
+    "category": "Docker",
+    "skills": ["typescript", "docker"],
+    "description": "Create container config builder in docker-manager.ts - Build CreateContainerOptions with security settings",
+    "steps_to_verify": [
+      "Image: 'node:18-alpine'",
+      "WorkingDir: '/workspace'",
+      "HostConfig.Memory: 1 * 1024 * 1024 * 1024 (1GB)",
+      "HostConfig.CpuPeriod: 100000, CpuQuota: 100000 (1 CPU)",
+      "HostConfig.PidsLimit: 100",
+      "HostConfig.Init: true",
+      "User: `${process.getuid()}:${process.getgid()}`"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TEST.SETUP",
+    "category": "Testing",
+    "skills": ["typescript", "vitest"],
+    "description": "Create test setup in packages/backend/tests/setup.ts - Initialize in-memory SQLite, export test utilities",
+    "steps_to_verify": [
+      "import Database from 'better-sqlite3'",
+      "Create db with ':memory:' path",
+      "Run schema initialization",
+      "Export getTestDb() and resetTestDb() functions",
+      "beforeEach() calls resetTestDb() to clear tables"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TEST.REPO.PROJECTS",
+    "category": "Testing",
+    "skills": ["typescript", "vitest"],
+    "description": "Create ProjectRepository tests in packages/backend/tests/unit/repositories/projects.test.ts",
+    "steps_to_verify": [
+      "Test create() stores project and returns with id",
+      "Test findById() returns null for non-existent",
+      "Test findAll() includes missionsCount",
+      "Test delete() throws for project with active missions",
+      "Test update() modifies name and config"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TEST.REPO.MISSIONS",
+    "category": "Testing",
+    "skills": ["typescript", "vitest"],
+    "description": "Create MissionRepository tests in packages/backend/tests/unit/repositories/missions.test.ts",
+    "steps_to_verify": [
+      "Test create() initializes state as 'draft'",
+      "Test updateState() succeeds for valid transitions",
+      "Test updateState() throws InvalidStateTransitionError for invalid",
+      "Test findByStates() returns matching missions",
+      "Test cascading delete when project deleted"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TEST.ROUTES.PROJECTS",
+    "category": "Testing",
+    "skills": ["typescript", "vitest", "supertest"],
+    "description": "Create projects route tests in packages/backend/tests/integration/routes/projects.test.ts",
+    "steps_to_verify": [
+      "import request from 'supertest'",
+      "Test POST /api/projects returns 201 with valid data",
+      "Test POST /api/projects returns 400 for invalid path",
+      "Test DELETE /api/projects/:id returns 400 with active missions",
+      "Test GET /api/projects returns array with missionsCount"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TEST.ROUTES.MISSIONS",
+    "category": "Testing",
+    "skills": ["typescript", "vitest", "supertest"],
+    "description": "Create missions route tests in packages/backend/tests/integration/routes/missions.test.ts",
+    "steps_to_verify": [
+      "Test POST /api/missions creates in draft state",
+      "Test POST /api/missions/:id/start transitions to generating_prd",
+      "Test POST /api/missions/:id/prd/approve from wrong state returns 409",
+      "Test POST /api/missions/:id/cancel marks as completed_failed",
+      "Mock orchestrator and docker for process spawning"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TEST.SSE",
+    "category": "Testing",
+    "skills": ["typescript", "vitest"],
+    "description": "Create SSE streaming tests in packages/backend/tests/integration/routes/processes.test.ts",
+    "steps_to_verify": [
+      "Test GET /api/processes/:id/logs/stream returns correct headers",
+      "Test SSE events are properly formatted with id and data",
+      "Test Last-Event-Id header triggers replay from offset",
+      "Use EventSource polyfill or raw http for testing"
+    ],
+    "passes": false
+  },
+  {
+    "id": "IMPL.TEST.RECOVERY",
+    "category": "Testing",
+    "skills": ["typescript", "vitest"],
+    "description": "Create recovery tests in packages/backend/tests/integration/flows/recovery.test.ts",
+    "steps_to_verify": [
+      "Seed database with mission in 'in_progress' state",
+      "Mock docker.getContainer().inspect() to return running container",
+      "Run runRecovery() and verify container logs reattached",
+      "Test orphaned container (no DB record) is removed",
+      "Test dead process is marked as failed"
+    ],
+    "passes": false
+  }
+]

@@ -7,7 +7,9 @@
       "Bash(pnpm --filter ralphy test:*)",
       "Bash(pnpm test:*)",
       "Bash(pnpm install:*)",
-      "Bash(pnpm --filter cli test)"
+      "Bash(pnpm --filter cli test)",
+      "Bash(git -C /home/s-linux/projects/ralphy show e59bb4c:packages/backend/src/database/schema.ts)",
+      "Bash(git -C /home/s-linux/projects/ralphy show e59bb4c:packages/shared/src/index.ts)"
     ]
   },
   "enabledPlugins": {

@@ -1,0 +1,7 @@
+Convert my entire PRD requirements into structured PRD items in an JSON file array.
+Each item should have: category , skills, agents = [] | null description, steps to verify, and passes: false.
+Format as JSON. Be specific about acceptance criteria.
+
+Convert my entire PRD requirements into structured PRD items in an JSON file array.
+Each item should have: category , description, steps to verify, and passes: false.
+Format as JSON. Be specific about acceptance criteria.
