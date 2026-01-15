@@ -721,3 +721,45 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - LogManager follows the same singleton pattern as Orchestrator
 - The LogManager is ready for use by Orchestrator output events and SSE streaming
+
+---
+
+### 2026-01-15 - IMPL.SVC.SSE Complete
+
+**What was done:**
+- Created `packages/backend/src/services/sse-manager.ts` with SSEManager class
+- Implemented `addClient(processId, res)` that sets SSE headers and registers client
+- Sets headers: Content-Type: text/event-stream, Cache-Control: no-cache, Connection: keep-alive
+- Writes 'retry: 10000\n\n' immediately after connection
+- Implemented `removeClient(processId, res)` that removes client from Set
+- Handles req.on('close') to automatically remove disconnected clients
+- Implemented `broadcast(processId, eventId, data)` that writes SSE format to all clients
+- Broadcast format: `id: ${eventId}\ndata: ${data}\n\n`
+- Implemented helper methods: send(), getNextEventId(), getCurrentEventId(), hasClients(), getClientCount(), closeProcess(), cleanup()
+- Added singleton pattern via `getSSEManager()` and `resetSSEManager()` for testing
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/services/sse-manager.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - clients stored as Map<string, Set<Response>>
+  - addClient() sets headers: Content-Type: text/event-stream, Cache-Control: no-cache, Connection: keep-alive
+  - addClient() writes 'retry: 10000\n\n' immediately
+  - broadcast() writes 'id: ${eventId}\ndata: ${data}\n\n' to all clients
+  - removeClient() deletes from Set on req.on('close')
+
+**Next recommended priority:**
+- IMPL.SVC.GIT - GitManager class (standalone, needed by MissionExecutor)
+- IMPL.SVC.DOCKER - DockerManager class (needed by MissionExecutor and Health route)
+- IMPL.ROUTES.HEALTH - Health endpoint (simple, needed by IMPL.SERVER)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- SSEManager follows the same singleton pattern as Orchestrator and LogManager
+- The SSEManager is ready for use by IMPL.ROUTES.PROCESSES for streaming logs

@@ -184,7 +184,7 @@
       "broadcast() writes 'id: ${eventId}\\ndata: ${data}\\n\\n' to all clients",
       "removeClient() deletes from Set on req.on('close')"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.SVC.MISSION_EXECUTOR",
