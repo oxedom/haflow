@@ -267,7 +267,7 @@
       "DELETE /:id calls projectRepo.delete() which throws on active missions",
       "Export as projectsRouter"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.ROUTES.MISSIONS",

@@ -17,3 +17,4 @@ export * from './middleware/error-handler';
 export * from './services/orchestrator';
 export * from './services/log-manager';
 export * from './services/sse-manager';
+export * from './routes/projects';

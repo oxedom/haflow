@@ -763,3 +763,43 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - SSEManager follows the same singleton pattern as Orchestrator and LogManager
 - The SSEManager is ready for use by IMPL.ROUTES.PROCESSES for streaming logs
+
+---
+
+### 2026-01-15 - IMPL.ROUTES.PROJECTS Complete
+
+**What was done:**
+- Created `packages/backend/src/routes/projects.ts` with projects router
+- Implemented POST / with CreateProjectSchema validation and path/git verification
+- Implemented GET / that returns projectRepo.findAll() with missionsCount
+- Implemented GET /:id that returns single project or throws NotFoundError
+- Implemented PATCH /:id with UpdateProjectSchema validation
+- Implemented DELETE /:id that throws if project has active missions
+- Exported as `projectsRouter`
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/routes/projects.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - POST / validates body with CreateProjectSchema (path: string, name: string)
+  - POST / calls fs.existsSync(path) and validates .git exists
+  - GET / returns projectRepo.findAll() with missionsCount
+  - DELETE /:id calls projectRepo.delete() which throws on active missions
+  - Export as projectsRouter
+
+**Next recommended priority:**
+- IMPL.SVC.GIT - GitManager class (standalone, needed by MissionExecutor)
+- IMPL.SVC.DOCKER - DockerManager class (needed by MissionExecutor and Health route)
+- IMPL.ROUTES.HEALTH - Health endpoint (simple, needed by IMPL.SERVER)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- ProjectsRouter uses validateBody middleware for request validation
+- Path validation checks: exists, is directory, has .git folder, not already registered
+- All error cases properly pass to Express error handler via next(err)
