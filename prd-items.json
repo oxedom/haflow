@@ -76,7 +76,7 @@
       "findRunning() returns processes with status='running'",
       "updateHeartbeat() updates heartbeat_at timestamp"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.REPO.AUDIT",

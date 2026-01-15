@@ -330,3 +330,45 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - TaskRepository follows the same patterns as other repositories (prepared statements, singleton DB)
 - All Database repository features except PROCESSES and AUDIT are now complete
+
+---
+
+### 2026-01-15 - IMPL.REPO.PROCESSES Complete
+
+**What was done:**
+- Created `packages/backend/src/database/repositories/processes.ts` with ProcessRepository class
+- Implemented create(data) that accepts type, command, cwd, missionId, env
+- Implemented findById(), findByMission(), findRunning(), findByStatus()
+- Implemented updateStatus() that handles 'running', 'success', 'error', 'canceled' with proper started_at/ended_at timestamps
+- Implemented updatePid() to set process PID and PGID
+- Implemented updateContainerId() to set Docker container ID
+- Implemented updateHeartbeat() to update heartbeat_at timestamp
+- Implemented findByContainerId() helper for container lookup
+- Implemented delete() and deleteByMission()
+- JSON env field properly serialized/deserialized
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/database/repositories/processes.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - create() accepts type, command, cwd, missionId
+  - updateStatus() handles 'running', 'success', 'error', 'canceled' with proper timestamps
+  - findRunning() returns processes with status='running'
+  - updateHeartbeat() updates heartbeat_at timestamp
+
+**Next recommended priority:**
+- IMPL.REPO.AUDIT - AuditRepository class (completes the database layer)
+- After AUDIT, the Services layer can begin (IMPL.SVC.ORCHESTRATOR, IMPL.SVC.MISSION_EXECUTOR)
+- Alternatively, IMPL.CONFIG or IMPL.UTILS.SANITIZE could be done as they're utility features
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- All Database repository features except AUDIT are now complete
+- ProcessRepository follows the same patterns as other repositories (prepared statements, singleton DB)
+- The env field is stored as JSON string (matches how tasks store agents/skills)
