@@ -239,7 +239,7 @@
       "ValidationError class extends Error with issues property",
       "Middleware can be used as: router.post('/', validateBody(CreateProjectSchema), handler)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.MW.ERROR",

@@ -12,3 +12,4 @@ export * from './database/repositories/tasks';
 export * from './database/repositories/processes';
 export * from './database/repositories/audit';
 export * from './middleware/auth';
+export * from './middleware/validation';
