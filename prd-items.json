@@ -170,7 +170,7 @@
       "Ring buffer is Map<string, string[]> holding last 100 lines",
       "getRecentLines(processId) returns ring buffer contents"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.SVC.SSE",

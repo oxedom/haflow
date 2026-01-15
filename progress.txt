@@ -682,3 +682,42 @@
 - Orchestrator integrates with ProcessRepository to track process state in database
 - The Orchestrator is the foundation for process management used by MissionExecutor
 - tree-kill has built-in TypeScript types (index.d.ts)
+
+---
+
+### 2026-01-15 - IMPL.SVC.LOG_MANAGER Complete
+
+**What was done:**
+- Created `packages/backend/src/services/log-manager.ts` with LogManager class
+- Implemented `createLogStream(processId, missionId)` that creates WriteStream at `~/.ralphy/logs/missions/<missionId>/<processId>.log`
+- Implemented `write(processId, data)` that writes to file stream and pushes to ring buffer
+- Ring buffer is `Map<string, string[]>` holding last 100 lines (RING_BUFFER_SIZE constant)
+- Implemented `getRecentLines(processId)` that returns ring buffer contents
+- Implemented `getLogPath(processId)` that returns the log file path
+- Implemented helper methods: `closeStream()`, `readLogFile()`, `hasStream()`, `cleanup()`
+- Added singleton pattern via `getLogManager()` and `resetLogManager()` for testing
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/services/log-manager.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - createLogStream() creates WriteStream at ~/.ralphy/logs/missions/<missionId>/<processId>.log
+  - write() writes to file stream and pushes to ring buffer
+  - Ring buffer is Map<string, string[]> holding last 100 lines
+  - getRecentLines(processId) returns ring buffer contents
+
+**Next recommended priority:**
+- IMPL.SVC.SSE - Server-Sent Events manager (depends on LogManager just implemented, needed for streaming logs)
+- IMPL.ROUTES.HEALTH - Health endpoint (simple, unblocks IMPL.SERVER)
+- IMPL.SVC.GIT - Git manager (standalone, needed by MissionExecutor)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- LogManager follows the same singleton pattern as Orchestrator
+- The LogManager is ready for use by Orchestrator output events and SSE streaming
