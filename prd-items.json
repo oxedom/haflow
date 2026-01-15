@@ -295,7 +295,7 @@
       "GET /:id/logs/stream handles Last-Event-Id header for resumption",
       "POST /:id/signal accepts { signal: 'SIGTERM' | 'SIGKILL' }"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.ROUTES.HEALTH",
