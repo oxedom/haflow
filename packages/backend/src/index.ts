@@ -14,3 +14,4 @@ export * from './database/repositories/audit';
 export * from './middleware/auth';
 export * from './middleware/validation';
 export * from './middleware/error-handler';
+export * from './services/orchestrator';

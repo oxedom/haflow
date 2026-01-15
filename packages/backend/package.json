@@ -48,6 +48,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "helmet": "^7.1.0",
+    "tree-kill": "^1.2.2",
     "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
@@ -55,9 +56,9 @@
     "@types/better-sqlite3": "^7.6.8",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/supertest": "^6.0.2",
     "@types/uuid": "^9.0.7",
     "supertest": "^6.3.4",
-    "@types/supertest": "^6.0.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"

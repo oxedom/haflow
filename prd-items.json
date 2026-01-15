@@ -129,7 +129,7 @@
       "On exit, emits ('exit', { processId, code })",
       "kill() uses tree-kill package to kill process tree"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.SVC.DOCKER",

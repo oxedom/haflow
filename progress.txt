@@ -638,3 +638,47 @@
 - All middleware features (IMPL.MW.AUTH, IMPL.MW.VALIDATION, IMPL.MW.ERROR) are now complete!
 - The middleware layer is fully functional and ready for IMPL.SERVER to consume
 - Using console.error for logging instead of pino (pino not yet in dependencies); can be replaced later
+
+---
+
+### 2026-01-15 - IMPL.SVC.ORCHESTRATOR Complete
+
+**What was done:**
+- Created `packages/backend/src/services/orchestrator.ts` with Orchestrator class
+- Extended EventEmitter to emit 'output' and 'exit' events
+- Implemented `spawnLocal(opts)` that spawns processes with { stdio: 'pipe', detached: true }
+- Stores ChildProcess instances in Map<string, ChildProcess> for tracking
+- Pipes stdout/stderr to emit('output', { processId, stream, data })
+- On process exit, emits ('exit', { processId, code, signal }) and updates database status
+- Implemented `kill(processId, signal)` using tree-kill package to kill entire process tree
+- Implemented `getOrchestrator()` singleton accessor and `resetOrchestrator()` for testing
+- Added helper methods: getProcess(), isRunning(), getRunningProcessIds(), cleanup()
+- Re-exported from `packages/backend/src/index.ts`
+- Added tree-kill package to backend dependencies
+
+**Files created:**
+- `packages/backend/src/services/orchestrator.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+- `packages/backend/package.json` (added tree-kill dependency)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - spawnLocal() uses spawn() with { stdio: 'pipe', detached: true }
+  - Stores ChildProcess in Map<string, ChildProcess>
+  - Pipes stdout/stderr to emit('output', { processId, stream, data })
+  - On exit, emits ('exit', { processId, code })
+  - kill() uses tree-kill package to kill process tree
+
+**Next recommended priority:**
+- IMPL.SVC.LOG_MANAGER - Log management service (needed for logging process output)
+- IMPL.SVC.SSE - Server-Sent Events manager (needed for streaming logs to clients)
+- IMPL.ROUTES.HEALTH - Health endpoint (simple, unblocks IMPL.SERVER)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- Orchestrator integrates with ProcessRepository to track process state in database
+- The Orchestrator is the foundation for process management used by MissionExecutor
+- tree-kill has built-in TypeScript types (index.d.ts)

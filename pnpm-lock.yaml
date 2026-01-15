@@ -25,6 +25,9 @@ importers:
       helmet:
         specifier: ^7.1.0
         version: 7.2.0
+      tree-kill:
+        specifier: ^1.2.2
+        version: 1.2.2
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -1338,6 +1341,10 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
+  tree-kill@1.2.2:
+    resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
+    hasBin: true
+
   tsx@4.21.0:
     resolution: {integrity: sha512-5C1sg4USs1lfG0GFb2RLXsdpXqBSEhAaA/0kPL01wxzpMqLILNxIxIOKiILz+cdg/pLnOUxFYOR5yhHU666wbw==}
     engines: {node: '>=18.0.0'}
@@ -2631,6 +2638,8 @@ snapshots:
   tinyspy@2.2.1: {}
 
   toidentifier@1.0.1: {}
+
+  tree-kill@1.2.2: {}
 
   tsx@4.21.0:
     dependencies:
