@@ -102,7 +102,7 @@
       "ProcessStatus has: QUEUED, RUNNING, SUCCESS, ERROR, CANCELED",
       "Enums use string values matching database column values"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.TYPES.STATE_MACHINE",
