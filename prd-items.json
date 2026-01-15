@@ -198,7 +198,7 @@
       "approveTasks() creates Docker container, transitions to in_progress, executes tasks",
       "cancel() sends SIGTERM, waits 10s, sends SIGKILL, updates state"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.SVC.RECOVERY",

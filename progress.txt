@@ -943,3 +943,54 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - Health endpoint is ready for use in IMPL.SERVER to mount before auth middleware
 - The health router uses the singleton DockerManager and database instances
+
+---
+
+### 2026-01-15 - IMPL.SVC.MISSION_EXECUTOR Complete
+
+**What was done:**
+- Created `packages/backend/src/services/mission-executor.ts` with MissionExecutor class
+- Implemented `start(missionId)` that creates git worktree, transitions to generating_prd, spawns Claude process
+- Implemented `approvePRD(missionId)` that transitions from prd_review to preparing_tasks, spawns task generation
+- Implemented `rejectPRD(missionId, notes)` that stores notes, increments prd_iterations, regenerates PRD
+- Implemented `approveTasks(missionId)` that creates Docker container, transitions to in_progress, executes tasks
+- Implemented `rejectTasks(missionId, notes)` that stores notes, increments tasks_iterations, regenerates tasks
+- Implemented `cancel(missionId)` that sends SIGTERM, waits, sends SIGKILL if needed, updates state to completed_failed
+- Added fallback to local execution when Docker is unavailable
+- Added singleton pattern via `getMissionExecutor()` and `resetMissionExecutor()` for testing
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/services/mission-executor.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - start() creates worktree, transitions to generating_prd, spawns Claude process
+  - approvePRD() transitions from prd_review to preparing_tasks, spawns task generation
+  - rejectPRD() stores notes in revision, increments prd_iterations, regenerates
+  - approveTasks() creates Docker container, transitions to in_progress, executes tasks
+  - cancel() sends SIGTERM, waits 10s, sends SIGKILL, updates state
+
+**Key features:**
+- Integrates with Orchestrator for local process spawning
+- Integrates with GitManager for worktree creation
+- Integrates with DockerManager for container-based execution
+- Integrates with LogManager for log streaming
+- Integrates with SSEManager for real-time event broadcasting
+- Uses AuditRepository for logging significant events
+- Tracks active processes per mission for cleanup
+- Handles process output/exit events and state transitions
+
+**Next recommended priority:**
+- IMPL.SVC.RECOVERY - Recovery function (similar patterns to MissionExecutor)
+- IMPL.ROUTES.MISSIONS - Missions router (depends on MissionExecutor just implemented)
+- IMPL.ROUTES.PROCESSES - Processes router (for log streaming and process signals)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- MissionExecutor is the core orchestration service - the heart of the application
+- All Services features except IMPL.SVC.RECOVERY are now complete
