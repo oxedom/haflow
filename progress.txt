@@ -413,3 +413,41 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - All Database repository features (IMPL.REPO.*) are now complete!
 - The database layer is fully functional and ready for the Services layer to consume
+
+---
+
+### 2026-01-15 - IMPL.CONFIG Complete
+
+**What was done:**
+- Created `packages/backend/src/config.ts` with configuration loader
+- Implemented `ConfigSchema` using Zod with all required environment variables
+- Configured defaults: PORT=3000, HOST='127.0.0.1', RALPHY_HOME=~/.ralphy, LOG_LEVEL='info', NODE_ENV='development'
+- Added optional RALPHY_API_TOKEN for authentication (used by IMPL.MW.AUTH)
+- Exported `config` singleton (validated at startup) and `ConfigSchema` for external use
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/config.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - ConfigSchema defined with z.object({ PORT: z.coerce.number().default(3000), ... })
+  - RALPHY_HOME defaults to path.join(os.homedir(), '.ralphy')
+  - HOST defaults to '127.0.0.1'
+  - LOG_LEVEL defaults to 'info'
+  - config object exported and validated
+
+**Next recommended priority:**
+- IMPL.UTILS.SANITIZE - Sanitization utilities (needed by IMPL.SVC.GIT)
+- IMPL.VALIDATORS - Zod schemas for API validation (needed by middleware and routes)
+- IMPL.SVC.ORCHESTRATOR - Core service for spawning processes (needed by MissionExecutor)
+- IMPL.SVC.LOG_MANAGER - Log management service
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- Config is now available for IMPL.SERVER, IMPL.INDEX, and services to consume
+- LOG_LEVEL uses enum to ensure valid pino log levels

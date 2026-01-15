@@ -2,6 +2,7 @@
 // Export utilities for now
 export * from './utils/errors';
 export * from './utils/id';
+export * from './config';
 export * from './database';
 export * from './database/repositories/projects';
 export * from './database/repositories/missions';

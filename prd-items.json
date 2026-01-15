@@ -352,7 +352,7 @@
       "LOG_LEVEL defaults to 'info'",
       "Export validated config object"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.UTILS.ID",
