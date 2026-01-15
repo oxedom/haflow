@@ -433,7 +433,7 @@
       "Export getTestDb() and resetTestDb() functions",
       "beforeEach() calls resetTestDb() to clear tables"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.TEST.REPO.PROJECTS",

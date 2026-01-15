@@ -1222,3 +1222,42 @@
 - The backend server is now fully runnable via `pnpm --filter @ralphy/backend dev` or `pnpm --filter @ralphy/backend start`
 - Entry point is in main.ts (separate from index.ts which handles exports)
 - All Server features (IMPL.SERVER, IMPL.INDEX) are now complete!
+
+---
+
+### 2026-01-15 - IMPL.TEST.SETUP Complete
+
+**What was done:**
+- Created `packages/backend/tests/setup.ts` with test infrastructure
+- Implemented `getTestDb()` that returns singleton in-memory SQLite database
+- Implemented `createTestDb()` that creates new in-memory database with schema initialized
+- Implemented `resetTestDb()` that clears all tables while preserving schema
+- Implemented `closeTestDb()` to clean up database connection
+- Tables cleared in reverse dependency order to avoid foreign key violations
+- Added Vitest hooks: `beforeEach()` calls `resetTestDb()`, `afterEach()` restores mocks, `afterAll()` closes database
+- Created `packages/backend/tests/unit/setup.test.ts` to verify test infrastructure works
+
+**Files created:**
+- `packages/backend/tests/setup.ts` (replaced stub file)
+- `packages/backend/tests/unit/setup.test.ts`
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- `pnpm --filter @ralphy/backend test` passes (9 tests)
+- All 5 verification steps from PRD confirmed:
+  - import Database from 'better-sqlite3' used
+  - Create db with ':memory:' path (in createTestDb())
+  - Run schema initialization (calls initSchema())
+  - Export getTestDb() and resetTestDb() functions
+  - beforeEach() calls resetTestDb() to clear tables
+
+**Next recommended priority:**
+- IMPL.TEST.REPO.PROJECTS - ProjectRepository tests (uses test setup just implemented)
+- IMPL.TEST.REPO.MISSIONS - MissionRepository tests (uses test setup)
+- These can now be implemented with proper database isolation
+
+**Notes:**
+- Tests now pass - the test infrastructure is functional
+- All subsequent IMPL.TEST.* features can now use getTestDb() for database access
+- Test isolation is ensured via beforeEach() reset
+- The setup follows the pattern of injecting database into repository constructors
