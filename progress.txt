@@ -372,3 +372,44 @@
 - All Database repository features except AUDIT are now complete
 - ProcessRepository follows the same patterns as other repositories (prepared statements, singleton DB)
 - The env field is stored as JSON string (matches how tasks store agents/skills)
+
+---
+
+### 2026-01-15 - IMPL.REPO.AUDIT Complete
+
+**What was done:**
+- Created `packages/backend/src/database/repositories/audit.ts` with AuditRepository class
+- Implemented `log(event, entityType, entityId, details)` that generates UUID with 'audit_' prefix and stores details as JSON string
+- Implemented `findById(id)` to retrieve a single audit entry
+- Implemented `findByEntity(entityType, entityId)` to return audit trail for an entity
+- Implemented `findByTimeRange(start, end)` to support time-based queries
+- Implemented `findByEvent(event)` to filter by event type
+- Implemented `findAll(limit)` to retrieve entries with optional limit
+- Implemented `deleteOlderThan(date)` for audit log cleanup
+- Details object is properly serialized with JSON.stringify() and deserialized with JSON.parse()
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/database/repositories/audit.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - log() generates UUID with 'audit_' prefix, stores details as JSON string
+  - findByEntity(type, id) returns audit trail for entity ordered by created_at DESC
+  - findByTimeRange(start, end) supports time-based queries
+  - Details object is properly serialized/deserialized (JSON.stringify on write, JSON.parse on read)
+
+**Next recommended priority:**
+- IMPL.CONFIG - Configuration loader (foundational for server and services)
+- IMPL.UTILS.SANITIZE - Sanitization utilities (needed by IMPL.SVC.GIT)
+- IMPL.VALIDATORS - Zod schemas for API validation (needed by middleware and routes)
+- Services layer can now begin: IMPL.SVC.ORCHESTRATOR, IMPL.SVC.LOG_MANAGER
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- All Database repository features (IMPL.REPO.*) are now complete!
+- The database layer is fully functional and ready for the Services layer to consume

@@ -89,7 +89,7 @@
       "findByTimeRange(start, end) supports time-based queries",
       "Details object is properly serialized/deserialized"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.TYPES.ENUMS",
