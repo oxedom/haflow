@@ -2,3 +2,4 @@
 // Export utilities for now
 export * from './utils/errors';
 export * from './utils/id';
+export * from './database';

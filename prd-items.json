@@ -10,7 +10,7 @@
       "Database file created at ~/.ralphy/ralphy.sqlite",
       "getDatabase() returns singleton instance"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.DB.SCHEMA",

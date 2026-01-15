@@ -131,3 +131,39 @@
 - The ID generator is now ready for use in all repository implementations
 - Uses uuid v4 (random) which is already in backend dependencies
 - All utility features (IMPL.ERRORS, IMPL.UTILS.ID) are now complete except IMPL.UTILS.SANITIZE and IMPL.VALIDATORS
+
+---
+
+### 2026-01-15 - IMPL.DB.INIT Complete
+
+**What was done:**
+- Created `packages/backend/src/database/index.ts` with database initialization
+- Implemented `initializeDatabase(dbPath?)` that creates better-sqlite3 connection
+- Configures PRAGMA statements: journal_mode=WAL, synchronous=NORMAL, foreign_keys=ON
+- Implemented `getDatabase()` singleton accessor (throws if not initialized)
+- Implemented `getDatabasePath()` that returns `~/.ralphy/ralphy.sqlite` (or RALPHY_HOME override)
+- Implemented `closeDatabase()` and `resetDatabaseInstance()` for cleanup/testing
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/database/index.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - `import Database from 'better-sqlite3'` works
+  - `db.pragma('journal_mode = WAL')` executes without error
+  - Database file created at `~/.ralphy/ralphy.sqlite`
+  - `getDatabase()` returns singleton instance
+
+**Next recommended priority:**
+- IMPL.DB.SCHEMA - Database schema DDL (depends on DB.INIT just implemented)
+- This will enable all repository implementations (IMPL.REPO.*)
+
+**Notes:**
+- The database module is ready for schema initialization
+- `initializeDatabase()` accepts optional path for testing with different database files
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
