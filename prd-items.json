@@ -115,7 +115,7 @@
       "prd_review -> generating_prd (reject) and preparing_tasks (approve) are valid",
       "isValidTransition returns boolean"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.SVC.ORCHESTRATOR",

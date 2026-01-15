@@ -46,3 +46,6 @@ export enum LogLevel {
   WARN = 'warn',
   ERROR = 'error',
 }
+
+// Re-export state machine utilities
+export { VALID_TRANSITIONS, isValidTransition } from './state-machine';
