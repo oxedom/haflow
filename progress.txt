@@ -167,3 +167,48 @@
 - The database module is ready for schema initialization
 - `initializeDatabase()` accepts optional path for testing with different database files
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+
+---
+
+### 2026-01-15 - IMPL.DB.SCHEMA Complete
+
+**What was done:**
+- Created `packages/backend/src/database/schema.ts` with database schema DDL
+- Implemented `SCHEMA_SQL` constant with all CREATE TABLE IF NOT EXISTS statements
+- Implemented `initSchema(db)` function that executes the SQL on the database
+- Created all 6 tables: projects, missions, tasks, processes, mission_revisions, audit_log
+- Created all required indexes for efficient queries
+- Updated `packages/backend/src/database/index.ts` to call `initSchema()` after PRAGMA configuration
+- Re-exported `SCHEMA_SQL` and `initSchema` from database module
+
+**Files created:**
+- `packages/backend/src/database/schema.ts`
+
+**Files modified:**
+- `packages/backend/src/database/index.ts` (imports initSchema, calls it during initialization, re-exports)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - projects table has: id TEXT PRIMARY KEY, name TEXT NOT NULL, path TEXT NOT NULL UNIQUE, is_active INTEGER DEFAULT 1, config TEXT, created_at TEXT, updated_at TEXT
+  - missions table has foreign key to projects with ON DELETE CASCADE
+  - All indexes created: idx_projects_path, idx_missions_project, idx_missions_state, idx_tasks_mission, idx_tasks_status, idx_processes_mission, idx_processes_status, idx_revisions_mission, idx_audit_event, idx_audit_entity, idx_audit_created_at
+  - initSchema() is idempotent (uses CREATE TABLE IF NOT EXISTS and CREATE INDEX IF NOT EXISTS)
+
+**Tables created:**
+- `projects` - Registry of linked repositories
+- `missions` - AI-driven feature development loops (FK to projects, CASCADE delete)
+- `tasks` - Individual work items within a mission (FK to missions, CASCADE delete)
+- `processes` - Spawned subprocesses and Docker containers (FK to missions, SET NULL on delete)
+- `mission_revisions` - Track PRD and task revision history (FK to missions, CASCADE delete)
+- `audit_log` - Record of significant events
+
+**Next recommended priority:**
+- IMPL.REPO.PROJECTS - ProjectRepository class (depends on schema just implemented)
+- IMPL.REPO.MISSIONS - MissionRepository class (depends on schema)
+- These can be implemented in parallel as they don't depend on each other
+
+**Notes:**
+- Database and schema are now complete and ready for repository implementations
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- All DB features (IMPL.DB.INIT and IMPL.DB.SCHEMA) are now complete

@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
+import { initSchema } from './schema';
 
 let db: Database.Database | null = null;
 
@@ -57,6 +58,9 @@ export function initializeDatabase(dbPath?: string): Database.Database {
   db.pragma('synchronous = NORMAL');
   db.pragma('foreign_keys = ON');
 
+  // Initialize schema (idempotent - safe to call multiple times)
+  initSchema(db);
+
   return db;
 }
 
@@ -76,3 +80,6 @@ export function closeDatabase(): void {
 export function resetDatabaseInstance(): void {
   db = null;
 }
+
+// Re-export schema utilities
+export { SCHEMA_SQL, initSchema } from './schema';

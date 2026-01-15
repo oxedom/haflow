@@ -23,7 +23,7 @@
       "All indexes created: idx_projects_path, idx_missions_project, idx_missions_state, etc.",
       "initSchema() is idempotent (can run multiple times)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.REPO.PROJECTS",
