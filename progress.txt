@@ -486,3 +486,43 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - Sanitization utilities are now ready for use in IMPL.SVC.GIT (createWorktree, branch naming)
 - All utility features except IMPL.VALIDATORS are now complete
+
+---
+
+### 2026-01-15 - IMPL.VALIDATORS Complete
+
+**What was done:**
+- Created `packages/backend/src/utils/validators.ts` with Zod schemas for API validation
+- Implemented `CreateProjectSchema` = z.object({ path: z.string().min(1), name: z.string().min(1) })
+- Implemented `UpdateProjectSchema` for partial project updates (name, config, is_active)
+- Implemented `CreateMissionSchema` = z.object({ projectId: z.string(), featureName: z.string(), description: z.string(), draft: z.string() })
+- Implemented `UpdateMissionSchema` for partial mission updates
+- Implemented `RejectSchema` = z.object({ notes: z.string().min(1) })
+- Implemented `SignalSchema` = z.object({ signal: z.enum(['SIGTERM', 'SIGKILL']) })
+- Exported type inference helpers for each schema (e.g., CreateProjectInput, RejectInput)
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/utils/validators.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - CreateProjectSchema = z.object({ path: z.string().min(1), name: z.string().min(1) })
+  - CreateMissionSchema = z.object({ projectId: z.string(), featureName: z.string(), description: z.string(), draft: z.string() })
+  - RejectSchema = z.object({ notes: z.string().min(1) })
+  - SignalSchema = z.object({ signal: z.enum(['SIGTERM', 'SIGKILL']) })
+
+**Next recommended priority:**
+- IMPL.SVC.ORCHESTRATOR - Core service for spawning processes (needed by MissionExecutor)
+- IMPL.MW.AUTH - Authentication middleware (no dependencies, unblocks server)
+- IMPL.MW.VALIDATION - Validation middleware (uses validators just implemented)
+- IMPL.MW.ERROR - Error handler middleware (uses errors already implemented)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- All utility features (IMPL.ERRORS, IMPL.UTILS.ID, IMPL.UTILS.SANITIZE, IMPL.VALIDATORS) are now complete!
+- Validators are ready for use in IMPL.MW.VALIDATION and all route implementations

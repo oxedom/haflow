@@ -390,7 +390,7 @@
       "RejectSchema = z.object({ notes: z.string().min(1) })",
       "SignalSchema = z.object({ signal: z.enum(['SIGTERM', 'SIGKILL']) })"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.ERRORS",
