@@ -846,3 +846,62 @@
 - GitManager follows the same singleton pattern as Orchestrator and LogManager
 - Uses sanitizeBranchName from IMPL.UTILS.SANITIZE for safe branch naming
 - The GitManager is now ready for use by MissionExecutor for worktree management
+
+---
+
+### 2026-01-15 - IMPL.SVC.DOCKER & IMPL.DOCKER.CONTAINER_OPTS Complete
+
+**What was done:**
+- Created `packages/backend/src/services/docker-manager.ts` with DockerManager class
+- Implemented `createContainer(opts)` with full security configuration:
+  - Image defaults to 'node:18-alpine'
+  - WorkingDir defaults to '/workspace'
+  - HostConfig.Memory: 1GB (1 * 1024 * 1024 * 1024)
+  - HostConfig.CpuPeriod: 100000, CpuQuota: 100000 (1 CPU)
+  - HostConfig.PidsLimit: 100
+  - HostConfig.Init: true
+  - User: `${process.getuid()}:${process.getgid()}`
+  - Labels: 'ralphy.managed' and 'ralphy.mission'
+- Implemented `exec(containerId, cmd)` that creates exec instance and returns duplex stream
+- Implemented `attachLogs(containerId)` that calls container.logs({ follow: true, stdout: true, stderr: true })
+- Implemented `stop(containerId, timeout)` for graceful container shutdown
+- Implemented `remove(containerId, force)` for container removal
+- Added helper methods: `inspect()`, `isRunning()`, `getContainer()`, `ping()`, `listManagedContainers()`, `listContainersForMission()`, `kill()`, `wait()`, `pullImageIfNeeded()`, `cleanup()`
+- Added singleton pattern via `getDockerManager()` and `resetDockerManager()` for testing
+- Added dockerode and @types/dockerode to backend dependencies
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/services/docker-manager.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+- `packages/backend/package.json` (added dockerode dependency)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 IMPL.SVC.DOCKER verification steps confirmed:
+  - import Docker from 'dockerode' and create instance
+  - createContainer() sets HostConfig with Memory, CpuPeriod, CpuQuota, PidsLimit, Init, Binds
+  - createContainer() sets Labels with 'ralphy.mission' and 'ralphy.managed'
+  - exec() creates exec instance and starts it, returns stream
+  - attachLogs() calls container.logs({ follow: true, stdout: true, stderr: true })
+- All 7 IMPL.DOCKER.CONTAINER_OPTS verification steps confirmed:
+  - Image: 'node:18-alpine'
+  - WorkingDir: '/workspace'
+  - HostConfig.Memory: 1 * 1024 * 1024 * 1024 (1GB)
+  - HostConfig.CpuPeriod: 100000, CpuQuota: 100000 (1 CPU)
+  - HostConfig.PidsLimit: 100
+  - HostConfig.Init: true
+  - User: `${process.getuid()}:${process.getgid()}`
+
+**Next recommended priority:**
+- IMPL.SVC.MISSION_EXECUTOR - Core mission orchestration (depends on Docker, Git, Orchestrator which are all done)
+- IMPL.SVC.RECOVERY - Recovery function (depends on Docker which is now done)
+- IMPL.ROUTES.HEALTH - Health endpoint (depends on Docker which is now done)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- DockerManager follows the same singleton pattern as Orchestrator, LogManager, SSEManager, and GitManager
+- The DockerManager is now ready for use by MissionExecutor and Recovery services
+- Container creation integrates with ProcessRepository to track containers in database
