@@ -157,7 +157,7 @@
       "push() runs: git push -u origin <branch>",
       "All commands use execa or spawn with proper error handling"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.SVC.LOG_MANAGER",

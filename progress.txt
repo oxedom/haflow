@@ -803,3 +803,46 @@
 - ProjectsRouter uses validateBody middleware for request validation
 - Path validation checks: exists, is directory, has .git folder, not already registered
 - All error cases properly pass to Express error handler via next(err)
+
+---
+
+### 2026-01-15 - IMPL.SVC.GIT Complete
+
+**What was done:**
+- Created `packages/backend/src/services/git-manager.ts` with GitManager class
+- Implemented `createWorktree(opts)` that runs `git worktree add <path> -b <branch>`
+- Branch naming follows pattern: `ralphy/feature/<sanitized-mission-name>`
+- Worktree path: `<project>/.ralphy/missions/<missionId>/worktree`
+- Implemented `createBranch(worktreePath, branchName)` for creating branches in worktrees
+- Implemented `commit(worktreePath, message)` that runs `git add . && git commit -m '<message>'`
+- Implemented `push(worktreePath)` that runs `git push -u origin <branch>`
+- All commands use spawn with proper error handling
+- Added helper methods: `getCurrentBranch()`, `removeWorktree()`, `listWorktrees()`, `hasUncommittedChanges()`, `branchExists()`
+- Added singleton pattern via `getGitManager()` and `resetGitManager()` for testing
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/services/git-manager.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - createWorktree() runs: git worktree add <path> -b <branch>
+  - Branch naming: ralphy/feature/<sanitized-mission-name>
+  - commit() runs: git add . && git commit -m '<message>'
+  - push() runs: git push -u origin <branch>
+  - All commands use spawn with proper error handling
+
+**Next recommended priority:**
+- IMPL.SVC.DOCKER - DockerManager class (needed by MissionExecutor, Health route, Recovery)
+- IMPL.ROUTES.HEALTH - Health endpoint (simple, needed by IMPL.SERVER)
+- IMPL.SVC.MISSION_EXECUTOR - Core orchestration (depends on Docker, Git which is now done)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- GitManager follows the same singleton pattern as Orchestrator and LogManager
+- Uses sanitizeBranchName from IMPL.UTILS.SANITIZE for safe branch naming
+- The GitManager is now ready for use by MissionExecutor for worktree management
