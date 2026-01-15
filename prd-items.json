@@ -365,7 +365,7 @@
       "generateId('mission') returns 'mission_<uuid>'",
       "UUID is lowercase without hyphens or full UUID format"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.UTILS.SANITIZE",

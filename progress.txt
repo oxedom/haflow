@@ -97,3 +97,37 @@
 - The backend package now has source files and builds successfully
 - Error classes are ready for use in IMPL.MW.VALIDATION, IMPL.MW.ERROR, and IMPL.REPO.MISSIONS
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+
+---
+
+### 2026-01-15 - IMPL.UTILS.ID Complete
+
+**What was done:**
+- Created `packages/backend/src/utils/id.ts` with ID generator utility
+- Implemented `generateId(prefix)` function that returns `{prefix}_{uuid}` format
+- Uses `uuid` v4 for generating UUIDs (full UUID format with hyphens)
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/utils/id.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - Uses `import { v4 as uuidv4 } from 'uuid'`
+  - `generateId('proj')` returns 'proj_<uuid>'
+  - `generateId('mission')` returns 'mission_<uuid>'
+  - UUID is in full format (lowercase with hyphens)
+
+**Next recommended priority:**
+- IMPL.DB.INIT - Database initialization (foundational for all repositories)
+- IMPL.DB.SCHEMA - Database schema (needed before any repository implementation)
+- These are sequential: IMPL.DB.INIT should be done before IMPL.DB.SCHEMA
+
+**Notes:**
+- The ID generator is now ready for use in all repository implementations
+- Uses uuid v4 (random) which is already in backend dependencies
+- All utility features (IMPL.ERRORS, IMPL.UTILS.ID) are now complete except IMPL.UTILS.SANITIZE and IMPL.VALIDATORS
