@@ -22,3 +22,4 @@ export * from './services/docker-manager';
 export * from './routes/projects';
 export * from './routes/health';
 export * from './services/mission-executor';
+export * from './services/recovery';

@@ -994,3 +994,53 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - MissionExecutor is the core orchestration service - the heart of the application
 - All Services features except IMPL.SVC.RECOVERY are now complete
+
+---
+
+### 2026-01-15 - IMPL.SVC.RECOVERY Complete
+
+**What was done:**
+- Created `packages/backend/src/services/recovery.ts` with recovery service
+- Implemented `runRecovery()` function that queries missions in running states and checks their processes
+- Queries missions with state IN ('generating_prd', 'preparing_tasks', 'in_progress')
+- For each mission, queries associated processes with status='running'
+- If container_id exists, calls docker.getContainer(id).inspect()
+- If container is running, reattaches logs via dockerManager.attachLogs()
+- If container exited or not found, marks process as failed and updates mission state
+- Implemented orphaned container cleanup (containers with no DB record are removed)
+- Added helper functions: recoverMission(), recoverProcess(), cleanupOrphanedContainers()
+- Supports dependency injection for testing (all dependencies are optional constructor params)
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/services/recovery.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - Query: SELECT * FROM missions WHERE state IN ('generating_prd', 'preparing_tasks', 'in_progress')
+  - For each mission, query associated processes with status='running'
+  - If container_id exists, call docker.getContainer(id).inspect()
+  - If container running, reattach logs via dockerManager.attachLogs()
+  - If container exited or not found, mark process as failed, update mission state
+
+**Key features:**
+- Recovery runs on server startup to handle crashed/restarted server scenarios
+- Gracefully handles Docker unavailability
+- Cleans up orphaned containers that have no database records
+- Forces mission state to completed_failed when all processes are dead
+- Returns detailed recovery results for logging/debugging
+- Uses singleton pattern for dependencies but supports injection for testing
+
+**Next recommended priority:**
+- IMPL.ROUTES.MISSIONS - Missions router (CRUD + action endpoints for start, approve, reject, cancel)
+- IMPL.ROUTES.PROCESSES - Processes router (for log streaming and process signals)
+- IMPL.SERVER - Express server setup (all middleware and most routes are ready)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- All Services features (IMPL.SVC.*) are now complete!
+- The backend service layer is fully functional and ready for routes to consume

@@ -212,7 +212,7 @@
       "If container running, reattach logs via dockerManager.attachLogs()",
       "If container exited or not found, mark process as failed, update mission state"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.MW.AUTH",
