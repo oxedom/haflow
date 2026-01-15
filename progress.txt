@@ -905,3 +905,41 @@
 - DockerManager follows the same singleton pattern as Orchestrator, LogManager, SSEManager, and GitManager
 - The DockerManager is now ready for use by MissionExecutor and Recovery services
 - Container creation integrates with ProcessRepository to track containers in database
+
+---
+
+### 2026-01-15 - IMPL.ROUTES.HEALTH Complete
+
+**What was done:**
+- Created `packages/backend/src/routes/health.ts` with health check router
+- Implemented GET /health endpoint that checks database and Docker connectivity
+- Database check uses `db.prepare('SELECT 1').get()` to verify database connection
+- Docker check uses `dockerManager.ping()` to verify Docker daemon connectivity
+- Returns `{ status: 'healthy', database: 'ok', docker: 'ok' }` on success (200 status)
+- Returns `{ status: 'unhealthy', ... }` with error details on failure (503 status)
+- Includes detailed error messages in `databaseError` and `dockerError` fields when checks fail
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/routes/health.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 4 verification steps from PRD confirmed:
+  - Run db.prepare('SELECT 1').get() to verify database
+  - Run docker.ping() to verify Docker daemon
+  - Return { status: 'healthy', database: 'ok', docker: 'ok' }
+  - On failure, return { status: 'unhealthy', ... } with 503 status
+
+**Next recommended priority:**
+- IMPL.ROUTES.PROCESSES - Processes router (for log streaming and process signals)
+- IMPL.SVC.MISSION_EXECUTOR - Core mission orchestration service
+- IMPL.SERVER - Express server setup (health route is now complete!)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- Health endpoint is ready for use in IMPL.SERVER to mount before auth middleware
+- The health router uses the singleton DockerManager and database instances

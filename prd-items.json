@@ -308,7 +308,7 @@
       "Return { status: 'healthy', database: 'ok', docker: 'ok' }",
       "On failure, return { status: 'unhealthy', ... } with 503 status"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.SERVER",
