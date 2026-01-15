@@ -1044,3 +1044,49 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - All Services features (IMPL.SVC.*) are now complete!
 - The backend service layer is fully functional and ready for routes to consume
+
+---
+
+### 2026-01-15 - IMPL.ROUTES.MISSIONS Complete
+
+**What was done:**
+- Created `packages/backend/src/routes/missions.ts` with missions router
+- Implemented POST / to create mission with state='draft'
+- Implemented GET / to list all missions
+- Implemented GET /:id to get a single mission
+- Implemented GET /:id/tasks to get tasks for a mission
+- Implemented PATCH /:id to update a mission
+- Implemented DELETE /:id to delete a mission
+- Implemented POST /:id/start that calls missionExecutor.start(id)
+- Implemented POST /:id/prd/approve that calls missionExecutor.approvePRD(id)
+- Implemented POST /:id/prd/reject with { notes: string } validation, calls missionExecutor.rejectPRD(id, notes)
+- Implemented POST /:id/tasks/approve that calls missionExecutor.approveTasks(id)
+- Implemented POST /:id/tasks/reject with { notes: string } validation, calls missionExecutor.rejectTasks(id, notes)
+- Implemented POST /:id/cancel that calls missionExecutor.cancel(id)
+- Exported as `missionsRouter`
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/routes/missions.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - POST / creates mission with state='draft' (uses missionRepo.create which initializes state as 'draft')
+  - POST /:id/start calls missionExecutor.start(id)
+  - POST /:id/prd/approve calls missionExecutor.approvePRD(id)
+  - POST /:id/prd/reject validates { notes: string } body, calls missionExecutor.rejectPRD(id, notes)
+  - POST /:id/cancel calls missionExecutor.cancel(id)
+
+**Next recommended priority:**
+- IMPL.ROUTES.PROCESSES - Processes router (for log streaming and process signals)
+- IMPL.SERVER - Express server setup (health and project routes are complete, missions now done)
+- After IMPL.SERVER, IMPL.INDEX can be implemented
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- All Routes features except IMPL.ROUTES.PROCESSES are now complete!
+- The missions router follows the same patterns as the projects router (validateBody middleware, async handling)

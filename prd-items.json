@@ -281,7 +281,7 @@
       "POST /:id/prd/reject validates { notes: string } body, calls missionExecutor.rejectPRD(id, notes)",
       "POST /:id/cancel calls missionExecutor.cancel(id)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.ROUTES.PROCESSES",
