@@ -403,7 +403,7 @@
       "class InvalidStateTransitionError extends Error { from: string; to: string }",
       "All errors have proper name property for instanceof checks"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.DOCKER.CONTAINER_OPTS",
