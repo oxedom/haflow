@@ -253,7 +253,7 @@
       "InvalidStateTransitionError -> 409",
       "Unknown errors -> 500 with { error: 'Internal server error' }, log with pino"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.ROUTES.PROJECTS",

@@ -599,3 +599,42 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - Validation middleware is ready for use in all route implementations
 - Works with the ValidationError class from IMPL.ERRORS and schemas from IMPL.VALIDATORS
+
+---
+
+### 2026-01-15 - IMPL.MW.ERROR Complete
+
+**What was done:**
+- Created `packages/backend/src/middleware/error-handler.ts` with global error handler
+- Implemented `errorHandler` as Express ErrorRequestHandler (4 params signature)
+- ValidationError -> 400 with { error: 'Validation failed', details: err.issues }
+- NotFoundError -> 404 with { error: err.message }
+- InvalidStateTransitionError -> 409 with { error: err.message, from, to }
+- Unknown errors -> 500 with { error: 'Internal server error' }, logged to console.error
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/middleware/error-handler.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - Signature: (err, req, res, next) => void (4 params for Express error handler)
+  - ValidationError -> 400 with { error: 'Validation failed', details: err.issues }
+  - NotFoundError -> 404 with { error: err.message }
+  - InvalidStateTransitionError -> 409
+  - Unknown errors -> 500 with { error: 'Internal server error' }, logged (using console.error; pino can be added later)
+
+**Next recommended priority:**
+- IMPL.SVC.ORCHESTRATOR - Core service for spawning processes (needed by MissionExecutor)
+- IMPL.ROUTES.HEALTH - Health endpoint (needed by IMPL.SERVER)
+- IMPL.SERVER - Express server setup (all middleware is now complete!)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- All middleware features (IMPL.MW.AUTH, IMPL.MW.VALIDATION, IMPL.MW.ERROR) are now complete!
+- The middleware layer is fully functional and ready for IMPL.SERVER to consume
+- Using console.error for logging instead of pino (pino not yet in dependencies); can be replaced later

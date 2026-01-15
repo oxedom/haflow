@@ -13,3 +13,4 @@ export * from './database/repositories/processes';
 export * from './database/repositories/audit';
 export * from './middleware/auth';
 export * from './middleware/validation';
+export * from './middleware/error-handler';
