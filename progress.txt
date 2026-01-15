@@ -250,3 +250,43 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - Repository uses the database singleton pattern from IMPL.DB.INIT
 - All repository features can now be implemented in any order
+
+---
+
+### 2026-01-15 - IMPL.REPO.MISSIONS Complete
+
+**What was done:**
+- Created `packages/backend/src/database/repositories/missions.ts` with MissionRepository class
+- Implemented all CRUD methods: create(), findById(), findByProject(), findByStates(), findAll(), update(), delete()
+- Implemented updateState() with state transition validation using isValidTransition from @ralphy/shared
+- Used prepared statements for all database operations
+- create() generates UUID with 'mission_' prefix using generateId('mission')
+- create() initializes state as 'draft' per the state machine
+- updateState() validates transition and throws InvalidStateTransitionError on invalid transitions
+- Exported interfaces: Mission, CreateMissionData, UpdateMissionData
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/database/repositories/missions.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 5 verification steps from PRD confirmed:
+  - create() generates UUID with 'mission_' prefix using generateId('mission')
+  - updateState() calls isValidTransition(currentState, newState) before update
+  - updateState() throws InvalidStateTransitionError on invalid transition
+  - findByProject(projectId) returns missions for a project ordered by created_at DESC
+  - findByStates(states[]) returns missions in any of given states
+
+**Next recommended priority:**
+- IMPL.REPO.TASKS - TaskRepository class (manages individual work items)
+- IMPL.REPO.PROCESSES - ProcessRepository class (manages spawned subprocesses)
+- IMPL.REPO.AUDIT - AuditRepository class (logs significant events)
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- MissionRepository integrates with the state machine validation from @ralphy/shared
+- All Database repository features (PROJECTS, MISSIONS) are complete; TASKS, PROCESSES, AUDIT remain

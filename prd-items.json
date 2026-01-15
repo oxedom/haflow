@@ -50,7 +50,7 @@
       "findByProject(projectId) returns missions for a project",
       "findByStates(states[]) returns missions in any of given states"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.REPO.TASKS",
