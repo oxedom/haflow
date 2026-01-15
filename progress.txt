@@ -1131,3 +1131,49 @@
 - Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
 - All Routes features (IMPL.ROUTES.*) are now complete!
 - The processes router follows the same patterns as other routers (validateBody middleware, async handling, NotFoundError for missing resources)
+
+---
+
+### 2026-01-15 - IMPL.SERVER Complete
+
+**What was done:**
+- Created `packages/backend/src/server.ts` with Express application factory
+- Implemented `createApp()` function that returns a configured Express application
+- Configured middleware in correct order:
+  1. `app.use(helmet())` for security headers
+  2. `app.use(cors())` for CORS support
+  3. `app.use(express.json())` for body parsing
+  4. `app.use('/health', healthRouter)` before auth middleware
+  5. `app.use(authMiddleware)` after health check
+  6. `app.use('/api', apiRouter)` for all API routes (projects, missions, processes)
+  7. `app.use(errorHandler)` at the end
+- Created API router that mounts all sub-routers under /api prefix
+- Exported both `createApp` function and pre-instantiated `app` instance
+- Re-exported from `packages/backend/src/index.ts`
+
+**Files created:**
+- `packages/backend/src/server.ts`
+
+**Files modified:**
+- `packages/backend/src/index.ts` (added re-export)
+
+**Verification:**
+- `pnpm --filter @ralphy/backend build` passes
+- All 7 verification steps from PRD confirmed:
+  - app.use(helmet()) for security headers
+  - app.use(cors()) for CORS support
+  - app.use(express.json()) for body parsing
+  - app.use('/health', healthRouter) before auth middleware
+  - app.use(authMiddleware) after health
+  - app.use('/api', routes) for all API routes (projects, missions, processes mounted)
+  - app.use(errorHandler) at the end
+
+**Next recommended priority:**
+- IMPL.INDEX - Entry point (depends on IMPL.SERVER just implemented)
+- This completes the Server layer and makes the backend fully runnable
+- After IMPL.INDEX, testing features (IMPL.TEST.*) can begin
+
+**Notes:**
+- Tests fail due to no test files existing yet - this is expected until IMPL.TEST.* features are implemented
+- Server is now complete and ready for IMPL.INDEX to create the entry point
+- The `createApp()` factory function allows for testing with isolated app instances

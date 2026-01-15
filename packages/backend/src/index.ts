@@ -25,3 +25,4 @@ export * from './routes/missions';
 export * from './services/mission-executor';
 export * from './services/recovery';
 export * from './routes/processes';
+export * from './server';

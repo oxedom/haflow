@@ -324,7 +324,7 @@
       "app.use('/api', routes) for all API routes",
       "app.use(errorHandler) at the end"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPL.INDEX",
