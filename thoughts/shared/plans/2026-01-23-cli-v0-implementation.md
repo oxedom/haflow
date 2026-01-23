@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement the Ralphy CLI package (`packages/cli`) with 6 commands: `init`, `link`, `unlink`, `start`, `stop`, `status`. This is the v0 "make it work" version - simplified with JSON config (no SQLite) and single-project-at-a-time linking.
+Implement the Haloop CLI package (`packages/cli`) with 6 commands: `init`, `link`, `unlink`, `start`, `stop`, `status`. This is the v0 "make it work" version - simplified with JSON config (no SQLite) and single-project-at-a-time linking.
 
 ## Current State Analysis
 
@@ -14,7 +14,7 @@ Implement the Ralphy CLI package (`packages/cli`) with 6 commands: `init`, `link
 - Existing PRD at `thoughts/prd-cli.md` (more comprehensive than v0 needs)
 
 ### Key Discoveries
-- Backend dev command: `tsx watch src/index.ts` → `pnpm --filter @ralphy/backend dev`
+- Backend dev command: `tsx watch src/index.ts` → `pnpm --filter @haloop/backend dev`
 - Frontend dev command: `vite` → `pnpm --filter frontend dev`
 - Monorepo uses `workspace:*` for local deps
 - All packages use ESM (`"type": "module"`)
@@ -23,23 +23,23 @@ Implement the Ralphy CLI package (`packages/cli`) with 6 commands: `init`, `link
 ## Desired End State
 
 After this plan is complete:
-1. `npm install -g .` from `packages/cli` installs `ralphy` command globally
-2. `ralphy init` creates `~/.ralphy/` with config file
-3. `ralphy link` registers a project (one at a time, re-linking replaces)
-4. `ralphy start` spawns both backend and frontend as child processes
-5. `ralphy status` shows running state and linked project
-6. `ralphy stop` gracefully terminates both services
-7. `ralphy unlink` removes the linked project
+1. `npm install -g .` from `packages/cli` installs `haloop` command globally
+2. `haloop init` creates `~/.haloop/` with config file
+3. `haloop link` registers a project (one at a time, re-linking replaces)
+4. `haloop start` spawns both backend and frontend as child processes
+5. `haloop status` shows running state and linked project
+6. `haloop stop` gracefully terminates both services
+7. `haloop unlink` removes the linked project
 
 ### Verification
 ```bash
 # Full flow test
-ralphy init
-cd /some/project && ralphy link
-ralphy start  # Both services start, logs visible
-ralphy status # Shows both running + linked project
-ralphy stop   # Both services stop
-ralphy unlink # Clears linked project
+haloop init
+cd /some/project && haloop link
+haloop start  # Both services start, logs visible
+haloop status # Shows both running + linked project
+haloop stop   # Both services stop
+haloop unlink # Clears linked project
 ```
 
 ## What We're NOT Doing
@@ -77,14 +77,14 @@ Create the CLI package structure with package.json, tsconfig, and initial files.
 
 ```json
 {
-  "name": "ralphy",
+  "name": "haloop",
   "version": "0.0.1",
   "type": "module",
-  "description": "CLI for Ralphy - multi-project Claude Code orchestrator",
+  "description": "CLI for Haloop - multi-project Claude Code orchestrator",
   "author": "oxedom",
   "license": "MIT",
   "bin": {
-    "ralphy": "./dist/index.js"
+    "haloop": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -177,7 +177,7 @@ packages/cli/
 
 ```typescript
 #!/usr/bin/env node
-console.log('Ralphy CLI - coming soon')
+console.log('Haloop CLI - coming soon')
 ```
 
 ### Success Criteria
@@ -185,7 +185,7 @@ console.log('Ralphy CLI - coming soon')
 #### Automated Verification
 - [ ] Package installs: `cd packages/cli && pnpm install`
 - [ ] TypeScript compiles: `pnpm build`
-- [ ] CLI runs: `node dist/index.js` outputs "Ralphy CLI - coming soon"
+- [ ] CLI runs: `node dist/index.js` outputs "Haloop CLI - coming soon"
 
 #### Manual Verification
 - [ ] Directory structure matches plan
@@ -207,10 +207,10 @@ import { homedir } from 'os'
 import { join } from 'path'
 
 // Support override via env var for testing
-export const RALPHY_HOME = process.env.RALPHY_HOME || join(homedir(), '.ralphy')
-export const CONFIG_PATH = join(RALPHY_HOME, 'config.json')
-export const BACKEND_PID_PATH = join(RALPHY_HOME, 'backend.pid')
-export const FRONTEND_PID_PATH = join(RALPHY_HOME, 'frontend.pid')
+export const HALOOP_HOME = process.env.HALOOP_HOME || join(homedir(), '.haloop')
+export const CONFIG_PATH = join(HALOOP_HOME, 'config.json')
+export const BACKEND_PID_PATH = join(HALOOP_HOME, 'backend.pid')
+export const FRONTEND_PID_PATH = join(HALOOP_HOME, 'frontend.pid')
 ```
 
 #### 2. Config schema and operations
@@ -218,9 +218,9 @@ export const FRONTEND_PID_PATH = join(RALPHY_HOME, 'frontend.pid')
 
 ```typescript
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
-import { RALPHY_HOME, CONFIG_PATH } from './paths.js'
+import { HALOOP_HOME, CONFIG_PATH } from './paths.js'
 
-export interface RalphyConfig {
+export interface HaloopConfig {
   version: string
   linkedProject: {
     name: string
@@ -232,7 +232,7 @@ export interface RalphyConfig {
   }
 }
 
-const DEFAULT_CONFIG: RalphyConfig = {
+const DEFAULT_CONFIG: HaloopConfig = {
   version: '0.0.1',
   linkedProject: null,
   server: {
@@ -245,22 +245,22 @@ export function isInitialized(): boolean {
   return existsSync(CONFIG_PATH)
 }
 
-export function loadConfig(): RalphyConfig {
+export function loadConfig(): HaloopConfig {
   if (!isInitialized()) {
-    throw new Error('Ralphy not initialized. Run: ralphy init')
+    throw new Error('Haloop not initialized. Run: haloop init')
   }
   const content = readFileSync(CONFIG_PATH, 'utf-8')
-  return JSON.parse(content) as RalphyConfig
+  return JSON.parse(content) as HaloopConfig
 }
 
-export function saveConfig(config: RalphyConfig): void {
-  if (!existsSync(RALPHY_HOME)) {
-    mkdirSync(RALPHY_HOME, { recursive: true })
+export function saveConfig(config: HaloopConfig): void {
+  if (!existsSync(HALOOP_HOME)) {
+    mkdirSync(HALOOP_HOME, { recursive: true })
   }
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2))
 }
 
-export function createDefaultConfig(): RalphyConfig {
+export function createDefaultConfig(): HaloopConfig {
   return { ...DEFAULT_CONFIG }
 }
 ```
@@ -277,8 +277,8 @@ import { join } from 'path'
 let testDir: string
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'ralphy-test-'))
-  vi.stubEnv('RALPHY_HOME', testDir)
+  testDir = await mkdtemp(join(tmpdir(), 'haloop-test-'))
+  vi.stubEnv('HALOOP_HOME', testDir)
 })
 
 afterEach(async () => {
@@ -298,7 +298,7 @@ export function getTestDir(): string {
 import { describe, it, expect } from 'vitest'
 import { existsSync } from 'fs'
 import { isInitialized, loadConfig, saveConfig, createDefaultConfig } from '../../src/lib/config.js'
-import { RALPHY_HOME, CONFIG_PATH } from '../../src/lib/paths.js'
+import { HALOOP_HOME, CONFIG_PATH } from '../../src/lib/paths.js'
 
 describe('config', () => {
   it('isInitialized returns false when not initialized', () => {
@@ -309,7 +309,7 @@ describe('config', () => {
     const config = createDefaultConfig()
     saveConfig(config)
 
-    expect(existsSync(RALPHY_HOME)).toBe(true)
+    expect(existsSync(HALOOP_HOME)).toBe(true)
     expect(existsSync(CONFIG_PATH)).toBe(true)
   })
 
@@ -323,7 +323,7 @@ describe('config', () => {
   })
 
   it('loadConfig throws when not initialized', () => {
-    expect(() => loadConfig()).toThrow('Ralphy not initialized')
+    expect(() => loadConfig()).toThrow('Haloop not initialized')
   })
 })
 ```
@@ -342,7 +342,7 @@ describe('config', () => {
 ## Phase 3: Init Command
 
 ### Overview
-Implement the `init` command that creates ~/.ralphy and config.json.
+Implement the `init` command that creates ~/.haloop and config.json.
 
 ### Changes Required
 
@@ -353,7 +353,7 @@ Implement the `init` command that creates ~/.ralphy and config.json.
 import chalk from 'chalk'
 import ora from 'ora'
 import { existsSync, mkdirSync } from 'fs'
-import { RALPHY_HOME, CONFIG_PATH } from '../lib/paths.js'
+import { HALOOP_HOME, CONFIG_PATH } from '../lib/paths.js'
 import { isInitialized, saveConfig, createDefaultConfig } from '../lib/config.js'
 
 interface InitOptions {
@@ -361,31 +361,31 @@ interface InitOptions {
 }
 
 export async function initCommand(options: InitOptions = {}): Promise<void> {
-  const spinner = ora('Initializing Ralphy...').start()
+  const spinner = ora('Initializing Haloop...').start()
 
   try {
     if (isInitialized() && !options.force) {
-      spinner.info('Ralphy already initialized')
+      spinner.info('Haloop already initialized')
       console.log(chalk.dim(`  Config: ${CONFIG_PATH}`))
       return
     }
 
     // Create directory
-    if (!existsSync(RALPHY_HOME)) {
-      mkdirSync(RALPHY_HOME, { recursive: true })
+    if (!existsSync(HALOOP_HOME)) {
+      mkdirSync(HALOOP_HOME, { recursive: true })
     }
 
     // Create config
     const config = createDefaultConfig()
     saveConfig(config)
 
-    spinner.succeed('Ralphy initialized')
+    spinner.succeed('Haloop initialized')
     console.log()
     console.log(chalk.dim(`  Created: ${CONFIG_PATH}`))
     console.log()
     console.log('Next steps:')
     console.log(chalk.cyan('  cd <your-project>'))
-    console.log(chalk.cyan('  ralphy link'))
+    console.log(chalk.cyan('  haloop link'))
   } catch (error) {
     spinner.fail('Failed to initialize')
     console.error(chalk.red(error instanceof Error ? error.message : String(error)))
@@ -401,7 +401,7 @@ export async function initCommand(options: InitOptions = {}): Promise<void> {
 import { describe, it, expect, vi } from 'vitest'
 import { existsSync } from 'fs'
 import { initCommand } from '../../src/commands/init.js'
-import { RALPHY_HOME, CONFIG_PATH } from '../../src/lib/paths.js'
+import { HALOOP_HOME, CONFIG_PATH } from '../../src/lib/paths.js'
 import { loadConfig } from '../../src/lib/config.js'
 
 // Mock ora to avoid spinner output in tests
@@ -416,9 +416,9 @@ vi.mock('ora', () => ({
 }))
 
 describe('init command', () => {
-  it('creates ~/.ralphy directory', async () => {
+  it('creates ~/.haloop directory', async () => {
     await initCommand()
-    expect(existsSync(RALPHY_HOME)).toBe(true)
+    expect(existsSync(HALOOP_HOME)).toBe(true)
   })
 
   it('creates config.json with defaults', async () => {
@@ -450,7 +450,7 @@ describe('init command', () => {
 - [ ] Command runs: `node dist/index.js init` (after wiring in Phase 7)
 
 #### Manual Verification
-- [ ] `~/.ralphy/config.json` created with correct structure
+- [ ] `~/.haloop/config.json` created with correct structure
 
 ---
 
@@ -481,8 +481,8 @@ export async function linkCommand(pathArg?: string, options: LinkOptions = {}): 
   try {
     // Check initialized
     if (!isInitialized()) {
-      spinner.fail('Ralphy not initialized')
-      console.log(chalk.yellow('Run: ralphy init'))
+      spinner.fail('Haloop not initialized')
+      console.log(chalk.yellow('Run: haloop init'))
       process.exit(1)
     }
 
@@ -525,7 +525,7 @@ export async function linkCommand(pathArg?: string, options: LinkOptions = {}): 
 
     console.log()
     console.log('Next steps:')
-    console.log(chalk.cyan('  ralphy start'))
+    console.log(chalk.cyan('  haloop start'))
   } catch (error) {
     spinner.fail('Failed to link project')
     console.error(chalk.red(error instanceof Error ? error.message : String(error)))
@@ -547,8 +547,8 @@ export async function unlinkCommand(): Promise<void> {
 
   try {
     if (!isInitialized()) {
-      spinner.fail('Ralphy not initialized')
-      console.log(chalk.yellow('Run: ralphy init'))
+      spinner.fail('Haloop not initialized')
+      console.log(chalk.yellow('Run: haloop init'))
       process.exit(1)
     }
 
@@ -689,7 +689,7 @@ import { spawn, ChildProcess } from 'child_process'
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs'
 import { resolve } from 'path'
 import { isInitialized, loadConfig } from '../lib/config.js'
-import { BACKEND_PID_PATH, FRONTEND_PID_PATH, RALPHY_HOME } from '../lib/paths.js'
+import { BACKEND_PID_PATH, FRONTEND_PID_PATH, HALOOP_HOME } from '../lib/paths.js'
 
 // Find monorepo root (where pnpm-workspace.yaml lives)
 function findMonorepoRoot(): string {
@@ -701,12 +701,12 @@ function findMonorepoRoot(): string {
     return dir
   }
 
-  // Fallback: check if RALPHY_MONOREPO_ROOT is set
-  if (process.env.RALPHY_MONOREPO_ROOT) {
-    return process.env.RALPHY_MONOREPO_ROOT
+  // Fallback: check if HALOOP_MONOREPO_ROOT is set
+  if (process.env.HALOOP_MONOREPO_ROOT) {
+    return process.env.HALOOP_MONOREPO_ROOT
   }
 
-  throw new Error('Cannot find Ralphy monorepo root')
+  throw new Error('Cannot find Haloop monorepo root')
 }
 
 function isRunning(pidPath: string): boolean {
@@ -728,12 +728,12 @@ function savePid(pidPath: string, pid: number): void {
 }
 
 export async function startCommand(): Promise<void> {
-  const spinner = ora('Starting Ralphy...').start()
+  const spinner = ora('Starting Haloop...').start()
 
   try {
     if (!isInitialized()) {
-      spinner.fail('Ralphy not initialized')
-      console.log(chalk.yellow('Run: ralphy init'))
+      spinner.fail('Haloop not initialized')
+      console.log(chalk.yellow('Run: haloop init'))
       process.exit(1)
     }
 
@@ -741,8 +741,8 @@ export async function startCommand(): Promise<void> {
 
     // Check if already running
     if (isRunning(BACKEND_PID_PATH) || isRunning(FRONTEND_PID_PATH)) {
-      spinner.info('Ralphy services already running')
-      console.log(chalk.yellow('Run: ralphy stop  to stop them first'))
+      spinner.info('Haloop services already running')
+      console.log(chalk.yellow('Run: haloop stop  to stop them first'))
       return
     }
 
@@ -750,7 +750,7 @@ export async function startCommand(): Promise<void> {
     spinner.text = 'Starting backend...'
 
     // Start backend
-    const backend = spawn('pnpm', ['--filter', '@ralphy/backend', 'dev'], {
+    const backend = spawn('pnpm', ['--filter', '@haloop/backend', 'dev'], {
       cwd: monorepoRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: false
@@ -793,7 +793,7 @@ export async function startCommand(): Promise<void> {
       lines.forEach(line => console.log(chalk.magenta('[frontend]'), chalk.red(line)))
     })
 
-    spinner.succeed('Ralphy started')
+    spinner.succeed('Haloop started')
     console.log()
     console.log(`  Backend:  ${chalk.cyan(`http://localhost:${config.server.backendPort}`)}`)
     console.log(`  Frontend: ${chalk.cyan(`http://localhost:${config.server.frontendPort}`)}`)
@@ -801,7 +801,7 @@ export async function startCommand(): Promise<void> {
     if (config.linkedProject) {
       console.log(`  Project:  ${chalk.green(config.linkedProject.name)}`)
     } else {
-      console.log(chalk.yellow('  No project linked. Run: ralphy link'))
+      console.log(chalk.yellow('  No project linked. Run: haloop link'))
     }
 
     console.log()
@@ -879,12 +879,12 @@ function stopProcess(pidPath: string, name: string): boolean {
 }
 
 export async function stopCommand(): Promise<void> {
-  const spinner = ora('Stopping Ralphy...').start()
+  const spinner = ora('Stopping Haloop...').start()
 
   try {
     if (!isInitialized()) {
-      spinner.fail('Ralphy not initialized')
-      console.log(chalk.yellow('Run: ralphy init'))
+      spinner.fail('Haloop not initialized')
+      console.log(chalk.yellow('Run: haloop init'))
       process.exit(1)
     }
 
@@ -892,11 +892,11 @@ export async function stopCommand(): Promise<void> {
     const frontendStopped = stopProcess(FRONTEND_PID_PATH, 'frontend')
 
     if (!backendStopped && !frontendStopped) {
-      spinner.info('No Ralphy services running')
+      spinner.info('No Haloop services running')
       return
     }
 
-    spinner.succeed('Ralphy stopped')
+    spinner.succeed('Haloop stopped')
 
     if (backendStopped) {
       console.log(chalk.dim('  Stopped backend'))
@@ -959,11 +959,11 @@ describe('stop command', () => {
 - [ ] Tests pass: `pnpm test`
 
 #### Manual Verification
-- [ ] `ralphy start` spawns both services with colored prefixed output
+- [ ] `haloop start` spawns both services with colored prefixed output
 - [ ] Both services accessible (backend:4000, frontend:5173)
 - [ ] Ctrl+C stops both services cleanly
 - [ ] PID files created/removed appropriately
-- [ ] `ralphy stop` terminates running services
+- [ ] `haloop stop` terminates running services
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation that start/stop work correctly before proceeding to the next phase.
 
@@ -983,7 +983,7 @@ Implement `status` to show initialization state, running services, and linked pr
 import chalk from 'chalk'
 import { existsSync, readFileSync } from 'fs'
 import { isInitialized, loadConfig } from '../lib/config.js'
-import { RALPHY_HOME, CONFIG_PATH, BACKEND_PID_PATH, FRONTEND_PID_PATH } from '../lib/paths.js'
+import { HALOOP_HOME, CONFIG_PATH, BACKEND_PID_PATH, FRONTEND_PID_PATH } from '../lib/paths.js'
 
 function isProcessRunning(pidPath: string): boolean {
   if (!existsSync(pidPath)) return false
@@ -999,19 +999,19 @@ function isProcessRunning(pidPath: string): boolean {
 
 export async function statusCommand(): Promise<void> {
   console.log()
-  console.log(chalk.bold('Ralphy Status'))
+  console.log(chalk.bold('Haloop Status'))
   console.log(chalk.dim('─'.repeat(40)))
   console.log()
 
   // Initialization
   const initialized = isInitialized()
   console.log(
-    `Initialized:  ${initialized ? chalk.green('✓') : chalk.red('✗')} ${chalk.dim(RALPHY_HOME)}`
+    `Initialized:  ${initialized ? chalk.green('✓') : chalk.red('✗')} ${chalk.dim(HALOOP_HOME)}`
   )
 
   if (!initialized) {
     console.log()
-    console.log(chalk.yellow('Run: ralphy init'))
+    console.log(chalk.yellow('Run: haloop init'))
     return
   }
 
@@ -1041,7 +1041,7 @@ export async function statusCommand(): Promise<void> {
     console.log(`  Path:       ${chalk.dim(config.linkedProject.path)}`)
   } else {
     console.log(chalk.dim('  No project linked'))
-    console.log(chalk.yellow('  Run: cd <project> && ralphy link'))
+    console.log(chalk.yellow('  Run: cd <project> && haloop link'))
   }
 
   console.log()
@@ -1078,7 +1078,7 @@ afterEach(() => {
 describe('status command', () => {
   it('shows not initialized message', async () => {
     await statusCommand()
-    expect(consoleOutput.some(l => l.includes('ralphy init'))).toBe(true)
+    expect(consoleOutput.some(l => l.includes('haloop init'))).toBe(true)
   })
 
   it('shows initialized status', async () => {
@@ -1133,19 +1133,19 @@ import { stopCommand } from './commands/stop.js'
 import { statusCommand } from './commands/status.js'
 
 program
-  .name('ralphy')
-  .description('CLI for Ralphy - multi-project Claude Code orchestrator')
+  .name('haloop')
+  .description('CLI for Haloop - multi-project Claude Code orchestrator')
   .version('0.0.1')
 
 program
   .command('init')
-  .description('Initialize Ralphy on this machine')
+  .description('Initialize Haloop on this machine')
   .option('--force', 'Reinitialize even if exists')
   .action(initCommand)
 
 program
   .command('link [path]')
-  .description('Link a project to Ralphy (replaces any existing link)')
+  .description('Link a project to Haloop (replaces any existing link)')
   .option('--name <name>', 'Custom project name')
   .action(linkCommand)
 
@@ -1166,7 +1166,7 @@ program
 
 program
   .command('status')
-  .description('Show Ralphy status and linked project')
+  .description('Show Haloop status and linked project')
   .action(statusCommand)
 
 program.parse()
@@ -1181,9 +1181,9 @@ program.parse()
 - [ ] All commands listed in help output
 
 #### Manual Verification
-- [ ] `ralphy --help` shows all commands
-- [ ] `ralphy init --help` shows init options
-- [ ] `ralphy link --help` shows link options
+- [ ] `haloop --help` shows all commands
+- [ ] `haloop init --help` shows init options
+- [ ] `haloop link --help` shows link options
 
 ---
 
@@ -1205,34 +1205,34 @@ pnpm build
 ```bash
 cd packages/cli
 npm link  # Creates global symlink
-ralphy --help
+haloop --help
 ```
 
 #### 3. Full end-to-end test
 ```bash
 # Initialize
-ralphy init
-ralphy status  # Should show initialized, nothing running
+haloop init
+haloop status  # Should show initialized, nothing running
 
 # Link a project
 cd /tmp && mkdir test-project && cd test-project && git init
-ralphy link
-ralphy status  # Should show linked project
+haloop link
+haloop status  # Should show linked project
 
 # Start services
-ralphy start  # Both should start, logs visible
+haloop start  # Both should start, logs visible
 # Open browser to http://localhost:5173
 
 # In another terminal
-ralphy status  # Should show both running
+haloop status  # Should show both running
 
 # Stop
-Ctrl+C  # or ralphy stop from another terminal
-ralphy status  # Should show both stopped
+Ctrl+C  # or haloop stop from another terminal
+haloop status  # Should show both stopped
 
 # Cleanup
-ralphy unlink
-ralphy status  # Should show no linked project
+haloop unlink
+haloop status  # Should show no linked project
 ```
 
 ### Success Criteria
@@ -1244,7 +1244,7 @@ ralphy status  # Should show no linked project
 
 #### Manual Verification
 - [ ] Full end-to-end flow works as described above
-- [ ] UI loads at localhost:5173 after `ralphy start`
+- [ ] UI loads at localhost:5173 after `haloop start`
 - [ ] Backend API responds at localhost:4000/api
 - [ ] Ctrl+C gracefully stops both services
 - [ ] PID files are created and cleaned up appropriately
@@ -1254,7 +1254,7 @@ ralphy status  # Should show no linked project
 ## Testing Strategy
 
 ### Unit Tests
-- Path resolution with different RALPHY_HOME values
+- Path resolution with different HALOOP_HOME values
 - Config loading, saving, validation
 - Individual command logic with mocked I/O
 
@@ -1264,13 +1264,13 @@ ralphy status  # Should show no linked project
 
 ### Manual Testing Steps
 1. Fresh install: `npm link` from packages/cli
-2. `ralphy init` on clean system
-3. `ralphy link` from a project directory
-4. `ralphy start` - verify both services start
+2. `haloop init` on clean system
+3. `haloop link` from a project directory
+4. `haloop start` - verify both services start
 5. Access frontend in browser
-6. `ralphy stop` - verify clean shutdown
-7. `ralphy unlink` - verify project removed
-8. `ralphy status` at each step
+6. `haloop stop` - verify clean shutdown
+7. `haloop unlink` - verify project removed
+8. `haloop status` at each step
 
 ## Performance Considerations
 
@@ -1284,7 +1284,7 @@ N/A - this is a new package
 
 ## References
 
-- v0 spec: `/home/s-linux/projects/ralphy/ralphy-v0-working-spec.md`
-- Existing PRD: `/home/s-linux/projects/ralphy/thoughts/prd-cli.md`
-- Backend package: `/home/s-linux/projects/ralphy/packages/backend/package.json`
-- Frontend package: `/home/s-linux/projects/ralphy/packages/frontend/package.json`
+- v0 spec: `/home/s-linux/projects/haloop/haloop-v0-working-spec.md`
+- Existing PRD: `/home/s-linux/projects/haloop/thoughts/prd-cli.md`
+- Backend package: `/home/s-linux/projects/haloop/packages/backend/package.json`
+- Frontend package: `/home/s-linux/projects/haloop/packages/frontend/package.json`

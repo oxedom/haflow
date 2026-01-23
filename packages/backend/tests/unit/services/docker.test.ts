@@ -79,9 +79,9 @@ describe('docker provider', () => {
       const { stdout } = await execAsync(`docker inspect --format='{{json .Config.Labels}}' ${containerId}`);
       const labels = JSON.parse(stdout.trim());
 
-      expect(labels['ralphy.mission_id']).toBe('m-labeltest');
-      expect(labels['ralphy.run_id']).toBe('r-labeltest');
-      expect(labels['ralphy.step_id']).toBe('label-step');
+      expect(labels['haloop.mission_id']).toBe('m-labeltest');
+      expect(labels['haloop.run_id']).toBe('r-labeltest');
+      expect(labels['haloop.step_id']).toBe('label-step');
     });
 
     it('mounts artifacts volume', async () => {

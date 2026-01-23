@@ -1,5 +1,5 @@
 
-> @ralphy/backend@0.0.1 demo /home/sam/projects/ralphy/packages/backend
+> @haloop/backend@0.0.1 demo /home/sam/projects/haloop/packages/backend
 > tsx src/demo.ts
 
 🚀 Starting pipeline with thread: 123
@@ -17,7 +17,7 @@ The file already exists and contains a well-structured HTML page displaying a li
   4. Banana Bread
   5. Greek Salad
 
-Each recipe shows a name, description, and preparation/cooking times. The page is already complete at `/home/sam/projects/ralphy/packages/backend/public/index.html`.
+Each recipe shows a name, description, and preparation/cooking times. The page is already complete at `/home/sam/projects/haloop/packages/backend/public/index.html`.
 
 <promise>COMPLETE</promise>
 
@@ -35,7 +35,7 @@ Each recipe shows a name, description, and preparation/cooking times. The page i
   4. Banana Bread
   5. Greek Salad
 
-Each recipe shows a name, description, and preparation/cooking times. The page is already complete at `/home/sam/projects/ralphy/packages/backend/public/index.html`.
+Each recipe shows a name, description, and preparation/cooking times. The page is already complete at `/home/sam/projects/haloop/packages/backend/public/index.html`.
 
 <promise>COMPLETE</promise>
 [<u[?1004l[?2004l[?25h[?25h]0;
@@ -54,7 +54,7 @@ smallToBeforeResearch complete.
     '  4. Banana Bread\r\n' +
     '  5. Greek Salad\r\n' +
     '\r\n' +
-    'Each recipe shows a name, description, and preparation/cooking times. The page is already complete at `/home/sam/projects/ralphy/packages/backend/public/index.html`.\r\n' +
+    'Each recipe shows a name, description, and preparation/cooking times. The page is already complete at `/home/sam/projects/haloop/packages/backend/public/index.html`.\r\n' +
     '\r\n' +
     '<promise>COMPLETE</promise>\r\n' +
     '\x1B[<u\x1B[?1004l\x1B[?2004l\x1B[?25h\x1B[?25h\x1B]0;\x07',

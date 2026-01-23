@@ -2,7 +2,7 @@
 Full Mobile Control
 Can host on VPS
 Can host on local machine
-**Ralphy lives globally (Central Hub Architecture)**
+**Haloop lives globally (Central Hub Architecture)**
 **One server manages multiple projects**
 
 # Features
@@ -57,15 +57,15 @@ Missions: (Draft, Preparing PRD -> Review PRD -> Ready, In progress, Completed S
 - Completed Failed (Blocked ie can't run e2e tests as database connection not returning response)
 
 # User stories:
-**Install Ralphy Globally (VPS/Local)**
-`npm install -g ralphy` (or git clone to `~/tools/ralphy`)
-`ralphy init`
+**Install Haloop Globally (VPS/Local)**
+`npm install -g haloop` (or git clone to `~/tools/haloop`)
+`haloop init`
 **Link a Project**
 `cd ~/dev/my-app`
-`ralphy link`
+`haloop link`
 
 **Start** (running backend and frontend server)
-ralphy start (local fe, local be)
+haloop start (local fe, local be)
 
 # Desktop flow
 Visit localhost:PORT
@@ -74,7 +74,7 @@ Start Mission
 
 
 
-# Files of repo (The Ralphy Tool)
+# Files of repo (The Haloop Tool)
 backend
 -src/
 - server.ts (Central Hub)
@@ -83,7 +83,7 @@ backend
 frontend/React 19 Vite (The Control pannel)
 
 # Files created in a target repo
-.ralphy
+.haloop
 missions/
 - [feature-template]
 -- progress.txt

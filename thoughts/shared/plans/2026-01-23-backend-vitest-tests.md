@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement the complete Vitest test suite for `@ralphy/backend` covering 8 test files across utils, services, and integration layers. Tests will use **real Docker containers** and the integration tests will hit an **actual running Express server**.
+Implement the complete Vitest test suite for `@haloop/backend` covering 8 test files across utils, services, and integration layers. Tests will use **real Docker containers** and the integration tests will hit an **actual running Express server**.
 
 ## Current State Analysis
 
@@ -33,8 +33,8 @@ Implement the complete Vitest test suite for `@ralphy/backend` covering 8 test f
 ## Desired End State
 
 After this plan is complete:
-1. All 8 test suites pass with `pnpm --filter @ralphy/backend test`
-2. Coverage report available via `pnpm --filter @ralphy/backend test:coverage`
+1. All 8 test suites pass with `pnpm --filter @haloop/backend test`
+2. Coverage report available via `pnpm --filter @haloop/backend test:coverage`
 3. Integration tests spin up real Docker containers
 4. Tests run against actual Express server started by vitest globalSetup
 5. Temp directories cleaned up after each test
@@ -64,7 +64,7 @@ Install missing dependencies, create directory structure, and configure vitest f
 #### 1. Install supertest runtime
 **Command**:
 ```bash
-pnpm --filter @ralphy/backend add -D supertest
+pnpm --filter @haloop/backend add -D supertest
 ```
 
 #### 2. Create directory structure
@@ -106,8 +106,8 @@ import { join } from 'path';
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'ralphy-test-'));
-  vi.stubEnv('RALPHY_HOME', testDir);
+  testDir = await mkdtemp(join(tmpdir(), 'haloop-test-'));
+  vi.stubEnv('HALOOP_HOME', testDir);
 });
 
 afterEach(async () => {
@@ -178,7 +178,7 @@ export default async function globalTeardown() {
   // Cleanup any orphaned Docker containers from tests
   try {
     const { stdout } = await execAsync(
-      'docker ps -aq --filter="label=ralphy.mission_id"'
+      'docker ps -aq --filter="label=haloop.mission_id"'
     );
     const containerIds = stdout.trim().split('\n').filter(Boolean);
     for (const id of containerIds) {
@@ -223,7 +223,7 @@ export async function startServer(port: number) {
   const app = createServer();
 
   return app.listen(port, () => {
-    console.log(`Ralphy backend listening on port ${port}`);
+    console.log(`Haloop backend listening on port ${port}`);
   });
 }
 ```
@@ -258,10 +258,10 @@ export default defineConfig({
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] `pnpm --filter @ralphy/backend add -D supertest` completes successfully
+- [x] `pnpm --filter @haloop/backend add -D supertest` completes successfully
 - [x] Directory structure exists: `ls packages/backend/tests/unit/utils packages/backend/tests/unit/services packages/backend/tests/integration/routes`
-- [x] Vitest config valid: `pnpm --filter @ralphy/backend test` runs (0 tests found is OK)
-- [x] TypeScript compiles: `pnpm --filter @ralphy/backend build`
+- [x] Vitest config valid: `pnpm --filter @haloop/backend test` runs (0 tests found is OK)
+- [x] TypeScript compiles: `pnpm --filter @haloop/backend build`
 
 #### Manual Verification:
 - [ ] Verify test server starts on port 4001 when running tests
@@ -426,23 +426,23 @@ describe('config utils', () => {
     });
   });
 
-  describe('ralphyHome', () => {
-    it('defaults to ~/.ralphy when RALPHY_HOME env not set', async () => {
-      delete process.env.RALPHY_HOME;
+  describe('haloopHome', () => {
+    it('defaults to ~/.haloop when HALOOP_HOME env not set', async () => {
+      delete process.env.HALOOP_HOME;
       const { config } = await import('../../../src/utils/config.js');
-      expect(config.ralphyHome).toBe(join(homedir(), '.ralphy'));
+      expect(config.haloopHome).toBe(join(homedir(), '.haloop'));
     });
 
-    it('respects RALPHY_HOME env variable', async () => {
-      process.env.RALPHY_HOME = '/custom/path';
+    it('respects HALOOP_HOME env variable', async () => {
+      process.env.HALOOP_HOME = '/custom/path';
       const { config } = await import('../../../src/utils/config.js');
-      expect(config.ralphyHome).toBe('/custom/path');
+      expect(config.haloopHome).toBe('/custom/path');
     });
   });
 
   describe('missionsDir', () => {
-    it('is ralphyHome/missions', async () => {
-      process.env.RALPHY_HOME = '/test/home';
+    it('is haloopHome/missions', async () => {
+      process.env.HALOOP_HOME = '/test/home';
       const { config } = await import('../../../src/utils/config.js');
       expect(config.missionsDir).toBe('/test/home/missions');
     });
@@ -462,7 +462,7 @@ describe('config utils', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] All utils tests pass: `pnpm --filter @ralphy/backend test tests/unit/utils`
+- [x] All utils tests pass: `pnpm --filter @haloop/backend test tests/unit/utils`
 - [x] No TypeScript errors in test files
 
 #### Manual Verification:
@@ -571,7 +571,7 @@ describe('workflow service', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] Workflow tests pass: `pnpm --filter @ralphy/backend test tests/unit/services/workflow`
+- [x] Workflow tests pass: `pnpm --filter @haloop/backend test tests/unit/services/workflow`
 - [x] No TypeScript errors
 
 #### Manual Verification:
@@ -961,7 +961,7 @@ describe('mission-store service', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] Mission store tests pass: `pnpm --filter @ralphy/backend test tests/unit/services/mission-store`
+- [x] Mission store tests pass: `pnpm --filter @haloop/backend test tests/unit/services/mission-store`
 - [x] No TypeScript errors
 
 #### Manual Verification:
@@ -1063,9 +1063,9 @@ describe('docker provider', () => {
       const { stdout } = await execAsync(`docker inspect --format='{{json .Config.Labels}}' ${containerId}`);
       const labels = JSON.parse(stdout.trim());
 
-      expect(labels['ralphy.mission_id']).toBe('m-labeltest');
-      expect(labels['ralphy.run_id']).toBe('r-labeltest');
-      expect(labels['ralphy.step_id']).toBe('label-step');
+      expect(labels['haloop.mission_id']).toBe('m-labeltest');
+      expect(labels['haloop.run_id']).toBe('r-labeltest');
+      expect(labels['haloop.step_id']).toBe('label-step');
     });
 
     it('mounts artifacts volume', async () => {
@@ -1364,8 +1364,8 @@ describe('docker provider', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] Docker tests pass: `pnpm --filter @ralphy/backend test tests/unit/services/docker`
-- [x] No orphaned containers after test run: `docker ps -a --filter="label=ralphy.mission_id"`
+- [x] Docker tests pass: `pnpm --filter @haloop/backend test tests/unit/services/docker`
+- [x] No orphaned containers after test run: `docker ps -a --filter="label=haloop.mission_id"`
 
 #### Manual Verification:
 - [x] Verify Docker daemon is running before tests
@@ -1555,7 +1555,7 @@ describe('mission-engine service', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] Mission engine tests pass: `pnpm --filter @ralphy/backend test tests/unit/services/mission-engine`
+- [x] Mission engine tests pass: `pnpm --filter @haloop/backend test tests/unit/services/mission-engine`
 - [x] No TypeScript errors
 
 #### Manual Verification:
@@ -1803,9 +1803,9 @@ describe('missions routes', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] Integration tests pass: `pnpm --filter @ralphy/backend test tests/integration`
-- [x] All tests pass together: `pnpm --filter @ralphy/backend test`
-- [x] Coverage report generates: `pnpm --filter @ralphy/backend test:coverage`
+- [x] Integration tests pass: `pnpm --filter @haloop/backend test tests/integration`
+- [x] All tests pass together: `pnpm --filter @haloop/backend test`
+- [x] Coverage report generates: `pnpm --filter @haloop/backend test:coverage`
 
 #### Manual Verification:
 - [x] Verify server starts before tests and stops after
@@ -1833,9 +1833,9 @@ describe('missions routes', () => {
 
 ### Manual Testing Steps:
 1. Verify Docker daemon is running: `docker version`
-2. Run full test suite: `pnpm --filter @ralphy/backend test`
-3. Check no orphaned containers: `docker ps -a --filter="label=ralphy.mission_id"`
-4. Generate coverage report: `pnpm --filter @ralphy/backend test:coverage`
+2. Run full test suite: `pnpm --filter @haloop/backend test`
+3. Check no orphaned containers: `docker ps -a --filter="label=haloop.mission_id"`
+4. Generate coverage report: `pnpm --filter @haloop/backend test:coverage`
 5. Review coverage HTML in `packages/backend/coverage/`
 
 ## Performance Considerations

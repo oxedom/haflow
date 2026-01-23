@@ -15,7 +15,7 @@ Open source
 It can run on a VM or my PC
 Phone
 
-# ralphy
+# haloop
 
 Mobile Overview from home
 Mobile Launch
@@ -42,7 +42,7 @@ passes: boolean;
 }
 https://github.com/binwiederhier/ntfy
 
-# Ralphy Lanaguge
+# Haloop Lanaguge
 
 Missions (Draft, Prepare, Ready, In progress, Completed Sucess, Completed Failed (Blocked))
 State: Always visibile

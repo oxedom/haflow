@@ -96,8 +96,8 @@ Capture the full manual verification steps under `packages/backend/tests/` so en
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] The document exists at `packages/backend/tests/frontend-container-runtime-verification.md`.
-- [ ] The document includes the exact container command and curl verification.
+- [x] The document exists at `packages/backend/tests/frontend-container-runtime-verification.md`.
+- [x] The document includes the exact container command and curl verification.
 
 #### Manual Verification:
 - [ ] `npm install` and `npm run build` complete with exit code 0.
@@ -130,7 +130,7 @@ const { stdout, stderr } = await execAsync(
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Integration test passes: `pnpm --filter @ralphy/backend test tests/integration/docker`.
+- [ ] Integration test passes: `pnpm --filter @haloop/backend test tests/integration/docker`.
 - [ ] Test skips gracefully when Docker is unavailable.
 
 #### Manual Verification:

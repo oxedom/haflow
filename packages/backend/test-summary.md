@@ -2,19 +2,19 @@
 
 ## Overview
 
-The `@ralphy/backend` package has a comprehensive Vitest test suite covering utils, services, and API routes. Tests use **real Docker containers** for the Docker provider tests and hit an **actual running Express server** for integration tests.
+The `@haloop/backend` package has a comprehensive Vitest test suite covering utils, services, and API routes. Tests use **real Docker containers** for the Docker provider tests and hit an **actual running Express server** for integration tests.
 
 ## Quick Start
 
 ```bash
 # Run all tests
-pnpm --filter @ralphy/backend test
+pnpm --filter @haloop/backend test
 
 # Run tests in watch mode
-pnpm --filter @ralphy/backend test:watch
+pnpm --filter @haloop/backend test:watch
 
 # Run tests with coverage report
-pnpm --filter @ralphy/backend test:coverage
+pnpm --filter @haloop/backend test:coverage
 ```
 
 ## Test Structure
@@ -43,19 +43,19 @@ packages/backend/tests/
 
 ```bash
 # Run only utils tests
-pnpm --filter @ralphy/backend test tests/unit/utils
+pnpm --filter @haloop/backend test tests/unit/utils
 
 # Run only service tests
-pnpm --filter @ralphy/backend test tests/unit/services
+pnpm --filter @haloop/backend test tests/unit/services
 
 # Run only integration tests
-pnpm --filter @ralphy/backend test tests/integration
+pnpm --filter @haloop/backend test tests/integration
 
 # Run a specific test file
-pnpm --filter @ralphy/backend test tests/unit/services/docker
+pnpm --filter @haloop/backend test tests/unit/services/docker
 
 # Run tests matching a pattern
-pnpm --filter @ralphy/backend test -t "createMission"
+pnpm --filter @haloop/backend test -t "createMission"
 ```
 
 ## Test Categories
@@ -96,7 +96,7 @@ The Docker provider tests require a running Docker daemon:
 docker version
 
 # Check for any orphaned test containers
-docker ps -a --filter="label=ralphy.mission_id"
+docker ps -a --filter="label=haloop.mission_id"
 ```
 
 ### Environment
@@ -108,7 +108,7 @@ Tests automatically:
 ## Coverage Report
 
 ```bash
-pnpm --filter @ralphy/backend test:coverage
+pnpm --filter @haloop/backend test:coverage
 ```
 
 Coverage is generated in `packages/backend/coverage/`:
@@ -167,7 +167,7 @@ The `mission-store` tests use dynamic imports with `vi.resetModules()` to ensure
 If tests fail mid-run, containers may be left behind:
 ```bash
 # Clean up manually
-docker ps -aq --filter="label=ralphy.mission_id" | xargs -r docker rm -f
+docker ps -aq --filter="label=haloop.mission_id" | xargs -r docker rm -f
 ```
 
 ## Adding New Tests

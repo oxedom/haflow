@@ -1,7 +1,7 @@
-# Ralphy Implementation Plan
+# Haloop Implementation Plan
 
 ## Overview
-Build Ralphy - a central hub for managing Claude Code missions across multiple projects. This MVP focuses on CLI + Backend (frontend later).
+Build Haloop - a central hub for managing Claude Code missions across multiple projects. This MVP focuses on CLI + Backend (frontend later).
 
 **Stack:** pnpm monorepo, Express + better-sqlite3, TypeScript, Vitest
 
@@ -11,16 +11,16 @@ Build Ralphy - a central hub for managing Claude Code missions across multiple p
 
 ```
 packages/
-  shared/     # @ralphy/shared - Types & enums
-  cli/        # ralphy - Global CLI (npm install -g)
-  backend/    # @ralphy/backend - Express REST API
+  shared/     # @haloop/shared - Types & enums
+  cli/        # haloop - Global CLI (npm install -g)
+  backend/    # @haloop/backend - Express REST API
 ```
 
-**Global Instance:** `~/.ralphy/`
-- `ralphy.sqlite` - Projects registry, missions, tasks, logs
+**Global Instance:** `~/.haloop/`
+- `haloop.sqlite` - Projects registry, missions, tasks, logs
 - `config.json` - Global settings (ports, auth path)
 
-**Per-Project:** `<project>/.ralphy/`
+**Per-Project:** `<project>/.haloop/`
 - `config.ts` - Project-specific settings
 - `missions/[id]/PRD.md, tasks.json, progress.txt`
 
@@ -30,14 +30,14 @@ packages/
 
 ### Phase 1: Monorepo Setup
 **Files to create:**
-- `/home/sam/projects/ralphy/tsconfig.base.json` - Shared TS config
-- `/home/sam/projects/ralphy/vitest.workspace.ts` - Vitest workspace config
-- Update `/home/sam/projects/ralphy/pnpm-workspace.yaml`
+- `/home/sam/projects/haloop/tsconfig.base.json` - Shared TS config
+- `/home/sam/projects/haloop/vitest.workspace.ts` - Vitest workspace config
+- Update `/home/sam/projects/haloop/pnpm-workspace.yaml`
 
 **Root package.json:**
 ```json
 {
-  "name": "ralphy-monorepo",
+  "name": "haloop-monorepo",
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
@@ -71,7 +71,7 @@ export default defineWorkspace([
 ])
 ``` 
 
-### Phase 2: Shared Types (@ralphy/shared)
+### Phase 2: Shared Types (@haloop/shared)
 **Files to create:**
 ```
 packages/shared/
@@ -93,7 +93,7 @@ packages/shared/
 **package.json:**
 ```json
 {
-  "name": "@ralphy/shared",
+  "name": "@haloop/shared",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -160,7 +160,7 @@ interface Mission {
 }
 ```
 
-### Phase 3: CLI Package (ralphy)
+### Phase 3: CLI Package (haloop)
 **Files to create:**
 ```
 packages/cli/
@@ -170,11 +170,11 @@ packages/cli/
   src/
     index.ts          # Commander.js entry
     lib/
-      paths.ts        # RALPHY_HOME, GLOBAL_DB_PATH, etc.
+      paths.ts        # HALOOP_HOME, GLOBAL_DB_PATH, etc.
       config.ts       # loadGlobalConfig
     commands/
-      init.ts         # Create ~/.ralphy, init SQLite
-      link.ts         # Register project, create .ralphy/
+      init.ts         # Create ~/.haloop, init SQLite
+      link.ts         # Register project, create .haloop/
       start.ts        # Start backend server
       status.ts       # Show linked projects
   tests/
@@ -188,11 +188,11 @@ packages/cli/
 **package.json:**
 ```json
 {
-  "name": "ralphy",
+  "name": "haloop",
   "version": "0.0.1",
   "type": "module",
   "bin": {
-    "ralphy": "./dist/index.js"
+    "haloop": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -203,7 +203,7 @@ packages/cli/
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@ralphy/shared": "workspace:*",
+    "@haloop/shared": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "chalk": "^5.3.0",
     "commander": "^12.0.0",
@@ -232,12 +232,12 @@ export default defineConfig({
 **CLI Commands:**
 | Command | Action |
 |---------|--------|
-| `ralphy init` | Create ~/.ralphy/, init SQLite, save config |
-| `ralphy link` | Register project in DB, create .ralphy/ dir |
-| `ralphy start` | Start Express backend server |
-| `ralphy status` | List linked projects |
+| `haloop init` | Create ~/.haloop/, init SQLite, save config |
+| `haloop link` | Register project in DB, create .haloop/ dir |
+| `haloop start` | Start Express backend server |
+| `haloop status` | List linked projects |
 
-### Phase 4: Backend Package (@ralphy/backend)
+### Phase 4: Backend Package (@haloop/backend)
 **Files to create:**
 ```
 packages/backend/
@@ -279,7 +279,7 @@ packages/backend/
 **package.json:**
 ```json
 {
-  "name": "@ralphy/backend",
+  "name": "@haloop/backend",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -299,7 +299,7 @@ packages/backend/
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@ralphy/shared": "workspace:*",
+    "@haloop/shared": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
@@ -369,7 +369,7 @@ export default defineConfig({
 - `generateTasks(missionId)` - Run Claude to break PRD into tasks
 - `startMission(missionId)` - Execute tasks sequentially
 - `stopMission(missionId)` - Kill active orchestrator
-- Saves artifacts to `.ralphy/missions/[featureName]/`
+- Saves artifacts to `.haloop/missions/[featureName]/`
 
 ---
 
@@ -388,25 +388,25 @@ pnpm test --watch
 pnpm test:coverage
 
 # Run tests for specific package
-pnpm --filter @ralphy/backend test
-pnpm --filter @ralphy/shared test
-pnpm --filter ralphy test
+pnpm --filter @haloop/backend test
+pnpm --filter @haloop/shared test
+pnpm --filter haloop test
 ```
 
 ### Test Categories
 
-**@ralphy/shared:**
+**@haloop/shared:**
 - Type guard validation
 - Enum value tests
 - Zod schema validation
 
-**ralphy (CLI):**
+**haloop (CLI):**
 - Path resolution (home dir, project dirs)
 - Config loading/saving
 - Command argument parsing
 - Mock filesystem operations
 
-**@ralphy/backend:**
+**@haloop/backend:**
 - Database CRUD operations (in-memory SQLite)
 - Route handlers with supertest
 - Service layer unit tests
@@ -425,8 +425,8 @@ import { join } from 'path'
 let testDir: string
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'ralphy-test-'))
-  vi.stubEnv('RALPHY_HOME', testDir)
+  testDir = await mkdtemp(join(tmpdir(), 'haloop-test-'))
+  vi.stubEnv('HALOOP_HOME', testDir)
 })
 
 afterEach(async () => {
@@ -475,17 +475,17 @@ pnpm build
 # 4. Link CLI globally
 cd packages/cli && pnpm link --global
 
-# 5. Initialize Ralphy
-ralphy init
+# 5. Initialize Haloop
+haloop init
 
 # 6. Link a test project
-cd /path/to/test-project && ralphy link
+cd /path/to/test-project && haloop link
 
 # 7. Check status
-ralphy status
+haloop status
 
 # 8. Start server
-ralphy start
+haloop start
 
 # 9. Test API
 curl http://localhost:3847/health

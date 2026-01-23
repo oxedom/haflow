@@ -126,7 +126,7 @@ async function remove(containerId: string): Promise<void> {
 
 async function cleanupOrphaned(): Promise<void> {
   try {
-    // Find and remove all containers with ralphy labels
+    // Find and remove all containers with haloop labels
     const { stdout } = await execAsync(
       `docker ps -aq --filter="label=${LABEL_PREFIX}.mission_id"`
     );

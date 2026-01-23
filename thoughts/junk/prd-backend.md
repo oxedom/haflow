@@ -1,9 +1,9 @@
-# PRD: Ralphy Backend
+# PRD: Haloop Backend
 
 ## Overview
-Backend REST API server for Ralphy - a central hub for managing Claude Code missions across multiple projects.
+Backend REST API server for Haloop - a central hub for managing Claude Code missions across multiple projects.
 
-**Package:** `@ralphy/backend` + `@ralphy/shared`
+**Package:** `@haloop/backend` + `@haloop/shared`
 **Stack:** Express, better-sqlite3, TypeScript, Zod, Vitest
 
 ---
@@ -11,7 +11,7 @@ Backend REST API server for Ralphy - a central hub for managing Claude Code miss
 ## Goals
 1. Provide REST API for managing projects, missions, tasks, and logs
 2. Execute Claude Code processes to generate PRDs and complete tasks
-3. Store all data in SQLite database at `~/.ralphy/ralphy.sqlite`
+3. Store all data in SQLite database at `~/.haloop/haloop.sqlite`
 4. Support concurrent mission execution with proper state management
 
 ---
@@ -40,7 +40,7 @@ export default defineWorkspace([
 
 ---
 
-## Phase 2: Shared Types (@ralphy/shared)
+## Phase 2: Shared Types (@haloop/shared)
 
 ### Package Structure
 ```
@@ -157,7 +157,7 @@ export interface ApiError {
 ### Dependencies
 ```json
 {
-  "name": "@ralphy/shared",
+  "name": "@haloop/shared",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -176,7 +176,7 @@ export interface ApiError {
 
 ---
 
-## Phase 3: Backend Package (@ralphy/backend)
+## Phase 3: Backend Package (@haloop/backend)
 
 ### Package Structure
 ```
@@ -219,11 +219,11 @@ packages/backend/
 ### Dependencies
 ```json
 {
-  "name": "@ralphy/backend",
+  "name": "@haloop/backend",
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
-    "@ralphy/shared": "workspace:*",
+    "@haloop/shared": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
@@ -397,7 +397,7 @@ class MissionExecutor {
 - Parse and store PRD content
 - Parse and create task records
 - Execute tasks sequentially
-- Save artifacts to `.ralphy/missions/[name]/`
+- Save artifacts to `.haloop/missions/[name]/`
 - Log all activity to database
 
 ### Mission State Machine
@@ -464,7 +464,7 @@ export { testDb }
 - [ ] Orchestrator spawns and tracks processes
 - [ ] MissionExecutor enforces state machine
 - [ ] Logs written for all operations
-- [ ] Artifacts saved to project `.ralphy/` directory
+- [ ] Artifacts saved to project `.haloop/` directory
 
 ### Tests
 - [ ] All unit tests pass

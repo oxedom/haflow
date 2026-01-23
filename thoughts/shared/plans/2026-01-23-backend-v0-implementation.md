@@ -1,9 +1,9 @@
 
-# Ralphy v0 Backend Implementation Plan
+# Haloop v0 Backend Implementation Plan
 
 ## Overview
 
-Implement the backend for Ralphy v0 - a local-first orchestrator that runs AI-assisted "missions" against real projects, with human gates and ephemeral Docker sandboxes. The backend provides a REST API consumed by the existing React frontend via polling.
+Implement the backend for Haloop v0 - a local-first orchestrator that runs AI-assisted "missions" against real projects, with human gates and ephemeral Docker sandboxes. The backend provides a REST API consumed by the existing React frontend via polling.
 
 ## Current State Analysis
 
@@ -25,7 +25,7 @@ Implement the backend for Ralphy v0 - a local-first orchestrator that runs AI-as
 
 A functional backend that:
 1. Serves all 6 API endpoints expected by the frontend
-2. Persists missions/artifacts/runs to `~/.ralphy/missions/`
+2. Persists missions/artifacts/runs to `~/.haloop/missions/`
 3. Executes agent steps in Docker containers via a provider abstraction
 4. Returns `current_log_tail` for running containers
 5. Supports the full v0 workflow (4 agent steps + 4 human gates)
@@ -39,7 +39,7 @@ A functional backend that:
 - **No streaming/SSE/WebSocket** - polling only (refetchInterval: 2000ms)
 - **No authentication** - local-only for v0
 - **No k3s provider** - Docker only, but behind abstraction
-- **No project linking** - missions exist globally under ~/.ralphy
+- **No project linking** - missions exist globally under ~/.haloop
 - **No workflow templates system** - hardcoded workflow for v0
 - **No database** - files on disk only
 
@@ -96,7 +96,7 @@ import { config } from './utils/config.js';
 const app = createServer();
 
 app.listen(config.port, () => {
-  console.log(`Ralphy backend listening on port ${config.port}`);
+  console.log(`Haloop backend listening on port ${config.port}`);
 });
 ```
 
@@ -136,9 +136,9 @@ import { join } from 'path';
 
 export const config = {
   port: parseInt(process.env.PORT || '4000', 10),
-  ralphyHome: process.env.RALPHY_HOME || join(homedir(), '.ralphy'),
+  haloopHome: process.env.HALOOP_HOME || join(homedir(), '.haloop'),
   get missionsDir() {
-    return join(this.ralphyHome, 'missions');
+    return join(this.haloopHome, 'missions');
   },
   // Workflows live with the backend for v0
   get workflowsDir() {
@@ -150,7 +150,7 @@ export const config = {
 #### 4. Response wrapper utility
 **File**: `packages/backend/src/utils/response.ts`
 ```typescript
-import type { ApiResponse } from '@ralphy/shared';
+import type { ApiResponse } from '@haloop/shared';
 import type { Response } from 'express';
 
 export function sendSuccess<T>(res: Response, data: T, status = 200): void {
@@ -188,9 +188,9 @@ export function generateRunId(): string {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] `pnpm --filter @ralphy/backend build` compiles without errors
+- [x] `pnpm --filter @haloop/backend build` compiles without errors
 - [x] `curl localhost:4000/api/missions` returns valid JSON (empty array or error)
-- [x] Server starts: `pnpm --filter @ralphy/backend dev`
+- [x] Server starts: `pnpm --filter @haloop/backend dev`
 
 #### Manual Verification:
 - [ ] No TypeScript errors in IDE
@@ -210,7 +210,7 @@ Implement the disk-based storage layer for missions, artifacts, runs, and logs.
 import { mkdir, readdir, readFile, writeFile, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType } from '@ralphy/shared';
+import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType } from '@haloop/shared';
 import { config } from '../utils/config.js';
 import { generateMissionId, generateRunId } from '../utils/id.js';
 import { getDefaultWorkflow, getDefaultWorkflowId, getWorkflowStepName } from './workflow.js';
@@ -457,7 +457,7 @@ export const missionStore = {
 - Workflow definitions live in `packages/backend/public/workflows/` for v0;
   the service can later read JSON from there, but starts with an in-memory map.
 ```typescript
-import type { Workflow } from '@ralphy/shared';
+import type { Workflow } from '@haloop/shared';
 
 // Hardcoded for v0 - matches frontend mock exactly
 const WORKFLOWS: Record<string, Workflow> = {
@@ -494,13 +494,13 @@ export function getWorkflowStepName(workflowId: string, stepIndex: number): stri
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] `pnpm --filter @ralphy/backend build` compiles without errors
-- [x] After creating a mission via API, `~/.ralphy/missions/<id>/` exists with correct structure
+- [x] `pnpm --filter @haloop/backend build` compiles without errors
+- [x] After creating a mission via API, `~/.haloop/missions/<id>/` exists with correct structure
 - [x] `mission.json`, `artifacts/raw-input.md` are created correctly
 
 #### Manual Verification:
-- [ ] `ls ~/.ralphy/missions/` shows mission folders
-- [ ] `cat ~/.ralphy/missions/<id>/mission.json` shows valid JSON
+- [ ] `ls ~/.haloop/missions/` shows mission folders
+- [ ] `cat ~/.haloop/missions/<id>/mission.json` shows valid JSON
 
 ---
 
@@ -515,7 +515,7 @@ Implement all 6 API endpoints matching the frontend contract exactly.
 **File**: `packages/backend/src/routes/missions.ts`
 ```typescript
 import { Router } from 'express';
-import type { CreateMissionRequest, SaveArtifactRequest } from '@ralphy/shared';
+import type { CreateMissionRequest, SaveArtifactRequest } from '@haloop/shared';
 import { missionStore } from '../services/mission-store.js';
 import { missionEngine } from '../services/mission-engine.js';
 import { sendSuccess, sendError } from '../utils/response.js';
@@ -693,7 +693,7 @@ export interface SandboxProvider {
   isAvailable(): Promise<boolean>;
 
   /**
-   * Cleanup orphaned resources (e.g., containers with ralphy labels)
+   * Cleanup orphaned resources (e.g., containers with haloop labels)
    */
   cleanupOrphaned(): Promise<void>;
 }
@@ -723,7 +723,7 @@ import type { SandboxProvider, SandboxRunOptions, SandboxStatus } from './sandbo
 
 const execAsync = promisify(exec);
 
-const LABEL_PREFIX = 'ralphy';
+const LABEL_PREFIX = 'haloop';
 
 const defaultImage = 'node:20-slim'; // Default agent image for v0
 
@@ -823,7 +823,7 @@ async function remove(containerId: string): Promise<void> {
 
 async function cleanupOrphaned(): Promise<void> {
   try {
-    // Find and remove all containers with ralphy labels
+    // Find and remove all containers with haloop labels
     const { stdout } = await execAsync(
       `docker ps -aq --filter="label=${LABEL_PREFIX}.mission_id"`
     );
@@ -852,11 +852,11 @@ export const dockerProvider: SandboxProvider = {
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] `pnpm --filter @ralphy/backend build` compiles without errors
+- [x] `pnpm --filter @haloop/backend build` compiles without errors
 - [ ] `docker run --rm node:20-slim echo "hello"` works manually
 
 #### Manual Verification:
-- [ ] After starting a sandbox, `docker ps` shows container with ralphy labels
+- [ ] After starting a sandbox, `docker ps` shows container with haloop labels
 - [ ] `docker logs <container_id>` shows output
 
 ---
@@ -872,7 +872,7 @@ Implement the mission engine that handles the `continue` action - advancing thro
 **File**: `packages/backend/src/services/mission-engine.ts`
 ```typescript
 import { join } from 'path';
-import type { MissionMeta, MissionStatus, WorkflowStep } from '@ralphy/shared';
+import type { MissionMeta, MissionStatus, WorkflowStep } from '@haloop/shared';
 import { missionStore } from './mission-store.js';
 import { getDefaultWorkflow } from './workflow.js';
 import { dockerProvider } from './docker.js';
@@ -1077,7 +1077,7 @@ async function main() {
   const app = createServer();
 
   app.listen(config.port, () => {
-    console.log(`Ralphy backend listening on port ${config.port}`);
+    console.log(`Haloop backend listening on port ${config.port}`);
     console.log(`Missions directory: ${config.missionsDir}`);
   });
 }
@@ -1088,7 +1088,7 @@ main().catch(console.error);
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] `pnpm --filter @ralphy/backend build` compiles without errors
+- [x] `pnpm --filter @haloop/backend build` compiles without errors
 - [ ] `curl -X POST localhost:4000/api/missions/<id>/continue` advances the mission
 - [ ] Container starts and runs (visible in `docker ps`)
 
@@ -1108,7 +1108,7 @@ Ensure the full end-to-end flow works with the frontend.
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] Backend starts without errors: `pnpm --filter @ralphy/backend dev`
+- [x] Backend starts without errors: `pnpm --filter @haloop/backend dev`
 - [ ] Frontend connects successfully: `VITE_USE_MOCKS=false pnpm --filter frontend dev`
 
 #### Manual Verification:
@@ -1138,7 +1138,7 @@ Ensure the full end-to-end flow works with the frontend.
 - Mission engine: State machine transitions with mock provider
 
 ### Manual Testing Steps:
-1. Start backend: `pnpm --filter @ralphy/backend dev`
+1. Start backend: `pnpm --filter @haloop/backend dev`
 2. Start frontend: `VITE_USE_MOCKS=false pnpm --filter frontend dev`
 3. Create new mission with sample input
 4. Verify mission appears in sidebar
@@ -1170,7 +1170,7 @@ src/
 
 ## References
 
-- Working spec: `ralphy-v0-working-spec.md`
+- Working spec: `haloop-v0-working-spec.md`
 - Shared types: `packages/shared/src/types.ts`
 - Frontend mock data: `packages/frontend/src/mocks/data.ts`
 - Frontend API client: `packages/frontend/src/api/client.ts`

@@ -67,7 +67,7 @@ async function aiStructureSpecDocument(voiceInput: string): Promise<SpecDocument
 }
 ```
 
-**Output**: `SpecDocument` object stored at `.ralphy/missions/<id>/spec.json`
+**Output**: `SpecDocument` object stored at `.haloop/missions/<id>/spec.json`
 
 ---
 
@@ -86,7 +86,7 @@ interface ReviewResult<T> {
 
 async function humanReviewAndApprove(specDoc: SpecDocument): Promise<SpecDocument> {
   // 1. Save spec to file for human review
-  await saveToFile(specDoc, '.ralphy/missions/<id>/spec-pending.json');
+  await saveToFile(specDoc, '.haloop/missions/<id>/spec-pending.json');
 
   // 2. Notify human (webhook, CLI prompt, or API endpoint)
   await notifyHumanForReview('spec', specDoc);
@@ -150,7 +150,7 @@ async function aiResearchCodebase(approvedSpec: SpecDocument): Promise<ResearchD
 }
 ```
 
-**Output**: `ResearchData` stored at `.ralphy/missions/<id>/research.json`
+**Output**: `ResearchData` stored at `.haloop/missions/<id>/research.json`
 
 ---
 
@@ -161,7 +161,7 @@ async function aiResearchCodebase(approvedSpec: SpecDocument): Promise<ResearchD
 **Implementation**:
 ```typescript
 async function humanReviewResearch(researchData: ResearchData): Promise<ResearchData> {
-  await saveToFile(researchData, '.ralphy/missions/<id>/research-pending.json');
+  await saveToFile(researchData, '.haloop/missions/<id>/research-pending.json');
   await notifyHumanForReview('research', researchData);
 
   const review = await waitForHumanAction<ResearchData>('research-review');
@@ -223,7 +223,7 @@ async function aiCreateImplementationPlan(
 }
 ```
 
-**Output**: `ImplementationPlan` stored at `.ralphy/missions/<id>/plan.json`
+**Output**: `ImplementationPlan` stored at `.haloop/missions/<id>/plan.json`
 
 ---
 
@@ -244,7 +244,7 @@ interface ExecutionConfig {
 async function humanApproveAndSelectOneshot(
   plan: ImplementationPlan
 ): Promise<ExecutionConfig> {
-  await saveToFile(plan, '.ralphy/missions/<id>/plan-pending.json');
+  await saveToFile(plan, '.haloop/missions/<id>/plan-pending.json');
   await notifyHumanForReview('plan', plan);
 
   const review = await waitForHumanAction<{
@@ -426,9 +426,9 @@ async function waitForHumanAction<T>(
 
 ### State Persistence
 
-All intermediate states saved to `.ralphy/missions/<id>/`:
+All intermediate states saved to `.haloop/missions/<id>/`:
 ```
-.ralphy/missions/<mission-id>/
+.haloop/missions/<mission-id>/
 ├── spec.json           # Approved spec
 ├── spec-pending.json   # Awaiting review
 ├── research.json       # Approved research

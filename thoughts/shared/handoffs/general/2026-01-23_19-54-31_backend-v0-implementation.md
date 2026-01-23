@@ -3,7 +3,7 @@ date: 2026-01-23T19:54:31+02:00
 researcher: Claude
 git_commit: 8236f6b1ac229baed4cf74f4cc57377a5037c9f9
 branch: main
-repository: ralphy
+repository: haloop
 topic: "Backend v0 Implementation"
 tags: [implementation, backend, express, api, mission-orchestration]
 status: in_progress
@@ -15,7 +15,7 @@ type: implementation_strategy
 # Handoff: Backend v0 Implementation
 
 ## Task(s)
-Implementing the Ralphy v0 backend from the plan document `thoughts/shared/plans/2026-01-23-backend-v0-implementation.md`.
+Implementing the Haloop v0 backend from the plan document `thoughts/shared/plans/2026-01-23-backend-v0-implementation.md`.
 
 **Status:**
 - **Phases 1-6: COMPLETED** - All backend source code implemented
@@ -49,7 +49,7 @@ Implementing the Ralphy v0 backend from the plan document `thoughts/shared/plans
 ## Learnings
 1. **Express type exports** - Need explicit type annotations for `Router` and `Express` to avoid TS2742 errors about non-portable types
 2. **Unused params** - Prefix with `_` to satisfy TypeScript strict mode (e.g., `_req`, `_next`)
-3. **Mission storage** - Missions stored at `~/.ralphy/missions/<id>/` with subdirs: `artifacts/`, `runs/`, `logs/`
+3. **Mission storage** - Missions stored at `~/.haloop/missions/<id>/` with subdirs: `artifacts/`, `runs/`, `logs/`
 4. **Workflow structure** - 8 steps alternating agent/human-gate: cleanup → review → research → review → planning → review → implementation → review
 
 ## Artifacts
@@ -59,13 +59,13 @@ Implementing the Ralphy v0 backend from the plan document `thoughts/shared/plans
 ## Action Items & Next Steps
 1. **Test Docker availability** - Docker is now re-enabled, verify with `docker version`
 2. **Test continue endpoint** - `curl -X POST localhost:4000/api/missions/m-7a050c62/continue` should start agent container
-3. **Verify container execution** - Check `docker ps` shows container with ralphy labels
+3. **Verify container execution** - Check `docker ps` shows container with haloop labels
 4. **Complete Phase 7 manual verification**:
    - Frontend with `VITE_USE_MOCKS=false` can create and list missions
    - Full workflow cycle through all 8 steps
    - Agent containers produce output artifacts
 
 ## Other Notes
-- A test mission already exists at `~/.ralphy/missions/m-7a050c62/` with `raw-input.md` artifact
+- A test mission already exists at `~/.haloop/missions/m-7a050c62/` with `raw-input.md` artifact
 - The mock agent command in `mission-engine.ts:100-108` copies input to output with header - replace with real Claude agent container later
 - Server warns "Sandbox provider (Docker) not available" if Docker isn't running - this is expected and handled gracefully

@@ -126,7 +126,7 @@ function AppContent() {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold">RALPHY</h1>
+        <h1 className="text-lg font-semibold">HALOOP</h1>
       </div>
 
       <Sidebar
@@ -148,7 +148,7 @@ function AppContent() {
       ) : (
         <div className="flex-1 flex items-center justify-center pt-14 md:pt-0">
           <div className="text-center text-muted-foreground px-4">
-            <h2 className="text-xl font-semibold mb-2">Welcome to Ralphy</h2>
+            <h2 className="text-xl font-semibold mb-2">Welcome to Haloop</h2>
             <p>Select a mission from the sidebar or create a new one.</p>
           </div>
         </div>
