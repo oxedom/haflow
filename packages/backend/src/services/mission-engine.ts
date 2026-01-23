@@ -1,13 +1,17 @@
 import { join } from 'path';
 import type { MissionMeta, MissionStatus, WorkflowStep } from '@haflow/shared';
 import { missionStore } from './mission-store.js';
-import { getDefaultWorkflow } from './workflow.js';
+import { getDefaultWorkflow, getStepPrompt } from './workflow.js';
 import { dockerProvider } from './docker.js';
 import type { SandboxProvider } from './sandbox.js';
 import { config } from '../utils/config.js';
 
 const provider: SandboxProvider = dockerProvider;
 const runningContainers: Map<string, string> = new Map(); // runId -> containerId
+const runningStreams: Map<string, AbortController> = new Map(); // runId -> abort controller
+
+// Default Ralph loop settings
+const DEFAULT_RALPH_MAX_ITERATIONS = 5;
 
 async function init(): Promise<void> {
   // Check provider availability
@@ -86,37 +90,15 @@ async function startAgentStep(
   try {
     // Get artifact paths
     const artifactsPath = join(config.missionsDir, missionId, 'artifacts');
-    const inputArtifact = step.inputArtifact || 'raw-input.md';
-    const outputArtifact = step.outputArtifact || 'output.md';
 
-    // TODO: Replace with actual Claude agent container
-    // For v0, we use a simple "mock agent" that just copies/transforms the input
-    // In production, this would be the actual Claude agent container
-    const containerId = await provider.start({
-      missionId,
-      runId: run.run_id,
-      stepId: step.step_id,
-      image: 'node:20-slim',
-      artifactsPath,
-      command: [
-        'sh', '-c',
-        // Simple mock: copy input to output with header
-        `echo "# Output from ${step.name}" > /mission/artifacts/${outputArtifact} && ` +
-        `echo "" >> /mission/artifacts/${outputArtifact} && ` +
-        `echo "Processed by: ${step.agent || step.step_id}" >> /mission/artifacts/${outputArtifact} && ` +
-        `echo "" >> /mission/artifacts/${outputArtifact} && ` +
-        `cat /mission/artifacts/${inputArtifact} >> /mission/artifacts/${outputArtifact} && ` +
-        `echo "Agent ${step.name} completed successfully"`
-      ],
-    });
-
-    // Store container ID
-    await missionStore.updateRun(missionId, run.run_id, { container_id: containerId });
-    runningContainers.set(run.run_id, containerId);
-
-    // Start monitoring the container
-    monitorContainer(missionId, run.run_id, containerId);
-
+    // Check if Claude streaming is available
+    if (provider.startClaudeStreaming) {
+      // Use Claude sandbox with streaming
+      await runClaudeStreaming(missionId, meta, step, run.run_id, artifactsPath);
+    } else {
+      // Fallback to mock agent for testing
+      await runMockAgent(missionId, meta, step, run.run_id, artifactsPath);
+    }
   } catch (err) {
     // Agent failed to start
     const error = err instanceof Error ? err.message : String(err);
@@ -130,6 +112,181 @@ async function startAgentStep(
       last_error: error,
     });
   }
+}
+
+// Run Claude with streaming output
+async function runClaudeStreaming(
+  missionId: string,
+  _meta: MissionMeta,
+  step: WorkflowStep,
+  runId: string,
+  artifactsPath: string
+): Promise<void> {
+  const prompt = getStepPrompt(step);
+
+  // Create abort controller for this run
+  const abortController = new AbortController();
+  runningStreams.set(runId, abortController);
+
+  let isComplete = false;
+  let logBuffer = '';
+
+  try {
+    const stream = provider.startClaudeStreaming!({
+      missionId,
+      runId,
+      stepId: step.step_id,
+      artifactsPath,
+      prompt,
+    });
+
+    for await (const event of stream) {
+      // Append to log buffer
+      if (event.text) {
+        logBuffer += event.text + '\n';
+        // Save logs periodically (every 500 chars)
+        if (logBuffer.length > 500) {
+          await missionStore.appendLog(missionId, runId, logBuffer);
+          logBuffer = '';
+        }
+      }
+
+      if (event.type === 'tool_use' && event.toolName) {
+        const toolLog = `[Tool: ${event.toolName}]\n${event.text || ''}\n`;
+        await missionStore.appendLog(missionId, runId, toolLog);
+      }
+
+      if (event.isComplete) {
+        isComplete = true;
+      }
+
+      if (event.type === 'error') {
+        throw new Error(event.text || 'Claude sandbox error');
+      }
+    }
+
+    // Flush remaining log buffer
+    if (logBuffer) {
+      await missionStore.appendLog(missionId, runId, logBuffer);
+    }
+
+    // Update run record
+    await missionStore.updateRun(missionId, runId, {
+      finished_at: new Date().toISOString(),
+      exit_code: 0,
+    });
+
+    runningStreams.delete(runId);
+
+    // Get fresh meta to check ralph mode
+    const freshMeta = await missionStore.getMeta(missionId);
+    if (!freshMeta) return;
+
+    // Handle completion
+    await handleAgentCompletion(missionId, freshMeta, step, isComplete);
+
+  } catch (err) {
+    runningStreams.delete(runId);
+
+    // Flush remaining log buffer
+    if (logBuffer) {
+      await missionStore.appendLog(missionId, runId, logBuffer);
+    }
+
+    const error = err instanceof Error ? err.message : String(err);
+    await missionStore.updateRun(missionId, runId, {
+      finished_at: new Date().toISOString(),
+      exit_code: 1,
+    });
+
+    const freshMeta = await missionStore.getMeta(missionId);
+    if (!freshMeta) return;
+
+    await missionStore.updateMeta(missionId, {
+      status: 'failed',
+      errors: [...freshMeta.errors, error],
+      last_error: error,
+    });
+  }
+}
+
+// Handle agent completion with Ralph loop logic
+async function handleAgentCompletion(
+  missionId: string,
+  meta: MissionMeta,
+  _step: WorkflowStep,
+  isComplete: boolean
+): Promise<void> {
+  // Check if Ralph mode is enabled
+  if (meta.ralph_mode && !isComplete) {
+    const currentIteration = meta.ralph_current_iteration || 1;
+    const maxIterations = meta.ralph_max_iterations || DEFAULT_RALPH_MAX_ITERATIONS;
+
+    if (currentIteration < maxIterations) {
+      // Increment iteration and restart the workflow from step 0
+      console.log(`[Ralph] Iteration ${currentIteration} not complete, restarting (max: ${maxIterations})`);
+
+      await missionStore.updateMeta(missionId, {
+        current_step: 0,
+        status: 'ready',
+        ralph_current_iteration: currentIteration + 1,
+      });
+
+      // Start the first step again
+      const workflow = getDefaultWorkflow();
+      const firstStep = workflow.steps[0];
+      if (firstStep && firstStep.type === 'agent') {
+        const updatedMeta = await missionStore.getMeta(missionId);
+        if (updatedMeta) {
+          await startAgentStep(missionId, updatedMeta, firstStep);
+        }
+      }
+      return;
+    } else {
+      console.log(`[Ralph] Max iterations (${maxIterations}) reached without COMPLETE marker`);
+    }
+  }
+
+  // Normal completion - advance to next step
+  await advanceToNextStep(missionId, meta);
+}
+
+// Fallback mock agent for testing without Docker sandbox
+async function runMockAgent(
+  missionId: string,
+  _meta: MissionMeta,
+  step: WorkflowStep,
+  runId: string,
+  artifactsPath: string
+): Promise<void> {
+  const inputArtifact = step.inputArtifact || 'raw-input.md';
+  const outputArtifact = step.outputArtifact || 'output.md';
+
+  const containerId = await provider.start({
+    missionId,
+    runId,
+    stepId: step.step_id,
+    image: 'node:20-slim',
+    artifactsPath,
+    command: [
+      'sh', '-c',
+      // Simple mock: copy input to output with header
+      `echo "# Output from ${step.name}" > /mission/artifacts/${outputArtifact} && ` +
+      `echo "" >> /mission/artifacts/${outputArtifact} && ` +
+      `echo "Processed by: ${step.agent || step.step_id}" >> /mission/artifacts/${outputArtifact} && ` +
+      `echo "" >> /mission/artifacts/${outputArtifact} && ` +
+      `cat /mission/artifacts/${inputArtifact} >> /mission/artifacts/${outputArtifact} && ` +
+      `echo "<promise>COMPLETE</promise>" >> /mission/artifacts/${outputArtifact} && ` +
+      `echo "Agent ${step.name} completed successfully"`
+    ],
+  });
+
+  // Store container ID
+  await missionStore.updateRun(missionId, runId, { container_id: containerId });
+  runningContainers.set(runId, containerId);
+
+  // Start monitoring the container
+  monitorContainer(missionId, runId, containerId);
 }
 
 function monitorContainer(missionId: string, runId: string, containerId: string): void {

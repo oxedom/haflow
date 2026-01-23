@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -21,13 +22,21 @@ import {
 interface NewMissionModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (title: string, type: 'feature' | 'fix' | 'bugfix', rawInput: string) => void
+  onSubmit: (
+    title: string,
+    type: 'feature' | 'fix' | 'bugfix',
+    rawInput: string,
+    ralphMode?: boolean,
+    ralphMaxIterations?: number
+  ) => void
 }
 
 export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalProps) {
   const [title, setTitle] = useState('')
   const [type, setType] = useState<'feature' | 'fix' | 'bugfix'>('feature')
   const [rawInput, setRawInput] = useState('')
+  const [ralphMode, setRalphMode] = useState(false)
+  const [ralphMaxIterations, setRalphMaxIterations] = useState(5)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,10 +45,18 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
 
     setIsSubmitting(true)
     try {
-      await onSubmit(title, type, rawInput)
+      await onSubmit(
+        title,
+        type,
+        rawInput,
+        ralphMode ? true : undefined,
+        ralphMode ? ralphMaxIterations : undefined
+      )
       setTitle('')
       setType('feature')
       setRawInput('')
+      setRalphMode(false)
+      setRalphMaxIterations(5)
       onClose()
     } finally {
       setIsSubmitting(false)
@@ -92,6 +109,37 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
                 rows={8}
                 className="font-mono text-sm resize-none"
               />
+            </div>
+
+            {/* Ralph Mode */}
+            <div className="space-y-3 pt-2 border-t">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="ralphMode"
+                  checked={ralphMode}
+                  onCheckedChange={(checked) => setRalphMode(checked === true)}
+                />
+                <Label htmlFor="ralphMode" className="text-sm font-normal cursor-pointer">
+                  Run as Ralph loop (auto-restart until complete)
+                </Label>
+              </div>
+
+              {ralphMode && (
+                <div className="flex items-center gap-3 pl-6">
+                  <Label htmlFor="maxIterations" className="text-sm text-muted-foreground whitespace-nowrap">
+                    Max iterations:
+                  </Label>
+                  <Input
+                    id="maxIterations"
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={ralphMaxIterations}
+                    onChange={(e) => setRalphMaxIterations(parseInt(e.target.value) || 5)}
+                    className="w-20"
+                  />
+                </div>
+              )}
             </div>
           </div>
 

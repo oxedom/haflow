@@ -3,6 +3,7 @@ import {
   getDefaultWorkflowId,
   getDefaultWorkflow,
   getWorkflowStepName,
+  getStepPrompt,
 } from '../../../src/services/workflow.js';
 
 describe('workflow service', () => {
@@ -78,6 +79,73 @@ describe('workflow service', () => {
 
     it('falls back to default workflow for unknown workflowId', () => {
       expect(getWorkflowStepName('unknown-workflow', 0)).toBe('Cleanup');
+    });
+  });
+
+  describe('getStepPrompt', () => {
+    it('returns prompt for cleanup step', () => {
+      const workflow = getDefaultWorkflow();
+      const cleanupStep = workflow.steps[0];
+      const prompt = getStepPrompt(cleanupStep);
+
+      expect(prompt).toContain('raw-input.md');
+      expect(prompt).toContain('structured-text.md');
+      expect(prompt).toContain('<promise>COMPLETE</promise>');
+    });
+
+    it('returns prompt for research step', () => {
+      const workflow = getDefaultWorkflow();
+      const researchStep = workflow.steps[2];
+      const prompt = getStepPrompt(researchStep);
+
+      expect(prompt).toContain('structured-text.md');
+      expect(prompt).toContain('research-output.md');
+      expect(prompt).toContain('<promise>COMPLETE</promise>');
+    });
+
+    it('returns prompt for planning step', () => {
+      const workflow = getDefaultWorkflow();
+      const planningStep = workflow.steps[4];
+      const prompt = getStepPrompt(planningStep);
+
+      expect(prompt).toContain('research-output.md');
+      expect(prompt).toContain('implementation-plan.md');
+      expect(prompt).toContain('<promise>COMPLETE</promise>');
+    });
+
+    it('returns prompt for implementation step', () => {
+      const workflow = getDefaultWorkflow();
+      const implStep = workflow.steps[6];
+      const prompt = getStepPrompt(implStep);
+
+      expect(prompt).toContain('implementation-plan.md');
+      expect(prompt).toContain('implementation-result.json');
+      expect(prompt).toContain('<promise>COMPLETE</promise>');
+    });
+
+    it('returns fallback prompt for unknown step', () => {
+      const unknownStep = {
+        step_id: 'unknown-step',
+        name: 'Unknown',
+        type: 'agent' as const,
+        inputArtifact: 'input.md',
+        outputArtifact: 'output.md',
+      };
+      const prompt = getStepPrompt(unknownStep);
+
+      expect(prompt).toContain('input.md');
+      expect(prompt).toContain('output.md');
+      expect(prompt).toContain('<promise>COMPLETE</promise>');
+    });
+
+    it('all agent steps have prompts with COMPLETE marker', () => {
+      const workflow = getDefaultWorkflow();
+      const agentSteps = workflow.steps.filter(s => s.type === 'agent');
+
+      for (const step of agentSteps) {
+        const prompt = getStepPrompt(step);
+        expect(prompt).toContain('<promise>COMPLETE</promise>');
+      }
     });
   });
 });

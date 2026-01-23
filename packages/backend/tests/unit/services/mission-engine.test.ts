@@ -191,4 +191,63 @@ describe('mission-engine service', () => {
       expect(tail).toBeUndefined();
     });
   });
+
+  describe('Ralph mode', () => {
+    it('creates mission with ralph_mode enabled', async () => {
+      const mission = await missionStore.createMission('Ralph Test', 'feature', 'Input', {
+        ralph_mode: true,
+        ralph_max_iterations: 3,
+      });
+
+      expect(mission.ralph_mode).toBe(true);
+      expect(mission.ralph_max_iterations).toBe(3);
+      expect(mission.ralph_current_iteration).toBe(1);
+    });
+
+    it('creates mission with default ralph values when not specified', async () => {
+      const mission = await missionStore.createMission('Normal Test', 'feature', 'Input');
+
+      expect(mission.ralph_mode).toBeUndefined();
+      expect(mission.ralph_max_iterations).toBeUndefined();
+      expect(mission.ralph_current_iteration).toBeUndefined();
+    });
+
+    it('ralph_mode persists in getMeta', async () => {
+      const mission = await missionStore.createMission('Persist Test', 'feature', 'Input', {
+        ralph_mode: true,
+        ralph_max_iterations: 5,
+      });
+
+      const meta = await missionStore.getMeta(mission.mission_id);
+      expect(meta!.ralph_mode).toBe(true);
+      expect(meta!.ralph_max_iterations).toBe(5);
+      expect(meta!.ralph_current_iteration).toBe(1);
+    });
+
+    it('ralph_current_iteration can be updated', async () => {
+      const mission = await missionStore.createMission('Update Test', 'feature', 'Input', {
+        ralph_mode: true,
+        ralph_max_iterations: 5,
+      });
+
+      await missionStore.updateMeta(mission.mission_id, {
+        ralph_current_iteration: 2,
+      });
+
+      const meta = await missionStore.getMeta(mission.mission_id);
+      expect(meta!.ralph_current_iteration).toBe(2);
+    });
+
+    it('getDetail includes ralph fields', async () => {
+      const mission = await missionStore.createMission('Detail Test', 'feature', 'Input', {
+        ralph_mode: true,
+        ralph_max_iterations: 10,
+      });
+
+      const detail = await missionStore.getDetail(mission.mission_id);
+      expect(detail!.ralph_mode).toBe(true);
+      expect(detail!.ralph_max_iterations).toBe(10);
+      expect(detail!.ralph_current_iteration).toBe(1);
+    });
+  });
 });

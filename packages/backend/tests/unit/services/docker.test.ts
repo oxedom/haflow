@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
-import { dockerProvider } from '../../../src/services/docker.js';
+import { dockerProvider, parseStreamJsonLine } from '../../../src/services/docker.js';
 import { getTestDir } from '../../setup.js';
 
 describe('docker provider', () => {
@@ -372,6 +372,201 @@ describe('docker provider', () => {
       // Verify removed
       const status = await dockerProvider.getStatus(containerId);
       expect(status.state).toBe('unknown');
+    });
+  });
+});
+
+describe('parseStreamJsonLine', () => {
+  describe('assistant messages', () => {
+    it('parses assistant message with text', () => {
+      const line = JSON.stringify({
+        type: 'assistant',
+        message: { content: [{ text: 'Hello world' }] },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event).not.toBeNull();
+      expect(event!.type).toBe('assistant');
+      expect(event!.text).toBe('Hello world');
+      expect(event!.isComplete).toBe(false);
+    });
+
+    it('detects COMPLETE marker in assistant message', () => {
+      const line = JSON.stringify({
+        type: 'assistant',
+        message: { content: [{ text: 'Done! <promise>COMPLETE</promise>' }] },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.isComplete).toBe(true);
+    });
+
+    it('handles empty content array', () => {
+      const line = JSON.stringify({
+        type: 'assistant',
+        message: { content: [] },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('assistant');
+      expect(event!.text).toBe('');
+    });
+  });
+
+  describe('content_block_delta messages', () => {
+    it('parses delta text', () => {
+      const line = JSON.stringify({
+        type: 'content_block_delta',
+        delta: { text: 'streaming text' },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('assistant');
+      expect(event!.text).toBe('streaming text');
+    });
+
+    it('detects COMPLETE marker in delta', () => {
+      const line = JSON.stringify({
+        type: 'content_block_delta',
+        delta: { text: '<promise>COMPLETE</promise>' },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.isComplete).toBe(true);
+    });
+  });
+
+  describe('tool_use messages', () => {
+    it('parses tool use with name and input', () => {
+      const line = JSON.stringify({
+        type: 'tool_use',
+        name: 'read_file',
+        input: { path: '/test.txt' },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('tool_use');
+      expect(event!.toolName).toBe('read_file');
+      expect(event!.text).toContain('/test.txt');
+    });
+  });
+
+  describe('result messages', () => {
+    it('parses result with isComplete true', () => {
+      const line = JSON.stringify({
+        type: 'result',
+        result: 'success',
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('result');
+      expect(event!.result).toBe('success');
+      expect(event!.isComplete).toBe(true);
+    });
+
+    it('uses subtype as result if result not present', () => {
+      const line = JSON.stringify({
+        type: 'result',
+        subtype: 'completed',
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.result).toBe('completed');
+    });
+  });
+
+  describe('error messages', () => {
+    it('parses error with message', () => {
+      const line = JSON.stringify({
+        type: 'error',
+        error: { message: 'Something went wrong' },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('error');
+      expect(event!.text).toBe('Something went wrong');
+    });
+
+    it('uses top-level message if error.message not present', () => {
+      const line = JSON.stringify({
+        type: 'error',
+        message: 'Top level error',
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.text).toBe('Top level error');
+    });
+
+    it('uses default message if no message present', () => {
+      const line = JSON.stringify({
+        type: 'error',
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.text).toBe('Unknown error');
+    });
+  });
+
+  describe('system/init messages', () => {
+    it('parses system message', () => {
+      const line = JSON.stringify({
+        type: 'system',
+        message: 'System initialized',
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('init');
+      expect(event!.text).toBe('System initialized');
+    });
+
+    it('parses init message', () => {
+      const line = JSON.stringify({
+        type: 'init',
+        message: 'Session started',
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('init');
+      expect(event!.text).toBe('Session started');
+    });
+
+    it('uses default text if message not present', () => {
+      const line = JSON.stringify({
+        type: 'system',
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.text).toBe('Session initialized');
+    });
+  });
+
+  describe('edge cases', () => {
+    it('returns null for empty line', () => {
+      expect(parseStreamJsonLine('')).toBeNull();
+      expect(parseStreamJsonLine('   ')).toBeNull();
+    });
+
+    it('returns null for unknown message type', () => {
+      const line = JSON.stringify({
+        type: 'unknown_type',
+        data: 'something',
+      });
+      expect(parseStreamJsonLine(line)).toBeNull();
+    });
+
+    it('treats non-JSON as plain text assistant message', () => {
+      const line = 'This is plain text output';
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('assistant');
+      expect(event!.text).toBe('This is plain text output');
+    });
+
+    it('detects COMPLETE marker in plain text', () => {
+      const line = 'Task done <promise>COMPLETE</promise>';
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.isComplete).toBe(true);
     });
   });
 });

@@ -10,6 +10,24 @@ export interface SandboxRunOptions {
   labels?: Record<string, string>;
 }
 
+// Options for Claude sandbox streaming execution
+export interface ClaudeSandboxOptions {
+  missionId: string;
+  runId: string;
+  stepId: string;
+  artifactsPath: string;   // Working directory for Claude
+  prompt: string;          // The prompt to send to Claude
+}
+
+// Stream events from Claude sandbox output
+export interface StreamEvent {
+  type: 'assistant' | 'result' | 'error' | 'tool_use' | 'init';
+  text?: string;
+  result?: string;
+  toolName?: string;
+  isComplete?: boolean;    // True when <promise>COMPLETE</promise> detected
+}
+
 export interface SandboxStatus {
   state: 'running' | 'exited' | 'unknown';
   exitCode?: number;
@@ -53,4 +71,10 @@ export interface SandboxProvider {
    * Cleanup orphaned resources (e.g., containers with haflow labels)
    */
   cleanupOrphaned(): Promise<void>;
+
+  /**
+   * Start Claude sandbox with streaming output
+   * Returns an async generator that yields StreamEvents
+   */
+  startClaudeStreaming?(options: ClaudeSandboxOptions): AsyncGenerator<StreamEvent, void, unknown>;
 }

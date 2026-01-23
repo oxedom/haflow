@@ -1,6 +1,7 @@
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
-import type { SandboxProvider, SandboxRunOptions, SandboxStatus } from './sandbox.js';
+import * as readline from 'readline';
+import type { SandboxProvider, SandboxRunOptions, SandboxStatus, ClaudeSandboxOptions, StreamEvent } from './sandbox.js';
 
 const execAsync = promisify(exec);
 
@@ -141,6 +142,148 @@ async function cleanupOrphaned(): Promise<void> {
   }
 }
 
+// COMPLETE marker for Ralph loop detection
+const COMPLETE_MARKER = '<promise>COMPLETE</promise>';
+
+// Parse a single line of stream-json output from Claude
+// Exported for testing
+export function parseStreamJsonLine(line: string): StreamEvent | null {
+  if (!line.trim()) return null;
+
+  try {
+    const parsed = JSON.parse(line);
+
+    // Handle different message types from Claude's stream-json output
+    if (parsed.type === 'assistant') {
+      const text = parsed.message?.content?.[0]?.text || '';
+      return {
+        type: 'assistant',
+        text,
+        isComplete: text.includes(COMPLETE_MARKER),
+      };
+    }
+
+    if (parsed.type === 'content_block_delta') {
+      const text = parsed.delta?.text || '';
+      return {
+        type: 'assistant',
+        text,
+        isComplete: text.includes(COMPLETE_MARKER),
+      };
+    }
+
+    if (parsed.type === 'tool_use') {
+      return {
+        type: 'tool_use',
+        toolName: parsed.name,
+        text: JSON.stringify(parsed.input, null, 2),
+      };
+    }
+
+    if (parsed.type === 'result') {
+      return {
+        type: 'result',
+        result: parsed.result || parsed.subtype,
+        isComplete: true,
+      };
+    }
+
+    if (parsed.type === 'error') {
+      return {
+        type: 'error',
+        text: parsed.error?.message || parsed.message || 'Unknown error',
+      };
+    }
+
+    // Init/system messages
+    if (parsed.type === 'system' || parsed.type === 'init') {
+      return {
+        type: 'init',
+        text: parsed.message || 'Session initialized',
+      };
+    }
+
+    return null;
+  } catch {
+    // Not valid JSON, treat as plain text
+    return {
+      type: 'assistant',
+      text: line,
+      isComplete: line.includes(COMPLETE_MARKER),
+    };
+  }
+}
+
+async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenerator<StreamEvent, void, unknown> {
+  const { artifactsPath, prompt } = options;
+
+  // Build docker sandbox run claude command
+  const args = [
+    'sandbox', 'run',
+    '-w', artifactsPath,
+    '--credentials', 'host',
+    'claude',
+    '--print',
+    '--output-format', 'stream-json',
+    '--dangerously-skip-permissions',
+    prompt,
+  ];
+
+  const childProcess = spawn('docker', args, {
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  // Create readline interface to parse line-by-line
+  const rl = readline.createInterface({
+    input: childProcess.stdout,
+    crlfDelay: Infinity,
+  });
+
+  let accumulatedText = '';
+  let isComplete = false;
+
+  // Process stdout line by line
+  for await (const line of rl) {
+    const event = parseStreamJsonLine(line);
+    if (event) {
+      // Accumulate text for COMPLETE detection
+      if (event.text) {
+        accumulatedText += event.text;
+        if (accumulatedText.includes(COMPLETE_MARKER)) {
+          event.isComplete = true;
+          isComplete = true;
+        }
+      }
+      yield event;
+    }
+  }
+
+  // Handle stderr
+  let stderrOutput = '';
+  childProcess.stderr.on('data', (data) => {
+    stderrOutput += data.toString();
+  });
+
+  // Wait for process to exit
+  await new Promise<void>((resolve, reject) => {
+    childProcess.on('close', (code) => {
+      if (code !== 0 && !isComplete) {
+        reject(new Error(`Claude sandbox exited with code ${code}: ${stderrOutput}`));
+      } else {
+        resolve();
+      }
+    });
+    childProcess.on('error', reject);
+  });
+
+  // Final result event
+  yield {
+    type: 'result',
+    result: isComplete ? 'completed' : 'finished',
+    isComplete,
+  };
+}
+
 export const dockerProvider: SandboxProvider = {
   start,
   getStatus,
@@ -149,4 +292,5 @@ export const dockerProvider: SandboxProvider = {
   remove,
   isAvailable,
   cleanupOrphaned,
+  startClaudeStreaming,
 };

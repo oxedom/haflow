@@ -40,8 +40,11 @@ missionRoutes.post('/', async (req, res, next) => {
       return sendError(res, parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '), 400);
     }
 
-    const { title, type, rawInput } = parsed.data;
-    const meta = await missionStore.createMission(title, type, rawInput);
+    const { title, type, rawInput, ralphMode, ralphMaxIterations } = parsed.data;
+    const meta = await missionStore.createMission(title, type, rawInput, {
+      ralph_mode: ralphMode,
+      ralph_max_iterations: ralphMaxIterations,
+    });
     sendSuccess(res, meta, 201);
   } catch (err) {
     next(err);

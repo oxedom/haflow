@@ -30,16 +30,36 @@ function AppContent() {
   })
 
   // Query: Fetch selected mission details with polling
+  // Use faster polling (500ms) when mission is running
   const { data: selectedMission } = useQuery({
     queryKey: ['mission', selectedMissionId],
     queryFn: () => api.getMission(selectedMissionId!),
     enabled: !!selectedMissionId,
+    refetchInterval: (query) => {
+      const mission = query.state.data
+      if (mission?.status === 'running_code_agent' || mission?.status === 'running_root_llm') {
+        return 500 // Faster polling when running
+      }
+      return 2000 // Normal polling
+    },
   })
 
   // Mutation: Create mission
   const createMissionMutation = useMutation({
-    mutationFn: async ({ title, type, rawInput }: { title: string; type: 'feature' | 'fix' | 'bugfix'; rawInput: string }) => {
-      return api.createMission(title, type, rawInput)
+    mutationFn: async ({
+      title,
+      type,
+      rawInput,
+      ralphMode,
+      ralphMaxIterations,
+    }: {
+      title: string
+      type: 'feature' | 'fix' | 'bugfix'
+      rawInput: string
+      ralphMode?: boolean
+      ralphMaxIterations?: number
+    }) => {
+      return api.createMission(title, type, rawInput, ralphMode, ralphMaxIterations)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['missions'] })
@@ -90,8 +110,14 @@ function AppContent() {
     setIsNewMissionModalOpen(true)
   }
 
-  const handleCreateMission = async (title: string, type: 'feature' | 'fix' | 'bugfix', rawInput: string) => {
-    await createMissionMutation.mutateAsync({ title, type, rawInput })
+  const handleCreateMission = async (
+    title: string,
+    type: 'feature' | 'fix' | 'bugfix',
+    rawInput: string,
+    ralphMode?: boolean,
+    ralphMaxIterations?: number
+  ) => {
+    await createMissionMutation.mutateAsync({ title, type, rawInput, ralphMode, ralphMaxIterations })
   }
 
   const handleSaveArtifact = async (filename: string, content: string) => {
