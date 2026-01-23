@@ -131,11 +131,11 @@ packages/cli/
 ### Success Criteria
 
 #### Automated Verification
-- [ ] `pnpm install` succeeds from root
-- [ ] `cd packages/cli && pnpm build` compiles without errors
+- [x] `pnpm install` succeeds from root
+- [x] `cd packages/cli && pnpm build` compiles without errors
 
 #### Manual Verification
-- [ ] Directory structure matches plan
+- [x] Directory structure matches plan
 
 ---
 
@@ -190,8 +190,8 @@ export async function saveConfig(config: Config): Promise<void> {
 ### Success Criteria
 
 #### Automated Verification
-- [ ] `pnpm build` succeeds
-- [ ] Config module exports correctly
+- [x] `pnpm build` succeeds
+- [x] Config module exports correctly
 
 ---
 
@@ -312,11 +312,11 @@ program.parse();
 ### Success Criteria
 
 #### Automated Verification
-- [ ] `pnpm build` succeeds
-- [ ] `node packages/cli/dist/index.js --help` shows all commands
-- [ ] `node packages/cli/dist/index.js init` creates ~/.haflow
-- [ ] `node packages/cli/dist/index.js link .` saves linked project
-- [ ] `node packages/cli/dist/index.js status` shows status
+- [x] `pnpm build` succeeds
+- [x] `node packages/cli/dist/index.js --help` shows all commands
+- [x] `node packages/cli/dist/index.js init` creates ~/.haflow
+- [x] `node packages/cli/dist/index.js link .` saves linked project
+- [x] `node packages/cli/dist/index.js status` shows status
 
 #### Manual Verification
 - [ ] `haflow start` runs both services with combined output

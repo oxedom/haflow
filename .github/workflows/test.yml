@@ -31,5 +31,11 @@ jobs:
       - name: Build shared package
         run: pnpm --filter @haflow/shared build
 
-      - name: Run tests
+      - name: Build CLI
+        run: pnpm --filter @haflow/cli build
+
+      - name: Run backend tests
         run: pnpm --filter @haflow/backend test
+
+      - name: Run CLI tests
+        run: pnpm --filter @haflow/cli test

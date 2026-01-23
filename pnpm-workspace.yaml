@@ -2,3 +2,4 @@ packages:
   - packages/shared
   - packages/backend
   - packages/frontend
+  - packages/cli
