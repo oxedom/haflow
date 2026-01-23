@@ -1,22 +1,14 @@
 import type { FullConfig } from '@playwright/test';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { mkdtemp } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import { mkdir, rm } from 'fs/promises';
+import { TEST_DIR, E2E_ENV } from './e2e-env';
 
-const execAsync = promisify(exec);
+export default async function globalSetup(_config: FullConfig) {
+  // Clean and recreate the test directory
+  await rm(TEST_DIR, { recursive: true, force: true });
+  await mkdir(TEST_DIR, { recursive: true });
 
-export default async function globalSetup(config: FullConfig) {
-  // Set test environment
-  process.env.NODE_ENV = 'test';
+  // Set env vars for any child processes
+  Object.assign(process.env, E2E_ENV);
 
-  // Create isolated test directory for HALOOP_HOME
-  const testDir = await mkdtemp(join(tmpdir(), 'haloop-e2e-'));
-  process.env.HALOOP_HOME = testDir;
-
-  // Store test dir for teardown
-  (globalThis as any).__E2E_TEST_DIR__ = testDir;
-
-  console.log(`E2E test setup complete. HALOOP_HOME=${testDir}`);
+  console.log(`E2E test setup complete. HALOOP_HOME=${TEST_DIR}`);
 }

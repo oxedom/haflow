@@ -2,19 +2,17 @@ import type { FullConfig } from '@playwright/test';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { rm } from 'fs/promises';
+import { TEST_DIR } from './e2e-env';
 
 const execAsync = promisify(exec);
 
-export default async function globalTeardown(config: FullConfig) {
+export default async function globalTeardown(_config: FullConfig) {
   // Cleanup test directory
-  const testDir = (globalThis as any).__E2E_TEST_DIR__;
-  if (testDir) {
-    try {
-      await rm(testDir, { recursive: true, force: true });
-      console.log(`Cleaned up test directory: ${testDir}`);
-    } catch {
-      // Directory may already be cleaned up
-    }
+  try {
+    await rm(TEST_DIR, { recursive: true, force: true });
+    console.log(`Cleaned up test directory: ${TEST_DIR}`);
+  } catch {
+    // Directory may already be cleaned up
   }
 
   // Cleanup any orphaned Docker containers from tests

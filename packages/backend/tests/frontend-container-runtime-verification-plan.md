@@ -100,9 +100,9 @@ Capture the full manual verification steps under `packages/backend/tests/` so en
 - [x] The document includes the exact container command and curl verification.
 
 #### Manual Verification:
-- [ ] `npm install` and `npm run build` complete with exit code 0.
-- [ ] Preview server binds to `0.0.0.0:4173` and reports readiness.
-- [ ] `curl http://localhost:4173/` returns a `200` or a valid HTML response.
+- [x] `npm install` and `npm run build` complete with exit code 0.
+- [x] Preview server binds to `0.0.0.0:4173` and reports readiness.
+- [x] `curl http://localhost:4173/` returns a `200` or a valid HTML response.
 
 **Implementation Note**: After this phase, run the manual steps once to confirm the flow works before moving on to automation.
 
@@ -130,8 +130,8 @@ const { stdout, stderr } = await execAsync(
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Integration test passes: `pnpm --filter @haloop/backend test tests/integration/docker`.
-- [ ] Test skips gracefully when Docker is unavailable.
+- [x] Integration test passes: `pnpm --filter @haloop/backend test tests/integration/docker`.
+- [x] Test skips gracefully when Docker is unavailable.
 
 #### Manual Verification:
 - [ ] Test log shows preview server started and bound to `0.0.0.0:4173`.

@@ -34,7 +34,7 @@ Haloop is a **local-first orchestrator** that runs AI-assisted “missions” ag
 | `packages/shared` | ✅ Complete | All mission/workflow types defined |
 | `packages/cli` | ❌ Not started | Folder exists but empty |
 
-#### packages/backend (~860 LOC)
+#### packages/backend (~820 LOC)
 - **API Server**: Express on port 4000 with CORS
 - **Routes** (`src/routes/missions.ts`): All 6 endpoints implemented
 - **Mission Store** (`src/services/mission-store.ts`): File-based persistence under `~/.haloop/missions/`
@@ -42,15 +42,15 @@ Haloop is a **local-first orchestrator** that runs AI-assisted “missions” ag
 - **Docker Provider** (`src/services/docker.ts`): Container execution via CLI, label-based tracking, log capture
 - **Sandbox Provider** (`src/services/sandbox.ts`): High-level abstraction (k3s-ready interface)
 - **Workflow** (`src/services/workflow.ts`): Hardcoded "standard-feature" 8-step workflow
-- **Tests**: 8 test files covering services and routes
+- **Tests**: 9 test files covering services, routes, and Docker integration
 
 **Current limitation**: Agent steps run a **mock command** that copies input to output (no real Claude execution yet).
 
-#### packages/frontend (~1600 LOC)
+#### packages/frontend (~1400 LOC)
 - **App.tsx**: TanStack Query with `refetchInterval: 2000`, `staleTime: 1000`
 - **MissionDetail.tsx**: Workflow timeline, live log tail, artifact editor with diff view
 - **API client** (`src/api/client.ts`): Axios client targeting `http://localhost:4000/api`
-- **Mocks**: `VITE_USE_MOCKS === 'false'` disables mock mode (default is mocks-on)
+- **E2E Tests**: Playwright-based tests with global setup/teardown
 - **Tech**: React 19, React Compiler, Vite 7, TailwindCSS 4, Radix UI
 
 #### packages/shared
@@ -60,7 +60,7 @@ Haloop is a **local-first orchestrator** that runs AI-assisted “missions” ag
 #### packages/cli
 - **Empty** — folder exists but no code
 
-**Current state**: Backend + Frontend can run together with mocks disabled. Full mission flow works end-to-end with mock agent execution.
+**Current state**: Backend + Frontend can run together directly (no mocks). Full mission flow works end-to-end with mock agent execution. E2E testing infrastructure in place with Playwright.
 
 ---
 
@@ -232,7 +232,7 @@ Backend orchestration (`mission-engine.ts`) calls `sandboxProvider.*` methods on
 
 ### Testability (v0) ✅ IMPLEMENTED
 
-Backend has 8 test files:
+#### Backend Tests (9 files)
 - `mission-store.test.ts` — File persistence
 - `mission-engine.test.ts` — Workflow orchestration
 - `docker.test.ts` — Container execution
@@ -241,6 +241,13 @@ Backend has 8 test files:
 - `id.test.ts` — ID generation
 - `response.test.ts` — API response wrapper
 - `routes/missions.test.ts` — API integration tests
+- `integration/docker/frontend-runtime.test.ts` — Docker container runtime verification (gated on Docker availability)
+
+#### Frontend E2E Tests (Playwright)
+- `tests/e2e/home.test.ts` — Home page E2E test
+- `tests/globalSetup.ts` — E2E global setup (starts backend + frontend)
+- `tests/globalTeardown.ts` — E2E cleanup
+- Config: `playwright.config.ts` with multi-browser support
 
 Tests use mocks/fakes for Docker provider to avoid requiring Docker daemon in CI.
 
@@ -272,6 +279,8 @@ This folder conceptually holds:
 
 **Summary**: 6/7 goals achieved. Only blocker is CLI (`haloop start`).
 
+**Bonus progress**: E2E testing infrastructure set up with Playwright. GitHub Actions workflow for E2E in progress (`.github/workflows/e2e.yml`).
+
 ---
 
 ### What Must Happen Next
@@ -281,7 +290,12 @@ This folder conceptually holds:
    - `init`, `link`, `start`, `status` commands
    - This is the primary blocker for v0 "ship it"
 
-2. **Real agent execution** (optional for v0)
+2. **Finalize E2E testing** (in progress)
+   - Complete GitHub Actions workflow (`.github/workflows/e2e.yml`)
+   - Add more E2E test coverage beyond `home.test.ts`
+   - Verify CI pipeline works end-to-end
+
+3. **Real agent execution** (optional for v0)
    - Replace mock command with actual Claude CLI invocation
    - Would need Docker image with Claude Code binary
    - Agent resource resolution from `.claude/` folder
@@ -321,4 +335,5 @@ This folder conceptually holds:
 | Frontend app | `packages/frontend/src/App.tsx` | Main React component |
 | Mission detail | `packages/frontend/src/components/MissionDetail.tsx` | Mission UI |
 | API client | `packages/frontend/src/api/client.ts` | Axios HTTP client |
-| Mock data | `packages/frontend/src/mocks/data.ts` | Test missions |
+| Playwright config | `packages/frontend/playwright.config.ts` | E2E test configuration |
+| E2E tests | `packages/frontend/tests/e2e/` | Playwright E2E tests |
