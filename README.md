@@ -1,4 +1,4 @@
-# Haflow
+# haflow(Human Agent flow) [WIP!]
 
 ![Haflow](haflow-readme.jpg)
 
