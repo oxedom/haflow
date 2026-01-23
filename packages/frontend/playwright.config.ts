@@ -28,8 +28,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run start',
-    url: 'http://127.0.0.1:3000',
+    command: 'pnpm dev -- --host 127.0.0.1 --port 5173',
+    url: 'http://127.0.0.1:5173',
     reuseExistingServer: !process.env.CI,
   },
 });
