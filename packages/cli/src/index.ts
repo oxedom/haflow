@@ -25,11 +25,7 @@ program
   .action(async (path?: string) => {
     const target = resolve(path || process.cwd());
 
-    // Validate it looks like a haflow-compatible project
-    if (!existsSync(resolve(target, 'packages/backend'))) {
-      console.error(`Not a valid project (missing packages/backend): ${target}`);
-      process.exit(1);
-    }
+
 
     await saveConfig({ linkedProject: target });
     console.log(`Linked: ${target}`);
@@ -47,14 +43,18 @@ program
       process.exit(1);
     }
 
-    console.log(`Starting haflow from: ${config.linkedProject}`);
+    // Resolve haflow root (CLI is at packages/cli, go up 2 levels)
+    const haflowRoot = resolve(import.meta.dirname, '..', '..', '..');
+
+    console.log(`Starting haflow services...`);
+    console.log(`Linked project: ${config.linkedProject}`);
     console.log('Backend:  http://localhost:4000');
     console.log('Frontend: http://localhost:5173');
     console.log('\nPress Ctrl+C to stop\n');
 
-    // Run the existing dev script from linked project
+    // Run haflow's own dev servers, not the linked project's
     const child = spawn('pnpm', ['dev'], {
-      cwd: config.linkedProject,
+      cwd: haflowRoot,
       stdio: 'inherit',
       shell: true,
     });

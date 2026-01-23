@@ -234,10 +234,7 @@ program
     const target = resolve(path || process.cwd());
 
     // Validate it looks like a haflow-compatible project
-    if (!existsSync(resolve(target, 'packages/backend'))) {
-      console.error(`Not a valid project (missing packages/backend): ${target}`);
-      process.exit(1);
-    }
+
 
     await saveConfig({ linkedProject: target });
     console.log(`Linked: ${target}`);

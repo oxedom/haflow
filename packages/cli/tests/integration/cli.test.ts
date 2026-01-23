@@ -92,16 +92,7 @@ describe('CLI commands', () => {
       expect(config.linkedProject).toBe(projectDir);
     });
 
-    it('rejects invalid project (missing packages/backend)', () => {
-      const testDir = getTestDir();
-      const haflowHome = join(testDir, 'haflow-link-invalid');
-      const invalidDir = join(testDir, 'not-a-project');
 
-      const { stderr, exitCode } = runCli(['link', invalidDir], { HAFLOW_HOME: haflowHome });
-
-      expect(exitCode).toBe(1);
-      expect(stderr).toContain('Not a valid project');
-    });
 
     it('re-linking replaces previous project', async () => {
       const testDir = getTestDir();
