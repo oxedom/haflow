@@ -2,7 +2,7 @@
 Full Mobile Control
 Can host on VPS
 Can host on local machine
-**Haloop lives globally (Central Hub Architecture)**
+**haflow lives globally (Central Hub Architecture)**
 **One server manages multiple projects**
 
 # Features
@@ -57,15 +57,15 @@ Missions: (Draft, Preparing PRD -> Review PRD -> Ready, In progress, Completed S
 - Completed Failed (Blocked ie can't run e2e tests as database connection not returning response)
 
 # User stories:
-**Install Haloop Globally (VPS/Local)**
-`npm install -g haloop` (or git clone to `~/tools/haloop`)
-`haloop init`
+**Install haflow Globally (VPS/Local)**
+`npm install -g haflow` (or git clone to `~/tools/haflow`)
+`haflow init`
 **Link a Project**
 `cd ~/dev/my-app`
-`haloop link`
+`haflow link`
 
 **Start** (running backend and frontend server)
-haloop start (local fe, local be)
+haflow start (local fe, local be)
 
 # Desktop flow
 Visit localhost:PORT
@@ -74,7 +74,7 @@ Start Mission
 
 
 
-# Files of repo (The Haloop Tool)
+# Files of repo (The haflow Tool)
 backend
 -src/
 - server.ts (Central Hub)
@@ -83,7 +83,7 @@ backend
 frontend/React 19 Vite (The Control pannel)
 
 # Files created in a target repo
-.haloop
+.haflow
 missions/
 - [feature-template]
 -- progress.txt

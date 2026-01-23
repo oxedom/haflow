@@ -8,7 +8,7 @@ Build a local-first orchestration dashboard for running autonomous coding missio
 
 ### What's IMPLEMENTED
 
-#### Shared Package (`@haloop/shared`) - COMPLETE
+#### Shared Package (`@haflow/shared`) - COMPLETE
 
 #### Frontend (`packages/frontend`) - COMPLETE
 
@@ -195,7 +195,7 @@ Agent prompt files in `.claude/agents/` define the agent behavior. The container
 ```typescript
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { MissionMeta, StepRun, Workflow } from '@haloop/shared';
+import { MissionMeta, StepRun, Workflow } from '@haflow/shared';
 
 const MISSIONS_DIR = path.join(process.cwd(), 'missions');
 const CONFIG_DIR = path.join(process.cwd(), 'config');
@@ -397,7 +397,7 @@ export async function loadAgents(): Promise<Record<string, { promptFile: string 
 
 #### Automated Verification
 - [ ] Config files created and valid JSON
-- [ ] `pnpm --filter @haloop/backend build` succeeds
+- [ ] `pnpm --filter @haflow/backend build` succeeds
 - [ ] Filesystem service compiles without errors
 
 #### Manual Verification
@@ -495,7 +495,7 @@ app.listen(PORT, () => {
 import { Router, Request, Response } from 'express';
 import * as fs from '../services/filesystem';
 import * as container from '../services/container';
-import { MissionMeta, MissionListItem, MissionDetail, ApiResponse, WorkflowStep } from '@haloop/shared';
+import { MissionMeta, MissionListItem, MissionDetail, ApiResponse, WorkflowStep } from '@haflow/shared';
 
 export const missionRouter = Router();
 
@@ -754,7 +754,7 @@ async function triggerAgentStep(
 ### Success Criteria
 
 #### Automated Verification
-- [ ] `pnpm --filter @haloop/backend dev` starts server
+- [ ] `pnpm --filter @haflow/backend dev` starts server
 - [ ] `curl http://localhost:4000/health` returns `{"status":"ok"}`
 - [ ] TypeScript compiles without errors
 
@@ -788,7 +788,7 @@ VITE_USE_MOCKS=false
 {
   "scripts": {
     "dev": "pnpm -r --parallel dev",
-    "dev:backend": "pnpm --filter @haloop/backend dev",
+    "dev:backend": "pnpm --filter @haflow/backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
     "build": "pnpm -r build"
   }
@@ -798,10 +798,10 @@ VITE_USE_MOCKS=false
 ### Success Criteria
 
 #### Automated Verification
-- [ ] `pnpm --filter @haloop/shared build` succeeds
-- [ ] `pnpm --filter @haloop/backend build` succeeds
+- [ ] `pnpm --filter @haflow/shared build` succeeds
+- [ ] `pnpm --filter @haflow/backend build` succeeds
 - [ ] `pnpm --filter frontend build` succeeds
-- [ ] Backend starts: `pnpm --filter @haloop/backend dev`
+- [ ] Backend starts: `pnpm --filter @haflow/backend dev`
 - [ ] Frontend starts: `pnpm --filter frontend dev`
 
 #### Manual Verification (End-to-End Flow)

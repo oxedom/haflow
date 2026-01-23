@@ -1,4 +1,4 @@
-## Haloop v0 — "Make It Work" Working Doc (Local Missions + Human Gates + Ephemeral Sandboxes)
+## haflow v0 — "Make It Work" Working Doc (Local Missions + Human Gates + Ephemeral Sandboxes)
 
 ### Document Context
 - **Date**: 2026-01-23 (updated)
@@ -11,7 +11,7 @@
 ---
 
 ### Product Goal (v0)
-Haloop is a **local-first orchestrator** that runs AI-assisted “missions” against real projects, with **human gates** and **ephemeral sandboxes**.
+haflow is a **local-first orchestrator** that runs AI-assisted “missions” against real projects, with **human gates** and **ephemeral sandboxes**.
 
 - **Local UI + Local Backend** only (not a hosted SaaS).
 - **Multiple missions in parallel** is a core goal (each mission/run must be isolated; artifacts must never collide).
@@ -37,7 +37,7 @@ Haloop is a **local-first orchestrator** that runs AI-assisted “missions” ag
 #### packages/backend (~820 LOC)
 - **API Server**: Express on port 4000 with CORS
 - **Routes** (`src/routes/missions.ts`): All 6 endpoints implemented
-- **Mission Store** (`src/services/mission-store.ts`): File-based persistence under `~/.haloop/missions/`
+- **Mission Store** (`src/services/mission-store.ts`): File-based persistence under `~/.haflow/missions/`
 - **Mission Engine** (`src/services/mission-engine.ts`): Workflow orchestration with container monitoring (1s polling)
 - **Docker Provider** (`src/services/docker.ts`): Container execution via CLI, label-based tracking, log capture
 - **Sandbox Provider** (`src/services/sandbox.ts`): High-level abstraction (k3s-ready interface)
@@ -139,7 +139,7 @@ Implemented in `packages/backend/src/services/mission-store.ts`.
 
 #### Implemented layout
 ```
-~/.haloop/
+~/.haflow/
   missions/
     m-<uuid>/
       mission.json              # MissionMeta + workflow_id + current_step
@@ -162,12 +162,12 @@ Implemented in `packages/backend/src/services/mission-store.ts`.
 - Runs stored as individual JSON files per step execution
 
 #### Multi-project note (forward-looking)
-We will later associate missions with linked projects. For v0, the CLI only supports **one linked project at a time**, which keeps the mental model simple and avoids conflicts. Missions can still be stored flat under `~/.haloop/missions/` and add project scoping later without breaking the UI.
+We will later associate missions with linked projects. For v0, the CLI only supports **one linked project at a time**, which keeps the mental model simple and avoids conflicts. Missions can still be stored flat under `~/.haflow/missions/` and add project scoping later without breaking the UI.
 
 #### Workflow templates (v0)
 Workflows are **templates**, not per-mission files:
 - **Project-level (optional)**: a `workflows/` folder at the project root for repo-specific templates.
-- **Global (preinstalled)**: `~/.haloop/workflows/` for built-in/common templates shipped with Haloop.
+- **Global (preinstalled)**: `~/.haflow/workflows/` for built-in/common templates shipped with haflow.
 
 Missions just reference which template to use (by ID/name/path) and the backend resolves it at runtime.
 
@@ -190,7 +190,7 @@ Implemented as two layers:
 | Stop | ✅ | `stopContainer()` |
 | Remove | ✅ | `removeContainer()` |
 | Cleanup orphans | ✅ | `cleanupOrphanedContainers()` on backend startup |
-| Labels | ✅ | `haloop.mission_id`, `haloop.run_id`, `haloop.step_id` |
+| Labels | ✅ | `haflow.mission_id`, `haflow.run_id`, `haflow.step_id` |
 
 #### Docker provider details
 - Uses `child_process.exec` to shell out to Docker CLI
@@ -226,7 +226,7 @@ Backend orchestration (`mission-engine.ts`) calls `sandboxProvider.*` methods on
 
 **Current workaround**: Run backend and frontend separately via `pnpm dev` in each package.
 
-**Blocking**: Users cannot run `haloop start` — the primary v0 UX goal.
+**Blocking**: Users cannot run `haflow start` — the primary v0 UX goal.
 
 ---
 
@@ -255,7 +255,7 @@ Tests use mocks/fakes for Docker provider to avoid requiring Docker daemon in CI
 
 ### Global Home Directory (Naming Decision)
 We keep a global folder in your home directory:
-- default: `~/.haloop` (pick one name and stick to it for v0)
+- default: `~/.haflow` (pick one name and stick to it for v0)
 
 This folder conceptually holds:
 - missions + artifacts + runs + logs
@@ -269,7 +269,7 @@ This folder conceptually holds:
 
 | Goal | Status | Notes |
 |------|--------|-------|
-| Run `haloop start` | ❌ | CLI not implemented |
+| Run `haflow start` | ❌ | CLI not implemented |
 | UI loads against real backend | ✅ | Works with `VITE_USE_MOCKS=false` |
 | Create mission from raw text | ✅ | POST /api/missions works |
 | Agent step runs in Docker sandbox | ✅ | Mock agent, but Docker execution works |
@@ -277,7 +277,7 @@ This folder conceptually holds:
 | Artifacts editable and persisted | ✅ | PUT endpoint + file I/O works |
 | Continue through whole workflow | ✅ | 8-step workflow completes end-to-end |
 
-**Summary**: 6/7 goals achieved. Only blocker is CLI (`haloop start`).
+**Summary**: 6/7 goals achieved. Only blocker is CLI (`haflow start`).
 
 **Bonus progress**: E2E testing infrastructure set up with Playwright. GitHub Actions workflow for E2E in progress (`.github/workflows/e2e.yml`).
 
@@ -313,7 +313,7 @@ This folder conceptually holds:
 | Question | Decision | Implementation |
 |----------|----------|----------------|
 | Mission ID format | UUID with prefix | `m-<uuid>` for missions, `r-<uuid>` for runs |
-| Global folder name | `~/.haloop` | Configured via `HALOOP_HOME` env var |
+| Global folder name | `~/.haflow` | Configured via `haflow_HOME` env var |
 | Workflow storage | Hardcoded for v0 | `packages/backend/src/services/workflow.ts` |
 | k3s compatibility | Preserved | Sandbox provider abstraction in place |
 

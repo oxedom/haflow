@@ -1,7 +1,7 @@
-# Haloop Implementation Plan
+# haflow Implementation Plan
 
 ## Overview
-Build Haloop - a central hub for managing Claude Code missions across multiple projects. This MVP focuses on CLI + Backend (frontend later).
+Build haflow - a central hub for managing Claude Code missions across multiple projects. This MVP focuses on CLI + Backend (frontend later).
 
 **Stack:** pnpm monorepo, Express + better-sqlite3, TypeScript, Vitest
 
@@ -11,16 +11,16 @@ Build Haloop - a central hub for managing Claude Code missions across multiple p
 
 ```
 packages/
-  shared/     # @haloop/shared - Types & enums
-  cli/        # haloop - Global CLI (npm install -g)
-  backend/    # @haloop/backend - Express REST API
+  shared/     # @haflow/shared - Types & enums
+  cli/        # haflow - Global CLI (npm install -g)
+  backend/    # @haflow/backend - Express REST API
 ```
 
-**Global Instance:** `~/.haloop/`
-- `haloop.sqlite` - Projects registry, missions, tasks, logs
+**Global Instance:** `~/.haflow/`
+- `haflow.sqlite` - Projects registry, missions, tasks, logs
 - `config.json` - Global settings (ports, auth path)
 
-**Per-Project:** `<project>/.haloop/`
+**Per-Project:** `<project>/.haflow/`
 - `config.ts` - Project-specific settings
 - `missions/[id]/PRD.md, tasks.json, progress.txt`
 
@@ -30,14 +30,14 @@ packages/
 
 ### Phase 1: Monorepo Setup
 **Files to create:**
-- `/home/sam/projects/haloop/tsconfig.base.json` - Shared TS config
-- `/home/sam/projects/haloop/vitest.workspace.ts` - Vitest workspace config
-- Update `/home/sam/projects/haloop/pnpm-workspace.yaml`
+- `/home/sam/projects/haflow/tsconfig.base.json` - Shared TS config
+- `/home/sam/projects/haflow/vitest.workspace.ts` - Vitest workspace config
+- Update `/home/sam/projects/haflow/pnpm-workspace.yaml`
 
 **Root package.json:**
 ```json
 {
-  "name": "haloop-monorepo",
+  "name": "haflow-monorepo",
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
@@ -71,7 +71,7 @@ export default defineWorkspace([
 ])
 ``` 
 
-### Phase 2: Shared Types (@haloop/shared)
+### Phase 2: Shared Types (@haflow/shared)
 **Files to create:**
 ```
 packages/shared/
@@ -93,7 +93,7 @@ packages/shared/
 **package.json:**
 ```json
 {
-  "name": "@haloop/shared",
+  "name": "@haflow/shared",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -160,7 +160,7 @@ interface Mission {
 }
 ```
 
-### Phase 3: CLI Package (haloop)
+### Phase 3: CLI Package (haflow)
 **Files to create:**
 ```
 packages/cli/
@@ -170,11 +170,11 @@ packages/cli/
   src/
     index.ts          # Commander.js entry
     lib/
-      paths.ts        # HALOOP_HOME, GLOBAL_DB_PATH, etc.
+      paths.ts        # haflow_HOME, GLOBAL_DB_PATH, etc.
       config.ts       # loadGlobalConfig
     commands/
-      init.ts         # Create ~/.haloop, init SQLite
-      link.ts         # Register project, create .haloop/
+      init.ts         # Create ~/.haflow, init SQLite
+      link.ts         # Register project, create .haflow/
       start.ts        # Start backend server
       status.ts       # Show linked projects
   tests/
@@ -188,11 +188,11 @@ packages/cli/
 **package.json:**
 ```json
 {
-  "name": "haloop",
+  "name": "haflow",
   "version": "0.0.1",
   "type": "module",
   "bin": {
-    "haloop": "./dist/index.js"
+    "haflow": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -203,7 +203,7 @@ packages/cli/
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@haloop/shared": "workspace:*",
+    "@haflow/shared": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "chalk": "^5.3.0",
     "commander": "^12.0.0",
@@ -232,12 +232,12 @@ export default defineConfig({
 **CLI Commands:**
 | Command | Action |
 |---------|--------|
-| `haloop init` | Create ~/.haloop/, init SQLite, save config |
-| `haloop link` | Register project in DB, create .haloop/ dir |
-| `haloop start` | Start Express backend server |
-| `haloop status` | List linked projects |
+| `haflow init` | Create ~/.haflow/, init SQLite, save config |
+| `haflow link` | Register project in DB, create .haflow/ dir |
+| `haflow start` | Start Express backend server |
+| `haflow status` | List linked projects |
 
-### Phase 4: Backend Package (@haloop/backend)
+### Phase 4: Backend Package (@haflow/backend)
 **Files to create:**
 ```
 packages/backend/
@@ -279,7 +279,7 @@ packages/backend/
 **package.json:**
 ```json
 {
-  "name": "@haloop/backend",
+  "name": "@haflow/backend",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -299,7 +299,7 @@ packages/backend/
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@haloop/shared": "workspace:*",
+    "@haflow/shared": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
@@ -369,7 +369,7 @@ export default defineConfig({
 - `generateTasks(missionId)` - Run Claude to break PRD into tasks
 - `startMission(missionId)` - Execute tasks sequentially
 - `stopMission(missionId)` - Kill active orchestrator
-- Saves artifacts to `.haloop/missions/[featureName]/`
+- Saves artifacts to `.haflow/missions/[featureName]/`
 
 ---
 
@@ -388,25 +388,25 @@ pnpm test --watch
 pnpm test:coverage
 
 # Run tests for specific package
-pnpm --filter @haloop/backend test
-pnpm --filter @haloop/shared test
-pnpm --filter haloop test
+pnpm --filter @haflow/backend test
+pnpm --filter @haflow/shared test
+pnpm --filter haflow test
 ```
 
 ### Test Categories
 
-**@haloop/shared:**
+**@haflow/shared:**
 - Type guard validation
 - Enum value tests
 - Zod schema validation
 
-**haloop (CLI):**
+**haflow (CLI):**
 - Path resolution (home dir, project dirs)
 - Config loading/saving
 - Command argument parsing
 - Mock filesystem operations
 
-**@haloop/backend:**
+**@haflow/backend:**
 - Database CRUD operations (in-memory SQLite)
 - Route handlers with supertest
 - Service layer unit tests
@@ -425,8 +425,8 @@ import { join } from 'path'
 let testDir: string
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'haloop-test-'))
-  vi.stubEnv('HALOOP_HOME', testDir)
+  testDir = await mkdtemp(join(tmpdir(), 'haflow-test-'))
+  vi.stubEnv('haflow_HOME', testDir)
 })
 
 afterEach(async () => {
@@ -475,17 +475,17 @@ pnpm build
 # 4. Link CLI globally
 cd packages/cli && pnpm link --global
 
-# 5. Initialize Haloop
-haloop init
+# 5. Initialize haflow
+haflow init
 
 # 6. Link a test project
-cd /path/to/test-project && haloop link
+cd /path/to/test-project && haflow link
 
 # 7. Check status
-haloop status
+haflow status
 
 # 8. Start server
-haloop start
+haflow start
 
 # 9. Test API
 curl http://localhost:3847/health

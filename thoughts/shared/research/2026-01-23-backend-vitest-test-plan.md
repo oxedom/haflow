@@ -3,7 +3,7 @@ date: 2026-01-23T00:00:00-05:00
 researcher: Claude
 git_commit: 8236f6b1ac229baed4cf74f4cc57377a5037c9f9
 branch: main
-repository: haloop
+repository: haflow
 topic: "Backend Vitest Test Plan Implementation Analysis"
 tags: [research, codebase, backend, vitest, testing]
 status: complete
@@ -17,7 +17,7 @@ last_updated_by: Claude
 **Researcher**: Claude
 **Git Commit**: 8236f6b1ac229baed4cf74f4cc57377a5037c9f9
 **Branch**: main
-**Repository**: haloop
+**Repository**: haflow
 
 ## Research Question
 Analyze the test-plan.md and verify it against the actual codebase implementation. Identify any gaps, inconsistencies, or implementation notes.
@@ -65,8 +65,8 @@ Both use `satisfies ApiResponse<T>` for type safety.
 
 Implementation matches plan with one addition:
 - `port` - defaults to 4000, respects PORT env
-- `haloopHome` - defaults to `~/.haloop`, respects HALOOP_HOME env
-- `missionsDir` - getter returning `{haloopHome}/missions`
+- `haflowHome` - defaults to `~/.haflow`, respects haflow_HOME env
+- `missionsDir` - getter returning `{haflowHome}/missions`
 - **Not in test plan**: `workflowsDir` getter returning `{cwd}/packages/backend/public/workflows`
 
 ### Services Layer (`src/services/`)
@@ -190,7 +190,7 @@ All 6 endpoints exist as documented:
 
 2. **File-based Persistence**: All state stored as JSON files in structured directories per mission:
    ```
-   ~/.haloop/missions/<id>/
+   ~/.haflow/missions/<id>/
    ├── mission.json
    ├── artifacts/
    ├── runs/
@@ -234,7 +234,7 @@ All 6 endpoints exist as documented:
 
 ### Missing Dependencies to Install
 ```bash
-pnpm --filter @haloop/backend add -D supertest
+pnpm --filter @haflow/backend add -D supertest
 ```
 
 ### Missing vitest.config.ts Coverage Config

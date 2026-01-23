@@ -130,7 +130,7 @@ const { stdout, stderr } = await execAsync(
 ### Success Criteria:
 
 #### Automated Verification:
-- [x] Integration test passes: `pnpm --filter @haloop/backend test tests/integration/docker`.
+- [x] Integration test passes: `pnpm --filter @haflow/backend test tests/integration/docker`.
 - [x] Test skips gracefully when Docker is unavailable.
 
 #### Manual Verification:

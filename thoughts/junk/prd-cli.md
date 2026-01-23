@@ -1,17 +1,17 @@
-# PRD: Haloop CLI
+# PRD: haflow CLI
 
 ## Overview
-Global command-line interface for Haloop - initializes the system, links projects, and starts the backend server.
+Global command-line interface for haflow - initializes the system, links projects, and starts the backend server.
 
-**Package:** `haloop` (global install via `npm install -g`)
+**Package:** `haflow` (global install via `npm install -g`)
 **Stack:** Commander.js, better-sqlite3, chalk, ora, TypeScript, Vitest
 
 ---
 
 ## Goals
-1. Provide simple CLI commands to initialize and manage Haloop
-2. Create and manage global configuration at `~/.haloop/`
-3. Link projects to the central Haloop instance
+1. Provide simple CLI commands to initialize and manage haflow
+2. Create and manage global configuration at `~/.haflow/`
+3. Link projects to the central haflow instance
 4. Start/stop the backend server
 
 ---
@@ -26,12 +26,12 @@ packages/cli/
   src/
     index.ts          # Commander.js entry point
     lib/
-      paths.ts        # HALOOP_HOME, GLOBAL_DB_PATH, etc.
+      paths.ts        # haflow_HOME, GLOBAL_DB_PATH, etc.
       config.ts       # loadGlobalConfig, saveGlobalConfig
       database.ts     # Database access utilities
     commands/
-      init.ts         # Create ~/.haloop, init SQLite
-      link.ts         # Register project, create .haloop/
+      init.ts         # Create ~/.haflow, init SQLite
+      link.ts         # Register project, create .haflow/
       unlink.ts       # Unregister project
       start.ts        # Start backend server
       stop.ts         # Stop backend server
@@ -53,11 +53,11 @@ packages/cli/
 
 ```json
 {
-  "name": "haloop",
+  "name": "haflow",
   "version": "0.0.1",
   "type": "module",
   "bin": {
-    "haloop": "./dist/index.js"
+    "haflow": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -68,7 +68,7 @@ packages/cli/
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@haloop/shared": "workspace:*",
+    "@haflow/shared": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "chalk": "^5.3.0",
     "commander": "^12.0.0",
@@ -87,9 +87,9 @@ packages/cli/
 
 ### Directory Structure
 ```
-~/.haloop/
+~/.haflow/
   config.json       # Global settings
-  haloop.sqlite     # Central database
+  haflow.sqlite     # Central database
   logs/             # Server logs (optional)
 ```
 
@@ -102,11 +102,11 @@ packages/cli/
     "host": "127.0.0.1"
   },
   "database": {
-    "path": "~/.haloop/haloop.sqlite"
+    "path": "~/.haflow/haflow.sqlite"
   },
   "logging": {
     "level": "info",
-    "file": "~/.haloop/logs/server.log"
+    "file": "~/.haflow/logs/server.log"
   }
 }
 ```
@@ -116,17 +116,17 @@ packages/cli/
 ## Path Resolution (`lib/paths.ts`)
 
 ```typescript
-export const HALOOP_HOME = process.env.HALOOP_HOME || join(homedir(), '.haloop')
-export const GLOBAL_CONFIG_PATH = join(HALOOP_HOME, 'config.json')
-export const GLOBAL_DB_PATH = join(HALOOP_HOME, 'haloop.sqlite')
-export const PROJECT_DIR_NAME = '.haloop'
+export const haflow_HOME = process.env.haflow_HOME || join(homedir(), '.haflow')
+export const GLOBAL_CONFIG_PATH = join(haflow_HOME, 'config.json')
+export const GLOBAL_DB_PATH = join(haflow_HOME, 'haflow.sqlite')
+export const PROJECT_DIR_NAME = '.haflow'
 
-export function getProjectHaloopDir(projectPath: string): string {
+export function getProjecthaflowDir(projectPath: string): string {
   return join(projectPath, PROJECT_DIR_NAME)
 }
 
 export function getMissionDir(projectPath: string, missionName: string): string {
-  return join(getProjectHaloopDir(projectPath), 'missions', missionName)
+  return join(getProjecthaflowDir(projectPath), 'missions', missionName)
 }
 ```
 
@@ -134,12 +134,12 @@ export function getMissionDir(projectPath: string, missionName: string): string 
 
 ## Commands
 
-### `haloop init`
+### `haflow init`
 
-Initialize Haloop on this machine.
+Initialize haflow on this machine.
 
 **Actions:**
-1. Create `~/.haloop/` directory if not exists
+1. Create `~/.haflow/` directory if not exists
 2. Create default `config.json`
 3. Initialize SQLite database with schema
 4. Display success message with next steps
@@ -149,13 +149,13 @@ Initialize Haloop on this machine.
 
 **Output:**
 ```
-✓ Created ~/.haloop/
+✓ Created ~/.haflow/
 ✓ Initialized config.json
 ✓ Created database
 
-Haloop initialized! Next steps:
+haflow initialized! Next steps:
   cd <your-project>
-  haloop link
+  haflow link
 ```
 
 **Error Cases:**
@@ -164,18 +164,18 @@ Haloop initialized! Next steps:
 
 ---
 
-### `haloop link [path]`
+### `haflow link [path]`
 
-Link a project to Haloop.
+Link a project to haflow.
 
 **Arguments:**
 - `path` - Project path (default: current directory)
 
 **Actions:**
-1. Verify Haloop is initialized
+1. Verify haflow is initialized
 2. Verify path is a valid directory
 3. Verify path contains a git repository (warning if not)
-4. Create `<project>/.haloop/` directory
+4. Create `<project>/.haflow/` directory
 5. Create project config file
 6. Register project in global database
 7. Display success message
@@ -185,22 +185,22 @@ Link a project to Haloop.
 
 **Output:**
 ```
-✓ Created .haloop/ directory
+✓ Created .haflow/ directory
 ✓ Registered project "my-app"
 
 Project linked! ID: abc-123
 ```
 
 **Error Cases:**
-- Haloop not initialized: Prompt to run `haloop init`
+- haflow not initialized: Prompt to run `haflow init`
 - Project already linked: Show existing info, exit 0
 - Invalid path: Show error, exit 1
 
 ---
 
-### `haloop unlink [path]`
+### `haflow unlink [path]`
 
-Unlink a project from Haloop.
+Unlink a project from haflow.
 
 **Arguments:**
 - `path` - Project path (default: current directory)
@@ -208,10 +208,10 @@ Unlink a project from Haloop.
 **Actions:**
 1. Verify project is linked
 2. Mark project as inactive in database (soft delete)
-3. Optionally remove `.haloop/` directory
+3. Optionally remove `.haflow/` directory
 
 **Flags:**
-- `--remove-dir` - Also remove the `.haloop/` directory
+- `--remove-dir` - Also remove the `.haflow/` directory
 - `--hard` - Permanently delete from database
 
 **Output:**
@@ -221,15 +221,15 @@ Unlink a project from Haloop.
 
 ---
 
-### `haloop start`
+### `haflow start`
 
-Start the Haloop backend server.
+Start the haflow backend server.
 
 **Actions:**
-1. Verify Haloop is initialized
+1. Verify haflow is initialized
 2. Check if server already running (PID file)
-3. Import and start `@haloop/backend` server
-4. Save PID to `~/.haloop/server.pid`
+3. Import and start `@haflow/backend` server
+4. Save PID to `~/.haflow/server.pid`
 5. Display server URL
 
 **Flags:**
@@ -240,7 +240,7 @@ Start the Haloop backend server.
 **Output:**
 ```
 ✓ Server starting...
-✓ Haloop running at http://127.0.0.1:3847
+✓ haflow running at http://127.0.0.1:3847
 
 Press Ctrl+C to stop
 ```
@@ -249,17 +249,17 @@ Press Ctrl+C to stop
 ```
 ✓ Server started in background (PID: 12345)
 
-Stop with: haloop stop
+Stop with: haflow stop
 ```
 
 ---
 
-### `haloop stop`
+### `haflow stop`
 
-Stop the Haloop backend server.
+Stop the haflow backend server.
 
 **Actions:**
-1. Read PID from `~/.haloop/server.pid`
+1. Read PID from `~/.haflow/server.pid`
 2. Send SIGTERM to process
 3. Remove PID file
 4. Display confirmation
@@ -275,9 +275,9 @@ Stop the Haloop backend server.
 
 ---
 
-### `haloop status`
+### `haflow status`
 
-Show Haloop status and linked projects.
+Show haflow status and linked projects.
 
 **Actions:**
 1. Check if initialized
@@ -286,9 +286,9 @@ Show Haloop status and linked projects.
 
 **Output:**
 ```
-Haloop Status
+haflow Status
 ─────────────
-Initialized: ✓ ~/.haloop/
+Initialized: ✓ ~/.haflow/
 Server:      ✓ Running at http://127.0.0.1:3847
 
 Linked Projects (3)
@@ -307,7 +307,7 @@ Linked Projects (3)
 
 ### Directory Structure
 ```
-<project>/.haloop/
+<project>/.haflow/
   config.ts         # Project-specific settings (optional)
   missions/
     <mission-name>/
@@ -318,7 +318,7 @@ Linked Projects (3)
 
 ### config.ts (Optional)
 ```typescript
-import { ProjectConfig } from '@haloop/shared'
+import { ProjectConfig } from '@haflow/shared'
 
 export default {
   // Override default agents/skills for this project
@@ -346,32 +346,32 @@ import { stopCommand } from './commands/stop.js'
 import { statusCommand } from './commands/status.js'
 
 program
-  .name('haloop')
+  .name('haflow')
   .description('Central hub for managing Claude Code missions')
   .version('0.0.1')
 
 program
   .command('init')
-  .description('Initialize Haloop on this machine')
+  .description('Initialize haflow on this machine')
   .option('--force', 'Reinitialize even if exists')
   .action(initCommand)
 
 program
   .command('link [path]')
-  .description('Link a project to Haloop')
+  .description('Link a project to haflow')
   .option('--name <name>', 'Custom project name')
   .action(linkCommand)
 
 program
   .command('unlink [path]')
-  .description('Unlink a project from Haloop')
-  .option('--remove-dir', 'Remove .haloop directory')
+  .description('Unlink a project from haflow')
+  .option('--remove-dir', 'Remove .haflow directory')
   .option('--hard', 'Permanently delete from database')
   .action(unlinkCommand)
 
 program
   .command('start')
-  .description('Start the Haloop backend server')
+  .description('Start the haflow backend server')
   .option('--port <port>', 'Override port')
   .option('--daemon', 'Run in background')
   .option('--verbose', 'Show detailed logs')
@@ -379,12 +379,12 @@ program
 
 program
   .command('stop')
-  .description('Stop the Haloop backend server')
+  .description('Stop the haflow backend server')
   .action(stopCommand)
 
 program
   .command('status')
-  .description('Show Haloop status and linked projects')
+  .description('Show haflow status and linked projects')
   .option('--json', 'Output as JSON')
   .action(statusCommand)
 
@@ -406,8 +406,8 @@ import { join } from 'path'
 let testDir: string
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'haloop-test-'))
-  vi.stubEnv('HALOOP_HOME', testDir)
+  testDir = await mkdtemp(join(tmpdir(), 'haflow-test-'))
+  vi.stubEnv('haflow_HOME', testDir)
 })
 
 afterEach(async () => {
@@ -420,7 +420,7 @@ export { testDir }
 
 ### Test Categories
 
-1. **Path Tests** - Verify path resolution with different HALOOP_HOME values
+1. **Path Tests** - Verify path resolution with different haflow_HOME values
 2. **Config Tests** - Load, save, validate config files
 3. **Command Tests** - Each command with success/error scenarios
 4. **Integration Tests** - Full init → link → status flow
@@ -432,13 +432,13 @@ import { describe, it, expect, vi } from 'vitest'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { initCommand } from '../../src/commands/init'
-import { HALOOP_HOME, GLOBAL_CONFIG_PATH, GLOBAL_DB_PATH } from '../../src/lib/paths'
+import { haflow_HOME, GLOBAL_CONFIG_PATH, GLOBAL_DB_PATH } from '../../src/lib/paths'
 
 describe('init command', () => {
-  it('creates .haloop directory', async () => {
+  it('creates .haflow directory', async () => {
     await initCommand({ force: false })
 
-    expect(existsSync(HALOOP_HOME)).toBe(true)
+    expect(existsSync(haflow_HOME)).toBe(true)
     expect(existsSync(GLOBAL_CONFIG_PATH)).toBe(true)
     expect(existsSync(GLOBAL_DB_PATH)).toBe(true)
   })
@@ -464,14 +464,14 @@ describe('init command', () => {
 ## Acceptance Criteria
 
 ### init
-- [ ] Creates `~/.haloop/` directory
+- [ ] Creates `~/.haflow/` directory
 - [ ] Creates valid `config.json` with defaults
 - [ ] Initializes SQLite database with schema
 - [ ] Idempotent (safe to run multiple times)
 - [ ] `--force` recreates everything
 
 ### link
-- [ ] Creates `<project>/.haloop/` directory
+- [ ] Creates `<project>/.haflow/` directory
 - [ ] Registers project in database
 - [ ] Detects already-linked projects
 - [ ] Warns if not a git repository

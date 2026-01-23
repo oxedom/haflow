@@ -1,8 +1,8 @@
-# Haloop Backend Vitest Test Plan
+# haflow Backend Vitest Test Plan
 
 ## Overview
 
-Test plan for the Haloop v0 backend using Vitest. Tests are organized by layer following the implementation structure.
+Test plan for the haflow v0 backend using Vitest. Tests are organized by layer following the implementation structure.
 
 ## Test Structure
 
@@ -70,9 +70,9 @@ packages/backend/
 |-----------|-------------|
 | `config.port defaults to 4000` | When PORT env not set |
 | `config.port respects PORT env` | Parses PORT as integer |
-| `config.haloopHome defaults to ~/.haloop` | Uses homedir() |
-| `config.haloopHome respects HALOOP_HOME env` | Uses env value |
-| `config.missionsDir is haloopHome/missions` | Computed getter |
+| `config.haflowHome defaults to ~/.haflow` | Uses homedir() |
+| `config.haflowHome respects haflow_HOME env` | Uses env value |
+| `config.missionsDir is haflowHome/missions` | Computed getter |
 
 **Setup**: Save/restore env vars in beforeEach/afterEach
 
@@ -105,7 +105,7 @@ packages/backend/
 
 | Test Case | Description |
 |-----------|-------------|
-| `init creates missions directory if not exists` | Creates `~/.haloop/missions/` |
+| `init creates missions directory if not exists` | Creates `~/.haflow/missions/` |
 | `init is idempotent` | Safe to call multiple times |
 
 #### Create Mission
@@ -223,7 +223,7 @@ packages/backend/
 | `stop ignores errors` | Container may already be stopped |
 | `remove calls docker rm -f` | Force remove |
 | `remove ignores errors` | Container may already be removed |
-| `cleanupOrphaned finds containers by label` | Filter by haloop.mission_id |
+| `cleanupOrphaned finds containers by label` | Filter by haflow.mission_id |
 | `cleanupOrphaned removes found containers` | Calls remove() for each |
 
 ---
@@ -351,8 +351,8 @@ import { join } from 'path';
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'haloop-test-'));
-  vi.stubEnv('HALOOP_HOME', testDir);
+  testDir = await mkdtemp(join(tmpdir(), 'haflow-test-'));
+  vi.stubEnv('haflow_HOME', testDir);
 });
 
 afterEach(async () => {
@@ -414,14 +414,14 @@ export default defineConfig({
 
 ```bash
 # Run all tests
-pnpm --filter @haloop/backend test
+pnpm --filter @haflow/backend test
 
 # Run with coverage
-pnpm --filter @haloop/backend test:coverage
+pnpm --filter @haflow/backend test:coverage
 
 # Run specific test file
-pnpm --filter @haloop/backend test mission-store
+pnpm --filter @haflow/backend test mission-store
 
 # Run in watch mode
-pnpm --filter @haloop/backend test:watch
+pnpm --filter @haflow/backend test:watch
 ```

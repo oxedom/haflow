@@ -72,4 +72,4 @@ resourceKey: {
 After syncing, verify:
 1. All files in `.claude/{skills,agents,commands}` have corresponding entries
 2. No orphan entries exist for deleted files
-3. TypeScript compiles without errors: `pnpm --filter @haloop/backend build`
+3. TypeScript compiles without errors: `pnpm --filter @haflow/backend build`
