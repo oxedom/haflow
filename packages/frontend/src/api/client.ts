@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { MissionListItem, MissionDetail, MissionMeta, ApiResponse } from '@haloop/shared';
+import type { MissionListItem, MissionDetail, MissionMeta, ApiResponse } from '@haflow/shared';
 
 const API_BASE = 'http://localhost:4000/api';
 

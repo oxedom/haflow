@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType } from '@haloop/shared';
+import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType } from '@haflow/shared';
 import { config } from '../utils/config.js';
 import { generateMissionId, generateRunId } from '../utils/id.js';
 import { getDefaultWorkflow, getDefaultWorkflowId, getWorkflowStepName } from './workflow.js';

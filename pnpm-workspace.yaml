@@ -1,5 +1,4 @@
 packages:
   - packages/shared
   - packages/backend
-  - packages/backend/tests/resource/vue-frontend
   - packages/frontend

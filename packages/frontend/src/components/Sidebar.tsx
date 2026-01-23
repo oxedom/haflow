@@ -1,4 +1,4 @@
-import type { MissionListItem, MissionStatus } from '@haloop/shared'
+import type { MissionListItem, MissionStatus } from '@haflow/shared'
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -66,7 +66,7 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
       >
         {/* Header */}
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-sidebar-foreground">HALOOP</h1>
+          <h1 className="text-lg font-semibold text-sidebar-foreground">HAFLOW</h1>
           <Button
             variant="ghost"
             size="icon"

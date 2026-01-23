@@ -27,23 +27,23 @@ describe('config utils', () => {
     });
   });
 
-  describe('haloopHome', () => {
-    it('defaults to ~/.haloop when HALOOP_HOME env not set', async () => {
-      delete process.env.HALOOP_HOME;
+  describe('haflowHome', () => {
+    it('defaults to ~/.haflow when HAFLOW_HOME env not set', async () => {
+      delete process.env.HAFLOW_HOME;
       const { config } = await import('../../../src/utils/config.js');
-      expect(config.haloopHome).toBe(join(homedir(), '.haloop'));
+      expect(config.haflowHome).toBe(join(homedir(), '.haflow'));
     });
 
-    it('respects HALOOP_HOME env variable', async () => {
-      process.env.HALOOP_HOME = '/custom/path';
+    it('respects HAFLOW_HOME env variable', async () => {
+      process.env.HAFLOW_HOME = '/custom/path';
       const { config } = await import('../../../src/utils/config.js');
-      expect(config.haloopHome).toBe('/custom/path');
+      expect(config.haflowHome).toBe('/custom/path');
     });
   });
 
   describe('missionsDir', () => {
-    it('is haloopHome/missions', async () => {
-      process.env.HALOOP_HOME = '/test/home';
+    it('is haflowHome/missions', async () => {
+      process.env.HAFLOW_HOME = '/test/home';
       const { config } = await import('../../../src/utils/config.js');
       expect(config.missionsDir).toBe('/test/home/missions');
     });

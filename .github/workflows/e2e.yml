@@ -30,7 +30,7 @@ jobs:
         run: pnpm install
 
       - name: Build shared package
-        run: pnpm --filter @haloop/shared build
+        run: pnpm --filter @haflow/shared build
 
       - name: Install Playwright Browsers
         run: pnpm --filter frontend exec playwright install --with-deps

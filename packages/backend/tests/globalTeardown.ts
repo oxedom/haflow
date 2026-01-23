@@ -18,7 +18,7 @@ export default async function globalTeardown() {
   // Cleanup any orphaned Docker containers from tests
   try {
     const { stdout } = await execAsync(
-      'docker ps -aq --filter="label=haloop.mission_id"'
+      'docker ps -aq --filter="label=haflow.mission_id"'
     );
     const containerIds = stdout.trim().split('\n').filter(Boolean);
     for (const id of containerIds) {

@@ -50,7 +50,7 @@ export interface SandboxProvider {
   isAvailable(): Promise<boolean>;
 
   /**
-   * Cleanup orphaned resources (e.g., containers with haloop labels)
+   * Cleanup orphaned resources (e.g., containers with haflow labels)
    */
   cleanupOrphaned(): Promise<void>;
 }

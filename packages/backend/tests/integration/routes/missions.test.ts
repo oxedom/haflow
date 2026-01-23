@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import type { MissionListItem } from '@haloop/shared';
+import type { MissionListItem } from '@haflow/shared';
 
 const execAsync = promisify(exec);
 const BASE_URL = 'http://localhost:4001';
@@ -25,10 +25,10 @@ async function createTestMission(title = 'Test', type = 'feature', rawInput = 'I
 describe('missions routes', () => {
   afterAll(async () => {
     // Clean up created missions by removing their directories
-    // This is a best-effort cleanup - the server uses ~/.haloop/missions
+    // This is a best-effort cleanup - the server uses ~/.haflow/missions
     try {
       for (const id of createdMissionIds) {
-        await execAsync(`rm -rf ~/.haloop/missions/${id}`).catch(() => {});
+        await execAsync(`rm -rf ~/.haflow/missions/${id}`).catch(() => {});
       }
     } catch {
       // Ignore cleanup errors

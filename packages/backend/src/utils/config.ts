@@ -3,9 +3,9 @@ import { join } from 'path';
 
 export const config = {
   port: parseInt(process.env.PORT || '4000', 10),
-  haloopHome: process.env.HALOOP_HOME || join(homedir(), '.haloop'),
+  haflowHome: process.env.HAFLOW_HOME || join(homedir(), '.haflow'),
   get missionsDir() {
-    return join(this.haloopHome, 'missions');
+    return join(this.haflowHome, 'missions');
   },
   // Workflows live with the backend for v0
   get workflowsDir() {

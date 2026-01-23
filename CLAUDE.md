@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Haloop is a **local-first orchestrator** that runs AI-assisted "missions" against real projects with human gates and ephemeral sandboxes. It consists of a React frontend, Express backend, and shared type library — all in a pnpm monorepo.
+Haflow is a **local-first orchestrator** that runs AI-assisted "missions" against real projects with human gates and ephemeral sandboxes. It consists of a React frontend, Express backend, and shared type library — all in a pnpm monorepo.
 
 **Status**: Backend + Frontend substantially complete; CLI not started.
 
@@ -15,25 +15,25 @@ Haloop is a **local-first orchestrator** that runs AI-assisted "missions" agains
 pnpm install
 
 # Build shared package (required before backend/frontend work)
-pnpm --filter @haloop/shared build
+pnpm --filter @haflow/shared build
 
 # Run backend (Express, port 4000)
-pnpm --filter @haloop/backend dev
+pnpm --filter @haflow/backend dev
 
 # Run frontend (Vite, port 5173)
 pnpm --filter frontend dev
 
 # Build all packages
-pnpm --filter @haloop/shared build && pnpm --filter @haloop/backend build && pnpm --filter frontend build
+pnpm --filter @haflow/shared build && pnpm --filter @haflow/backend build && pnpm --filter frontend build
 
 # Run backend tests
-pnpm --filter @haloop/backend test
+pnpm --filter @haflow/backend test
 
 # Run single test file
-pnpm --filter @haloop/backend vitest run tests/unit/services/mission-store.test.ts
+pnpm --filter @haflow/backend vitest run tests/unit/services/mission-store.test.ts
 
 # Run tests in watch mode
-pnpm --filter @haloop/backend test:watch
+pnpm --filter @haflow/backend test:watch
 
 # Frontend lint
 pnpm --filter frontend lint
@@ -45,23 +45,23 @@ pnpm --filter frontend lint
 
 ```
 packages/
-├── shared/      # @haloop/shared - Zod schemas + TypeScript types
-├── backend/     # @haloop/backend - Express API + Docker sandbox
+├── shared/      # @haflow/shared - Zod schemas + TypeScript types
+├── backend/     # @haflow/backend - Express API + Docker sandbox
 ├── frontend/    # React 19 + Vite + TailwindCSS 4
 └── cli/         # Empty (not implemented)
 ```
 
 ### Package Dependencies
 
-- `frontend` and `backend` both depend on `@haloop/shared` (workspace:*)
-- **Always build shared first** when types change: `pnpm --filter @haloop/shared build`
+- `frontend` and `backend` both depend on `@haflow/shared` (workspace:*)
+- **Always build shared first** when types change: `pnpm --filter @haflow/shared build`
 
 ### Backend Architecture (packages/backend)
 
 **Entry**: `src/index.ts` → Express server on port 4000
 
 **Key Services**:
-- `src/services/mission-store.ts` - File-based persistence under `~/.haloop/missions/`
+- `src/services/mission-store.ts` - File-based persistence under `~/.haflow/missions/`
 - `src/services/mission-engine.ts` - Workflow orchestration with 1s container polling
 - `src/services/docker.ts` - Docker CLI execution, label-based tracking, log capture
 - `src/services/sandbox.ts` - Provider abstraction (k3s-ready interface)
@@ -72,7 +72,7 @@ packages/
 ### Mission Storage Layout
 
 ```
-~/.haloop/
+~/.haflow/
   missions/
     m-<uuid>/
       mission.json          # MissionMeta + workflow state
@@ -139,6 +139,6 @@ Backend uses **Vitest** with:
 
 ## Environment
 
-- `HALOOP_HOME` - Override default `~/.haloop` directory
+- `HAFLOW_HOME` - Override default `~/.haflow` directory
 - `VITE_USE_MOCKS` - Frontend mock mode (default: true)
 - Backend runs on port 4000, frontend on 5173

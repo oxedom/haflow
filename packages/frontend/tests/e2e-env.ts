@@ -4,7 +4,7 @@ import { join } from 'path';
 
 // Use a predictable base path for the test directory
 // This allows both config and setup/teardown to know the path
-const E2E_TEST_BASE = join(tmpdir(), 'haloop-e2e');
+const E2E_TEST_BASE = join(tmpdir(), 'haflow-e2e');
 
 // Ensure base directory exists
 if (!existsSync(E2E_TEST_BASE)) {
@@ -19,6 +19,6 @@ export const TEST_DIR = process.env.CI
 
 // Export env vars for webServer processes
 export const E2E_ENV = {
-  HALOOP_HOME: TEST_DIR,
+  HAFLOW_HOME: TEST_DIR,
   NODE_ENV: 'test',
 };

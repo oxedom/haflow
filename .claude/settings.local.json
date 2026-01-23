@@ -13,7 +13,8 @@
       "Bash(docker ps:*)",
       "Bash(docker run:*)",
       "Bash(pkill:*)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(ls:*)"
     ]
   },
   "enabledPlugins": {

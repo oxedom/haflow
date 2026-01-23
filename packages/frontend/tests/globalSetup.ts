@@ -10,5 +10,5 @@ export default async function globalSetup(_config: FullConfig) {
   // Set env vars for any child processes
   Object.assign(process.env, E2E_ENV);
 
-  console.log(`E2E test setup complete. HALOOP_HOME=${TEST_DIR}`);
+  console.log(`E2E test setup complete. HAFLOW_HOME=${TEST_DIR}`);
 }

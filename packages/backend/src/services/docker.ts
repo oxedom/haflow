@@ -4,7 +4,7 @@ import type { SandboxProvider, SandboxRunOptions, SandboxStatus } from './sandbo
 
 const execAsync = promisify(exec);
 
-const LABEL_PREFIX = 'haloop';
+const LABEL_PREFIX = 'haflow';
 
 const defaultImage = 'node:20-slim'; // Default agent image for v0
 
@@ -126,7 +126,7 @@ async function remove(containerId: string): Promise<void> {
 
 async function cleanupOrphaned(): Promise<void> {
   try {
-    // Find and remove all containers with haloop labels
+    // Find and remove all containers with haflow labels
     const { stdout } = await execAsync(
       `docker ps -aq --filter="label=${LABEL_PREFIX}.mission_id"`
     );

@@ -1,5 +1,5 @@
 import { join } from 'path';
-import type { MissionMeta, MissionStatus, WorkflowStep } from '@haloop/shared';
+import type { MissionMeta, MissionStatus, WorkflowStep } from '@haflow/shared';
 import { missionStore } from './mission-store.js';
 import { getDefaultWorkflow } from './workflow.js';
 import { dockerProvider } from './docker.js';

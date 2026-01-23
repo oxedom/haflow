@@ -1,21 +1,21 @@
 {
-  "name": "@haloop/shared",
+  "name": "@haflow/shared",
   "version": "0.0.1",
   "type": "module",
-  "description": "Shared utilities for Haloop - multi-project Claude Code orchestrator",
+  "description": "Shared utilities for Haflow - multi-project Claude Code orchestrator",
   "author": "oxedom",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oxedom/haloop.git",
+    "url": "git+https://github.com/oxedom/haflow.git",
     "directory": "packages/shared"
   },
   "bugs": {
-    "url": "https://github.com/oxedom/haloop/issues"
+    "url": "https://github.com/oxedom/haflow/issues"
   },
-  "homepage": "https://github.com/oxedom/haloop#readme",
+  "homepage": "https://github.com/oxedom/haflow#readme",
   "keywords": [
-    "haloop",
+    "haflow",
     "claude",
     "shared"
   ],

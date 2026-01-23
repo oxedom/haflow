@@ -1,5 +1,5 @@
 import { Router, type Router as RouterType } from 'express';
-import { CreateMissionRequestSchema, SaveArtifactRequestSchema } from '@haloop/shared';
+import { CreateMissionRequestSchema, SaveArtifactRequestSchema } from '@haflow/shared';
 import { missionStore } from '../services/mission-store.js';
 import { missionEngine } from '../services/mission-engine.js';
 import { sendSuccess, sendError } from '../utils/response.js';

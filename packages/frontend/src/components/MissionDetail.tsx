@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import type { MissionDetail as MissionDetailType, MissionStatus, StepRun } from '@haloop/shared'
+import type { MissionDetail as MissionDetailType, MissionStatus, StepRun } from '@haflow/shared'
 import { Check, ChevronDown, ChevronUp, ArrowRight, Play } from 'lucide-react'
 import * as Diff from 'diff'
 import ReactMarkdown from 'react-markdown'

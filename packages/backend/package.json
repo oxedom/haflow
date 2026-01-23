@@ -1,21 +1,21 @@
 {
-  "name": "@haloop/backend",
+  "name": "@haflow/backend",
   "version": "0.0.1",
   "type": "module",
-  "description": "Backend server for Haloop - multi-project Claude Code orchestrator",
+  "description": "Backend server for Haflow - multi-project Claude Code orchestrator",
   "author": "oxedom",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oxedom/haloop.git",
+    "url": "git+https://github.com/oxedom/haflow.git",
     "directory": "packages/backend"
   },
   "bugs": {
-    "url": "https://github.com/oxedom/haloop/issues"
+    "url": "https://github.com/oxedom/haflow/issues"
   },
-  "homepage": "https://github.com/oxedom/haloop#readme",
+  "homepage": "https://github.com/oxedom/haflow#readme",
   "keywords": [
-    "haloop",
+    "haflow",
     "claude",
     "backend",
     "server"
@@ -44,7 +44,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@haloop/shared": "workspace:*",
+    "@haflow/shared": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "uuid": "^9.0.1",

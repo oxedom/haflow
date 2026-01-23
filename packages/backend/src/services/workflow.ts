@@ -1,4 +1,4 @@
-import type { Workflow } from '@haloop/shared';
+import type { Workflow } from '@haflow/shared';
 
 // Hardcoded for v0 - matches frontend mock exactly
 const WORKFLOWS: Record<string, Workflow> = {

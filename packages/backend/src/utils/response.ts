@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@haloop/shared';
+import type { ApiResponse } from '@haflow/shared';
 import type { Response } from 'express';
 
 export function sendSuccess<T>(res: Response, data: T, status = 200): void {

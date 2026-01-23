@@ -6,8 +6,8 @@ import { join } from 'path';
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'haloop-test-'));
-  vi.stubEnv('HALOOP_HOME', testDir);
+  testDir = await mkdtemp(join(tmpdir(), 'haflow-test-'));
+  vi.stubEnv('HAFLOW_HOME', testDir);
 });
 
 afterEach(async () => {

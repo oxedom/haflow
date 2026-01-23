@@ -5,7 +5,7 @@ import { join } from 'path';
 import { getTestDir } from '../../setup.js';
 
 // We need to dynamically import missionStore after env is stubbed
-// because config.ts reads HALOOP_HOME at module load time
+// because config.ts reads HAFLOW_HOME at module load time
 async function getMissionStore() {
   vi.resetModules();
   const { missionStore } = await import('../../../src/services/mission-store.js');
