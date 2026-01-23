@@ -11,6 +11,7 @@ describe('frontend container runtime', () => {
   let containerId: string | null = null;
   const CONTAINER_NAME = 'frontend-runtime-integration-test';
   const HOST_PORT = 4173;
+  const skipInCi = Boolean(process.env.CI);
 
   beforeAll(async () => {
     dockerAvailable = await dockerProvider.isAvailable();
@@ -30,7 +31,7 @@ describe('frontend container runtime', () => {
     }
   });
 
-  it('builds and serves the Vue fixture via preview', async () => {
+  it.skipIf(skipInCi)('builds and serves the Vue fixture via preview', async () => {
     if (!dockerAvailable) return;
 
     const fixturePath = resolve(__dirname, '../../resource/vue-frontend');

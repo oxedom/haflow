@@ -36,24 +36,21 @@ I can investigate logs, database state, and recent changes to help identify the 
 
 You have access to these key locations and tools:
 
-**Logs** (automatically created by `make daemon` and `make wui`):
-- MCP logs: `~/.humanlayer/logs/mcp-claude-approvals-*.log`
-- Combined WUI/Daemon logs: `~/.humanlayer/logs/wui-${BRANCH_NAME}/codelayer.log`
-- First line shows: `[timestamp] starting [service] in [directory]`
+**Logs**:
+- Check application logs in the project's log directory
+- Look for error messages and stack traces
 
-**Database**:
-- Location: `~/.humanlayer/daemon-{BRANCH_NAME}.db`
-- SQLite database with sessions, events, approvals, etc.
-- Can query directly with `sqlite3`
+**Database** (if applicable):
+- Check the database state for any anomalies
+- Can query directly with appropriate tools
 
 **Git State**:
 - Check current branch, recent commits, uncommitted changes
 - Similar to how `commit` and `describe_pr` commands work
 
 **Service Status**:
-- Check if daemon is running: `ps aux | grep hld`
-- Check if WUI is running: `ps aux | grep wui`
-- Socket exists: `~/.humanlayer/daemon.sock`
+- Check if services are running: `ps aux | grep [service-name]`
+- Check for socket files or process IDs
 
 ## Process Steps
 
@@ -78,23 +75,19 @@ Spawn parallel Task agents for efficient investigation:
 ```
 Task 1 - Check Recent Logs:
 Find and analyze the most recent logs for errors:
-1. Find latest daemon log: ls -t ~/.humanlayer/logs/daemon-*.log | head -1
-2. Find latest WUI log: ls -t ~/.humanlayer/logs/wui-*.log | head -1
-3. Search for errors, warnings, or issues around the problem timeframe
-4. Note the working directory (first line of log)
-5. Look for stack traces or repeated errors
+1. Find application logs in the project directory
+2. Search for errors, warnings, or issues around the problem timeframe
+3. Note the working directory
+4. Look for stack traces or repeated errors
 Return: Key errors/warnings with timestamps
 ```
 
 ```
-Task 2 - Database State:
+Task 2 - Database State (if applicable):
 Check the current database state:
-1. Connect to database: sqlite3 ~/.humanlayer/daemon.db
-2. Check schema: .tables and .schema for relevant tables
-3. Query recent data:
-   - SELECT * FROM sessions ORDER BY created_at DESC LIMIT 5;
-   - SELECT * FROM conversation_events WHERE created_at > datetime('now', '-1 hour');
-   - Other queries based on the issue
+1. Connect to the project's database
+2. Check schema and relevant tables
+3. Query recent data based on the issue
 4. Look for stuck states or anomalies
 Return: Relevant database findings
 ```
@@ -122,7 +115,7 @@ Based on the investigation, present a focused debug report:
 
 ### Evidence Found
 
-**From Logs** (`~/.humanlayer/logs/`):
+**From Logs**:
 - [Error/warning with timestamp]
 - [Pattern or repeated issue]
 
@@ -147,9 +140,9 @@ Based on the investigation, present a focused debug report:
    ```
 
 2. **If That Doesn't Work**:
-   - Restart services: `make daemon` and `make wui`
-   - Check browser console for WUI errors
-   - Run with debug: `HUMANLAYER_DEBUG=true make daemon`
+   - Restart services
+   - Check browser console for UI errors
+   - Run with debug mode enabled
 
 ### Can't Access?
 Some issues might be outside my reach:
@@ -171,23 +164,20 @@ Would you like me to investigate something specific further?
 
 ## Quick Reference
 
-**Find Latest Logs**:
+**Find Logs**:
 ```bash
-ls -t ~/.humanlayer/logs/daemon-*.log | head -1
-ls -t ~/.humanlayer/logs/wui-*.log | head -1
+# Find logs in the project's log directory
+ls -lt logs/ | head -5
 ```
 
-**Database Queries**:
+**Database Queries** (if applicable):
 ```bash
-sqlite3 ~/.humanlayer/daemon.db ".tables"
-sqlite3 ~/.humanlayer/daemon.db ".schema sessions"
-sqlite3 ~/.humanlayer/daemon.db "SELECT * FROM sessions ORDER BY created_at DESC LIMIT 5;"
+# Query the database based on your project's setup
 ```
 
 **Service Check**:
 ```bash
-ps aux | grep hld     # Is daemon running?
-ps aux | grep wui     # Is WUI running?
+ps aux | grep [service-name]     # Is the service running?
 ```
 
 **Git State**:

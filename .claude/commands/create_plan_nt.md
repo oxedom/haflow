@@ -51,11 +51,11 @@ Then wait for the user's input.
 
    - Use the **codebase-locator** agent to find all files related to the ticket/task
    - Use the **codebase-analyzer** agent to understand how the current implementation works
-   - If a Linear ticket is mentioned, use the **linear-ticket-reader** agent to get full details
+   - If a GitHub issue is mentioned, read the issue details
 
    These agents will:
    - Find relevant source files, configs, and tests
-   - Identify the specific directories to focus on (e.g., if WUI is mentioned, they'll focus on humanlayer-wui/)
+   - Identify the specific directories to focus on
    - Trace data flow and key functions
    - Return detailed explanations with file:line references
 
@@ -109,7 +109,7 @@ After getting initial clarifications:
    - **codebase-pattern-finder** - To find similar features we can model after
 
    **For related tickets:**
-   - **linear-searcher** - To find similar issues or past implementations
+   - Search for similar issues or past implementations in the repository
 
    Each agent knows how to:
    - Find the right files and code patterns
@@ -164,14 +164,14 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
-   - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
+1. **Write the plan** to `thoughts/shared/plans/YYYY-MM-DD-issue-XXXX-description.md`
+   - Format: `YYYY-MM-DD-issue-XXXX-description.md` where:
      - YYYY-MM-DD is today's date
-     - ENG-XXXX is the ticket number (omit if no ticket)
+     - issue-XXXX is the issue number (omit if no issue)
      - description is a brief kebab-case description
    - Examples:
-     - With ticket: `2025-01-08-ENG-1478-parent-child-tracking.md`
-     - Without ticket: `2025-01-08-improve-error-handling.md`
+     - With issue: `2025-01-08-issue-1478-parent-child-tracking.md`
+     - Without issue: `2025-01-08-improve-error-handling.md`
 2. **Use this template structure**:
 
 ````markdown
@@ -276,7 +276,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   `thoughts/shared/plans/YYYY-MM-DD-issue-XXXX-description.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?
@@ -312,7 +312,7 @@ After structure approval:
    - Research actual code patterns using parallel sub-tasks
    - Include specific file paths and line numbers
    - Write measurable success criteria with clear automated vs manual distinction
-   - automated steps should use `make` whenever possible - for example `make -C humanlayer-wui check` instead of `cd humanlayer-wui && bun run fmt`
+   - automated steps should use `make` whenever possible for consistent verification
 
 4. **Be Practical**:
    - Focus on incremental, testable changes
@@ -399,9 +399,7 @@ When spawning research sub-tasks:
    - What information to extract
    - Expected output format
 4. **Be EXTREMELY specific about directories**:
-   - If the ticket mentions "WUI", specify `humanlayer-wui/` directory
-   - If it mentions "daemon", specify `hld/` directory
-   - Never use generic terms like "UI" when you mean "WUI"
+   - Identify which project subdirectories are relevant based on the ticket
    - Include the full path context in your prompts
 5. **Specify read-only tools** to use
 6. **Request specific file:line references** in responses

@@ -1,20 +1,19 @@
 ---
-description: Implement highest priority small Linear ticket with worktree setup
+description: Implement highest priority small ticket with worktree setup
 model: sonnet
 ---
 
-## PART I - IF A TICKET IS MENTIONED
+## PART I - IF A TICKET/ISSUE IS MENTIONED
 
-0c. use `linear` cli to fetch the selected item into thoughts with the ticket number - ./thoughts/shared/tickets/ENG-xxxx.md
-0d. read the ticket and all comments to understand the implementation plan and any concerns
+0c. Fetch the issue details into thoughts with the issue number - ./thoughts/shared/tickets/issue-xxxx.md
+0d. Read the issue and all comments to understand the implementation plan and any concerns
 
-## PART I - IF NO TICKET IS MENTIOND
+## PART I - IF NO TICKET/ISSUE IS MENTIONED
 
-0.  read .claude/commands/linear.md
-0a. fetch the top 10 priority items from linear in status "ready for dev" using the MCP tools, noting all items in the `links` section
-0b. select the highest priority SMALL or XS issue from the list (if no SMALL or XS issues exist, EXIT IMMEDIATELY and inform the user)
-0c. use `linear` cli to fetch the selected item into thoughts with the ticket number - ./thoughts/shared/tickets/ENG-xxxx.md
-0d. read the ticket and all comments to understand the implementation plan and any concerns
+0a. Fetch the top priority items that are ready for dev, noting all items in the `links` section
+0b. Select the highest priority SMALL or XS issue from the list (if no SMALL or XS issues exist, EXIT IMMEDIATELY and inform the user)
+0c. Fetch the selected item into thoughts - ./thoughts/shared/tickets/issue-xxxx.md
+0d. Read the issue and all comments to understand the implementation plan and any concerns
 
 ## PART II - NEXT STEPS
 
@@ -27,7 +26,7 @@ think deeply
 think deeply about the implementation
 
 2. set up worktree for implementation:
-2a. read `hack/create_worktree.sh` and create a new worktree with the Linear branch name: `./hack/create_worktree.sh ENG-XXXX BRANCH_NAME`
-2b. launch implementation session: `humanlayer-nightly launch --model opus --dangerously-skip-permissions --dangerously-skip-permissions-timeout 15m --title "implement ENG-XXXX" -w ~/wt/humanlayer/ENG-XXXX "/implement_plan and when you are done implementing and all tests pass, read ./claude/commands/commit.md and create a commit, then read ./claude/commands/describe_pr.md and create a PR, then add a comment to the Linear ticket with the PR link"`
+2a. create a new worktree or branch for the implementation
+2b. run `/implement_plan` and when done implementing and all tests pass, create a commit and PR
 
-think deeply, use TodoWrite to track your tasks. When fetching from linear, get the top 10 items by priority but only work on ONE item - specifically the highest priority SMALL or XS sized issue.
+think deeply, use TodoWrite to track your tasks. Get the top 10 items by priority but only work on ONE item - specifically the highest priority SMALL or XS sized issue.

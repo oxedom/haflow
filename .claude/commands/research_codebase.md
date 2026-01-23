@@ -59,9 +59,9 @@ Then wait for the user's research query.
    - Use the **web-search-researcher** agent for external documentation and resources
    - IF you use web-research agents, instruct them to return LINKS with their findings, and please INCLUDE those links in your final report
 
-   **For Linear tickets (if relevant):**
-   - Use the **linear-ticket-reader** agent to get full details of a specific ticket
-   - Use the **linear-searcher** agent to find related tickets or historical context
+   **For GitHub issues (if relevant):**
+   - Read the full issue details
+   - Search for related issues or historical context in the repository
 
    The key is to use these agents intelligently:
    - Start with locator agents to find what exists
@@ -78,20 +78,20 @@ Then wait for the user's research query.
    - Use thoughts/ findings as supplementary historical context
    - Connect findings across different components
    - Include specific file paths and line numbers for reference
-   - Verify all thoughts/ paths are correct (e.g., thoughts/allison/ not thoughts/shared/ for personal files)
+   - Verify all thoughts/ paths are correct (e.g., thoughts/local/ for personal files, thoughts/shared/ for team files)
    - Highlight patterns, connections, and architectural decisions
    - Answer the user's specific questions with concrete evidence
 
 5. **Gather metadata for the research document:**
    - Run the `hack/spec_metadata.sh` script to generate all relevant metadata
-   - Filename: `thoughts/shared/research/YYYY-MM-DD-ENG-XXXX-description.md`
-     - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
+   - Filename: `thoughts/shared/research/YYYY-MM-DD-issue-XXXX-description.md`
+     - Format: `YYYY-MM-DD-issue-XXXX-description.md` where:
        - YYYY-MM-DD is today's date
-       - ENG-XXXX is the ticket number (omit if no ticket)
+       - issue-XXXX is the issue number (omit if no issue)
        - description is a brief kebab-case description of the research topic
      - Examples:
-       - With ticket: `2025-01-08-ENG-1478-parent-child-tracking.md`
-       - Without ticket: `2025-01-08-authentication-flow.md`
+       - With issue: `2025-01-08-issue-1478-parent-child-tracking.md`
+       - Without issue: `2025-01-08-authentication-flow.md`
 
 6. **Generate research document:**
    - Use the metadata gathered in step 4
@@ -161,8 +161,8 @@ Then wait for the user's research query.
      - Create permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
    - Replace local file references with permalinks in the document
 
-8. **Sync and present findings:**
-   - Run `humanlayer thoughts sync` to sync the thoughts directory
+8. **Save and present findings:**
+   - Save the research document
    - Present a concise summary of findings to the user
    - Include key file references for easy navigation
    - Ask if they have follow-up questions or need clarification
@@ -200,10 +200,10 @@ Then wait for the user's research query.
 - **Path handling**: The thoughts/searchable/ directory contains hard links for searching
   - Always document paths by removing ONLY "searchable/" - preserve all other subdirectories
   - Examples of correct transformations:
-    - `thoughts/searchable/allison/old_stuff/notes.md` → `thoughts/allison/old_stuff/notes.md`
+    - `thoughts/searchable/local/old_stuff/notes.md` → `thoughts/local/old_stuff/notes.md`
     - `thoughts/searchable/shared/prs/123.md` → `thoughts/shared/prs/123.md`
     - `thoughts/searchable/global/shared/templates.md` → `thoughts/global/shared/templates.md`
-  - NEVER change allison/ to shared/ or vice versa - preserve the exact directory structure
+  - NEVER change local/ to shared/ or vice versa - preserve the exact directory structure
   - This ensures paths are correct for editing and navigation
 - **Frontmatter consistency**:
   - Always include frontmatter at the beginning of research documents
