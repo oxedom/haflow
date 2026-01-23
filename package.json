@@ -14,7 +14,6 @@
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "dev": "pnpm --filter @haflow/shared build && pnpm --parallel --filter @haflow/backend --filter frontend dev",
-    "build": "pnpm --filter @haflow/shared build && pnpm --filter @haflow/backend build && pnpm --filter frontend build",
-    "build:shared": "pnpm --filter @haflow/shared build"
+    "build:all": "pnpm --filter @haflow/shared build && pnpm --filter @haflow/backend build && pnpm --filter frontend build && pnpm --filter @haflow/cli build"
   }
 }

@@ -32,7 +32,7 @@ haflow is a **local-first orchestrator** that runs AI-assisted “missions” ag
 | `packages/backend` | ✅ Substantially complete | All 6 API endpoints, mission store, Docker sandbox provider |
 | `packages/frontend` | ✅ Fully functional | Polling, artifact editor, mission lifecycle UI |
 | `packages/shared` | ✅ Complete | All mission/workflow types defined |
-| `packages/cli` | ❌ Not started | Folder exists but empty |
+| `packages/cli` | ✅ Implemented | `init`, `link`, `start`, `status` + tests |
 
 #### packages/backend (~820 LOC)
 - **API Server**: Express on port 4000 with CORS
@@ -58,7 +58,10 @@ haflow is a **local-first orchestrator** that runs AI-assisted “missions” ag
 - All exported from `src/index.ts`
 
 #### packages/cli
-- **Empty** — folder exists but no code
+- **Commands**: `init`, `link`, `start`, `status`
+- **Config**: `~/.haflow/config.json` stores linked project
+- **Start**: runs root `pnpm dev` to launch backend + frontend
+- **Tests**: unit tests for config + CLI integration tests
 
 **Current state**: Backend + Frontend can run together directly (no mocks). Full mission flow works end-to-end with mock agent execution. E2E testing infrastructure in place with Playwright.
 
@@ -216,17 +219,13 @@ Backend orchestration (`mission-engine.ts`) calls `sandboxProvider.*` methods on
 
 ---
 
-### Minimal CLI (v0) ❌ NOT STARTED
+### Minimal CLI (v0) ✅ IMPLEMENTED
 
-**Required commands** (not yet implemented):
-- `init`: create global home dir + minimal config
+**Commands**
+- `init`: create global home dir
 - `link`: register a local project path (**only one project at a time**; re-linking replaces previous)
-- `start`: start **both** backend + frontend locally
+- `start`: start **both** backend + frontend locally (runs root `pnpm dev`)
 - `status`: show whether backend/frontend are running + linked project
-
-**Current workaround**: Run backend and frontend separately via `pnpm dev` in each package.
-
-**Blocking**: Users cannot run `haflow start` — the primary v0 UX goal.
 
 ---
 
@@ -269,7 +268,7 @@ This folder conceptually holds:
 
 | Goal | Status | Notes |
 |------|--------|-------|
-| Run `haflow start` | ❌ | CLI not implemented |
+| Run `haflow start` | ✅ | CLI implemented in `packages/cli` |
 | UI loads against real backend | ✅ | Works with `VITE_USE_MOCKS=false` |
 | Create mission from raw text | ✅ | POST /api/missions works |
 | Agent step runs in Docker sandbox | ✅ | Mock agent, but Docker execution works |
@@ -277,7 +276,7 @@ This folder conceptually holds:
 | Artifacts editable and persisted | ✅ | PUT endpoint + file I/O works |
 | Continue through whole workflow | ✅ | 8-step workflow completes end-to-end |
 
-**Summary**: 6/7 goals achieved. Only blocker is CLI (`haflow start`).
+**Summary**: 7/7 goals achieved for the core v0 UX. Remaining work is about real agent execution.
 
 **Bonus progress**: E2E testing infrastructure set up with Playwright. GitHub Actions workflow for E2E in progress (`.github/workflows/e2e.yml`).
 
@@ -286,19 +285,17 @@ This folder conceptually holds:
 ### What Must Happen Next
 
 #### Remaining v0 work
-1. **CLI implementation** (packages/cli) — HIGH PRIORITY
-   - `init`, `link`, `start`, `status` commands
-   - This is the primary blocker for v0 "ship it"
-
-2. **Finalize E2E testing** (in progress)
+1. **Finalize E2E testing** (in progress)
    - Complete GitHub Actions workflow (`.github/workflows/e2e.yml`)
    - Add more E2E test coverage beyond `home.test.ts`
    - Verify CI pipeline works end-to-end
 
-3. **Real agent execution** (optional for v0)
+2. **Real agent execution** (optional for v0, but main missing runtime piece)
    - Replace mock command with actual Claude CLI invocation
-   - Would need Docker image with Claude Code binary
-   - Agent resource resolution from `.claude/` folder
+   - Provide a Docker image with Claude Code installed (current default is `node:20-slim`)
+   - Decide how to authenticate inside the container (mount host `~/.claude` or inject credentials)
+   - Mount the linked project workspace into the container (currently only `/mission/artifacts`)
+   - Resolve agent prompt/resources from `.claude/` (no backend integration yet)
 
 #### Post-v0 (future work)
 - Multi-workflow support (load from disk instead of hardcoded)
@@ -313,7 +310,7 @@ This folder conceptually holds:
 | Question | Decision | Implementation |
 |----------|----------|----------------|
 | Mission ID format | UUID with prefix | `m-<uuid>` for missions, `r-<uuid>` for runs |
-| Global folder name | `~/.haflow` | Configured via `haflow_HOME` env var |
+| Global folder name | `~/.haflow` | Configured via `HAFLOW_HOME` env var |
 | Workflow storage | Hardcoded for v0 | `packages/backend/src/services/workflow.ts` |
 | k3s compatibility | Preserved | Sandbox provider abstraction in place |
 
@@ -337,3 +334,5 @@ This folder conceptually holds:
 | API client | `packages/frontend/src/api/client.ts` | Axios HTTP client |
 | Playwright config | `packages/frontend/playwright.config.ts` | E2E test configuration |
 | E2E tests | `packages/frontend/tests/e2e/` | Playwright E2E tests |
+| CLI entry | `packages/cli/src/index.ts` | Command definitions |
+| CLI config | `packages/cli/src/config.ts` | HAFLOW_HOME config storage |

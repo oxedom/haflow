@@ -6,7 +6,6 @@
       "Bash(mkdir:*)",
       "Bash(cat:*)",
       "Bash(curl:*)",
-      "Bash(pnpm --filter @ralphy/backend dev:*)",
       "Bash(docker ps:*)",
       "Bash(docker run:*)",
       "Bash(pkill:*)",

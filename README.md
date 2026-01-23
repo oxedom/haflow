@@ -17,6 +17,9 @@ pnpm install
 # Build shared types
 pnpm --filter @haflow/shared build
 
+# Build everything (shared, backend, frontend, cli)
+pnpm build:all
+
 # Start backend (port 4000)
 pnpm --filter @haflow/backend dev
 
@@ -24,3 +27,28 @@ pnpm --filter @haflow/backend dev
 pnpm --filter frontend dev
 ```
 
+## 🧰 CLI (Global Install)
+
+```bash
+# Build the CLI
+pnpm --filter @haflow/cli build
+
+# Install globally (local workspace)
+pnpm add -g /home/s-linux/projects/haflow/packages/cli
+```
+
+### Link a project + start
+
+```bash
+# Initialize haflow home dir
+haflow init
+
+# Link the haflow repo (or any compatible project)
+haflow link /home/s-linux/projects/haflow
+
+# Start backend + frontend
+haflow start
+
+# Check status
+haflow status
+```

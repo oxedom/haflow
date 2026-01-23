@@ -89,6 +89,7 @@ async function startAgentStep(
     const inputArtifact = step.inputArtifact || 'raw-input.md';
     const outputArtifact = step.outputArtifact || 'output.md';
 
+    // TODO: Replace with actual Claude agent container
     // For v0, we use a simple "mock agent" that just copies/transforms the input
     // In production, this would be the actual Claude agent container
     const containerId = await provider.start({
