@@ -1,11 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm --filter @ralphy/shared build:*)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm --filter frontend add:*)",
       "Bash(pnpm add:*)",
-      "Bash(npm run build:*)",
       "Bash(mkdir:*)",
       "Bash(cat:*)",
       "Bash(curl:*)",
@@ -14,7 +11,9 @@
       "Bash(docker run:*)",
       "Bash(pkill:*)",
       "Bash(pnpm:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ]
   },
   "enabledPlugins": {
