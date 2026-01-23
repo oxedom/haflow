@@ -1,6 +1,6 @@
 # Haflow
 
-![Haflow](haflow-compressed.jpg)
+![Haflow](haflow-readme.jpg)
 
 **Local-first AI mission orchestrator** with human gates and ephemeral sandboxes.
 
