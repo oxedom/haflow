@@ -1,0 +1,53 @@
+{
+  "name": "@haloop/shared",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Shared utilities for Haloop - multi-project Claude Code orchestrator",
+  "author": "oxedom",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxedom/haloop.git",
+    "directory": "packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/oxedom/haloop/issues"
+  },
+  "homepage": "https://github.com/oxedom/haloop#readme",
+  "keywords": [
+    "haloop",
+    "claude",
+    "shared"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

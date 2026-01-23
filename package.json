@@ -1,0 +1,20 @@
+{
+  "name": "haloop",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxedom/haloop.git"
+  },
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "pnpm --filter @haloop/shared build && pnpm --parallel --filter @haloop/backend --filter frontend dev",
+    "build": "pnpm --filter @haloop/shared build && pnpm --filter @haloop/backend build && pnpm --filter frontend build",
+    "build:shared": "pnpm --filter @haloop/shared build"
+  }
+}
