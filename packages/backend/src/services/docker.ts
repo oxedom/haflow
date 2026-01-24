@@ -217,12 +217,24 @@ export function parseStreamJsonLine(line: string): StreamEvent | null {
 async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenerator<StreamEvent, void, unknown> {
   const { artifactsPath, prompt } = options;
 
-  // Build docker sandbox run claude command
+  const workingDir = '/mission';
+  const homeDir = process.env.HOME || '/home/user';
+
+  // Claude credentials file path from host
+  const claudeAuthPath = process.env.CLAUDE_AUTH_PATH || `${homeDir}/.claude/.credentials.json`;
+
+  // Build docker run command with defaultImage
   const args = [
-    'sandbox', 'run',
-    '-w', artifactsPath,
-    '--credentials', 'host',
+    'run',
+    '--rm',
+    '-i',
+    '--user', `${process.getuid?.() ?? 1000}:${process.getgid?.() ?? 1000}`,
+    '-v', `${artifactsPath}:${workingDir}/artifacts`,
+    '-v', `${claudeAuthPath}:/home/agent/.claude/.credentials.json:ro`,
+    '-w', workingDir,
+    defaultImage,
     'claude',
+    '--verbose',
     '--print',
     '--output-format', 'stream-json',
     '--dangerously-skip-permissions',
@@ -231,6 +243,12 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
 
   const childProcess = spawn('docker', args, {
     stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  // Capture stderr in parallel
+  let stderrOutput = '';
+  childProcess.stderr.on('data', (data) => {
+    stderrOutput += data.toString();
   });
 
   // Create readline interface to parse line-by-line
@@ -258,17 +276,11 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
     }
   }
 
-  // Handle stderr
-  let stderrOutput = '';
-  childProcess.stderr.on('data', (data) => {
-    stderrOutput += data.toString();
-  });
-
   // Wait for process to exit
   await new Promise<void>((resolve, reject) => {
     childProcess.on('close', (code) => {
       if (code !== 0 && !isComplete) {
-        reject(new Error(`Claude sandbox exited with code ${code}: ${stderrOutput}`));
+        reject(new Error(`Claude container exited with code ${code}: ${stderrOutput}`));
       } else {
         resolve();
       }
