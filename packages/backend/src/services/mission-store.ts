@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, writeFile } from 'fs/promises';
+import { mkdir, readdir, readFile, writeFile, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType } from '@haflow/shared';
@@ -119,6 +119,15 @@ async function updateMeta(missionId: string, updates: Partial<MissionMeta>): Pro
   };
 
   await writeFile(metaPath(missionId), JSON.stringify(updated, null, 2));
+}
+
+// --- Delete ---
+async function deleteMission(missionId: string): Promise<void> {
+  const dir = missionDir(missionId);
+  if (!existsSync(dir)) {
+    throw new Error(`Mission not found: ${missionId}`);
+  }
+  await rm(dir, { recursive: true, force: true });
 }
 
 // --- Artifacts ---

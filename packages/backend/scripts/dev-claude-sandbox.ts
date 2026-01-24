@@ -9,7 +9,11 @@ import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 
-const PROMPT = 'Create a file called hello.txt with lorem ipsum content (at least 3 paragraphs).';
+const PROMPT = `You are working in a sandbox environment. Your working directory is /mission, and you have write access to the /mission/artifacts subdirectory.
+
+Create a file called hello.txt in the /mission/artifacts directory with lorem ipsum content (at least 3 paragraphs).
+
+Important: Create the file directly in /mission/artifacts/hello.txt (not in /mission/hello.txt, as that directory requires root permissions).`;
 
 async function main() {
   // Check Docker availability

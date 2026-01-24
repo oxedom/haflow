@@ -49,7 +49,49 @@ haflow/
             ├── artifacts/      # Step outputs
             ├── runs/           # Execution records
             └── logs/           # Container logs
+└── .claude/             # Claude AI workspace configuration
+    ├── agents/          # Specialized agent definitions
+    ├── commands/        # Reusable command templates
+    ├── skills/          # Skill modules and best practices
+    ├── agent-template.md # Template for creating new agents
+    └── settings.json    # Claude workspace settings
 ```
+
+## .claude Folder
+
+The `.claude` folder contains Claude AI workspace configuration for enhanced codebase interaction:
+
+### Agents (`agents/`)
+Specialized AI agents for specific tasks:
+- **codebase-analyzer**: Analyzes implementation details and traces data flow
+- **codebase-locator**: Finds files and components by pattern
+- **codebase-pattern-finder**: Identifies architectural patterns
+- **security-vulnerability-detector**: Scans for security issues
+- **thoughts-analyzer**: Analyzes research and planning documents
+- **web-search-researcher**: Performs web research tasks
+
+### Commands (`commands/`)
+Reusable command templates for common workflows:
+- **research_codebase_generic**: Comprehensive codebase research using parallel sub-agents
+- **implement_plan**: Execute implementation plans
+- **create_plan_generic**: Generate implementation plans
+- **validate_plan**: Review and validate plans
+- **debug**: Debugging workflows
+- And more...
+
+### Skills (`skills/`)
+Skill modules providing domain-specific expertise:
+- **playwright**: E2E testing with Playwright
+- **react-best-practices**: React development patterns
+- **sql-pro**: Database and SQL expertise
+- **complex-task-planner**: Planning complex multi-step tasks
+- And more...
+
+### Configuration
+- **agent-template.md**: Template for creating new custom agents
+- **settings.json**: Workspace settings (e.g., thinking token limits)
+
+These resources enable Claude to work more effectively with the codebase by providing specialized knowledge and workflows.
 
 ## Quick Start
 
