@@ -17,7 +17,9 @@
       "Bash(gh api:*)",
       "Bash(chmod:*)",
       "Bash(git rev-parse:*)",
-      "WebFetch(domain:docs.k3s.io)"
+      "WebFetch(domain:docs.k3s.io)",
+      "Bash(CI=true npx playwright test:*)",
+      "Bash(npx playwright test:*)"
     ]
   },
   "enabledPlugins": {

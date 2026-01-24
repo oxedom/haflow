@@ -29,13 +29,13 @@ const statusConfig: Record<MissionStatus, { label: string; variant: 'default' | 
 
 function WorkflowTimeline({ steps, currentStep }: { steps: MissionDetailType['workflow']['steps']; currentStep: number }) {
   return (
-    <div className="flex items-center gap-1 py-4 px-4 md:px-6 overflow-x-auto">
+    <div data-testid="workflow-timeline" className="flex items-center gap-1 py-4 px-4 md:px-6 overflow-x-auto">
       {steps.map((step, i: number) => {
         const isCompleted = i < currentStep
         const isCurrent = i === currentStep
 
         return (
-          <div key={step.step_id} className="flex items-center">
+          <div key={step.step_id} data-testid={`workflow-step-${i}`} className="flex items-center">
             {/* Step Circle */}
             <div className="flex flex-col items-center">
               <div
@@ -81,6 +81,7 @@ function ActivityHistory({ runs }: { runs: StepRun[] }) {
   return (
     <div className="border-t">
       <button
+        data-testid="activity-history-toggle"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-4 md:px-6 py-3 flex items-center justify-between text-left hover:bg-muted/50 transition-colors"
       >
@@ -216,12 +217,12 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
   return (
     <div className="flex-1 flex flex-col h-screen bg-muted/30 pt-14 md:pt-0">
       {/* Header */}
-      <div className="bg-background border-b px-4 md:px-6 py-4">
+      <div data-testid="mission-detail-header" className="bg-background border-b px-4 md:px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <h2 className="text-lg md:text-xl font-semibold truncate">
+          <h2 data-testid="mission-title" className="text-lg md:text-xl font-semibold truncate">
             Mission: {mission.title}
           </h2>
-          <Badge variant={statusInfo.variant} className="w-fit">
+          <Badge data-testid="mission-status-badge" variant={statusInfo.variant} className="w-fit">
             {statusInfo.label}
           </Badge>
         </div>
@@ -242,7 +243,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                 <CardTitle className="text-sm font-medium text-muted-foreground">Agent running...</CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="font-mono text-sm bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-auto">
+                <pre data-testid="agent-log-viewer" className="font-mono text-sm bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-auto">
                   {mission.current_log_tail || 'Waiting for output...'}
                 </pre>
               </CardContent>
@@ -261,6 +262,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                   <div className="flex items-center gap-1 md:gap-2 text-sm text-muted-foreground">
                     <span className="hidden md:inline">View:</span>
                     <Button
+                      data-testid="view-mode-editor"
                       variant={viewMode === 'editor' ? 'secondary' : 'ghost'}
                       size="sm"
                       onClick={() => setViewMode('editor')}
@@ -269,6 +271,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                     </Button>
                     <span className="hidden md:inline">/</span>
                     <Button
+                      data-testid="view-mode-diff"
                       variant={viewMode === 'diff' ? 'secondary' : 'ghost'}
                       size="sm"
                       onClick={() => setViewMode('diff')}
@@ -277,6 +280,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                     </Button>
                     <span className="hidden md:inline">/</span>
                     <Button
+                      data-testid="view-mode-preview"
                       variant={viewMode === 'preview' ? 'secondary' : 'ghost'}
                       size="sm"
                       onClick={() => setViewMode('preview')}
@@ -287,6 +291,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                 </div>
                 <div className="flex items-center gap-2 md:gap-3">
                   <Button
+                    data-testid="save-draft-button"
                     variant="outline"
                     size="sm"
                     onClick={handleSave}
@@ -295,7 +300,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                   >
                     Save Draft
                   </Button>
-                  <Button size="sm" onClick={onContinue} className="flex-1 md:flex-none">
+                  <Button data-testid="continue-button" size="sm" onClick={onContinue} className="flex-1 md:flex-none">
                     Continue
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -306,6 +311,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
               <div className="flex-1 overflow-auto p-4">
                 {viewMode === 'editor' ? (
                   <Textarea
+                    data-testid="artifact-editor"
                     value={editorContent}
                     onChange={(e) => {
                       setEditorContent(e.target.value)
@@ -334,7 +340,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                 <CardTitle className="text-destructive">Mission Failed</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <pre className="font-mono text-sm bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-auto">
+                <pre data-testid="error-message" className="font-mono text-sm bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-auto">
                   {mission.last_error}
                 </pre>
                 {mission.current_log_tail && (
@@ -342,7 +348,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                     {mission.current_log_tail}
                   </pre>
                 )}
-                <Button variant="outline" onClick={onMarkCompleted}>
+                <Button data-testid="mark-completed-button" variant="outline" onClick={onMarkCompleted}>
                   Mark as Completed
                 </Button>
               </CardContent>
@@ -354,7 +360,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
             <Card>
               <CardContent className="pt-6">
                 <p className="text-muted-foreground mb-4">Ready to run: {currentStep.name}</p>
-                <Button onClick={onContinue}>
+                <Button data-testid="start-agent-button" onClick={onContinue}>
                   <Play className="mr-2 h-4 w-4" />
                   Start Agent
                 </Button>

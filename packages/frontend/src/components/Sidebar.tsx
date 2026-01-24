@@ -36,10 +36,10 @@ function formatTimeAgo(isoString: string): string {
   return `${days}d ago`
 }
 
-function StatusBadge({ status }: { status: MissionStatus }) {
+function StatusBadge({ status, testId }: { status: MissionStatus; testId?: string }) {
   const config = statusConfig[status]
   return (
-    <Badge variant={config.variant} className="text-[10px] px-1.5 py-0">
+    <Badge data-testid={testId} variant={config.variant} className="text-[10px] px-1.5 py-0">
       {config.label}
     </Badge>
   )
@@ -59,6 +59,7 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
 
       {/* Sidebar */}
       <div
+        data-testid="sidebar"
         className={cn(
           'fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-200 ease-in-out md:relative md:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -105,10 +106,11 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
           <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Recent Missions
           </div>
-          <div className="space-y-1 px-2 pb-4">
+          <div data-testid="mission-list" className="space-y-1 px-2 pb-4">
             {missions.map((mission) => (
               <button
                 key={mission.mission_id}
+                data-testid={`mission-item-${mission.mission_id}`}
                 onClick={() => onSelectMission(mission.mission_id)}
                 className={cn(
                   'w-full text-left p-3 rounded-md transition-colors',
@@ -121,7 +123,7 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
                   <span className="text-sm font-medium truncate pr-2">
                     {mission.title}
                   </span>
-                  <StatusBadge status={mission.status} />
+                  <StatusBadge status={mission.status} testId={`mission-status-${mission.mission_id}`} />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground capitalize">

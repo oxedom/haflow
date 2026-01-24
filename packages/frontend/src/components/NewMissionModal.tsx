@@ -92,7 +92,7 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent data-testid="new-mission-modal" className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Mission</DialogTitle>
         </DialogHeader>
@@ -115,6 +115,7 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
               </div>
               <Input
                 id="title"
+                data-testid="mission-title-input"
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="fox-swift"
@@ -132,7 +133,7 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
               <Select value={type} onValueChange={(v) => setType(v as 'feature' | 'fix' | 'bugfix')}>
-                <SelectTrigger>
+                <SelectTrigger data-testid="mission-type-select">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -171,6 +172,7 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
               </div>
               <Textarea
                 id="rawInput"
+                data-testid="mission-raw-input"
                 value={rawInput}
                 onChange={(e) => setRawInput(e.target.value)}
                 placeholder="Describe the feature/fix in detail, or use the mic button to speak..."
@@ -181,11 +183,12 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} data-testid="cancel-button">
               Cancel
             </Button>
             <Button
               type="submit"
+              data-testid="create-mission-button"
               disabled={!title.trim() || !rawInput.trim() || isSubmitting || !!titleError}
             >
               {isSubmitting ? 'Creating...' : 'Create Mission'}

@@ -23,9 +23,7 @@ Implement comprehensive E2E tests for the Haflow mission lifecycle, covering cre
 - Isolated `HAFLOW_HOME` at `/tmp/haflow-e2e/`
 - Docker containers cleaned up via label filtering
 
-### Current data-testid Attributes (only 3)
-- `voice-chat-button-desktop` (App.tsx:181)
-- `voice-chat-button-mobile` (App.tsx:158)
+### Current data-testid Attributes  (Need more)
 - `new-mission-button` (Sidebar.tsx:87)
 
 ## Desired End State
@@ -249,8 +247,8 @@ Then update usage at line 117:
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] TypeScript compiles: `pnpm --filter frontend build`
-- [ ] Linting passes: `pnpm --filter frontend lint`
+- [x] TypeScript compiles: `pnpm --filter frontend build`
+- [x] Linting passes: `pnpm --filter frontend lint` (pre-existing errors unrelated to testids)
 - [ ] App loads without errors: Start dev server and verify UI works
 
 #### Manual Verification:
@@ -387,8 +385,8 @@ test.describe('Mission Selection', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Test file compiles: `pnpm --filter frontend exec playwright test --list`
-- [ ] Tests skip in CI: `CI=true pnpm --filter frontend test:e2e` shows skipped tests
+- [x] Test file compiles: `pnpm --filter frontend exec playwright test --list`
+- [x] Tests skip in CI: `CI=true pnpm --filter frontend test:e2e` shows skipped tests
 
 #### Manual Verification:
 - [ ] Tests run locally with Docker: `pnpm --filter frontend test:e2e`
@@ -504,7 +502,7 @@ test.describe('Workflow Progression', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Tests pass locally: `pnpm --filter frontend test:e2e tests/e2e/mission-lifecycle.test.ts`
+- [x] Tests pass locally: `pnpm --filter frontend test:e2e tests/e2e/mission-lifecycle.test.ts`
 
 #### Manual Verification:
 - [ ] Observe workflow progression in browser during test execution
@@ -597,7 +595,7 @@ test.describe('Artifact Editing', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Tests pass locally: `pnpm --filter frontend test:e2e tests/e2e/mission-lifecycle.test.ts`
+- [x] Tests pass locally: `pnpm --filter frontend test:e2e tests/e2e/mission-lifecycle.test.ts`
 
 #### Manual Verification:
 - [ ] Artifact content actually persists across page reloads
@@ -699,7 +697,7 @@ test.describe('Activity History', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] All tests pass: `pnpm --filter frontend test:e2e tests/e2e/mission-lifecycle.test.ts`
+- [x] All tests pass: `pnpm --filter frontend test:e2e tests/e2e/mission-lifecycle.test.ts`
 
 #### Manual Verification:
 - [ ] Multi-mission scenarios work correctly in browser
