@@ -3,3 +3,4 @@ packages:
   - packages/backend
   - packages/frontend
   - packages/cli
+  - packages/site
