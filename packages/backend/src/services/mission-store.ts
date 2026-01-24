@@ -121,14 +121,7 @@ async function updateMeta(missionId: string, updates: Partial<MissionMeta>): Pro
   await writeFile(metaPath(missionId), JSON.stringify(updated, null, 2));
 }
 
-// --- Delete ---
-async function deleteMission(missionId: string): Promise<void> {
-  const dir = missionDir(missionId);
-  if (!existsSync(dir)) {
-    throw new Error(`Mission not found: ${missionId}`);
-  }
-  await rm(dir, { recursive: true, force: true });
-}
+
 
 // --- Artifacts ---
 async function loadArtifacts(missionId: string): Promise<Record<string, string>> {
