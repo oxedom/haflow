@@ -15,7 +15,9 @@
       "WebFetch(domain:github.com)",
       "Bash(node:*)",
       "Bash(gh api:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(git rev-parse:*)",
+      "WebFetch(domain:docs.k3s.io)"
     ]
   },
   "enabledPlugins": {

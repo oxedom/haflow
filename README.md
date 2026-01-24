@@ -8,6 +8,12 @@
 
 Haflow runs AI-assisted workflows against your real projects, combining automated agent steps with human review gates. Each agent step executes in isolated Docker containers, keeping your environment clean and secure.
 
+## 📋 Requirements
+
+- **Node.js** >= 18.0.0
+- **pnpm** >= 10.x ([install guide](https://pnpm.io/installation))
+- **Docker** (for running agent steps in sandboxes)
+
 ## 🚀 Quick Start
 
 ```bash
