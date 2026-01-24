@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import { StepHistoryModal } from './StepHistoryModal'
 
 interface MissionDetailProps {
   mission: MissionDetailType
@@ -27,29 +28,44 @@ const statusConfig: Record<MissionStatus, { label: string; variant: 'default' | 
   completed: { label: 'Completed', variant: 'outline' },
 }
 
-function WorkflowTimeline({ steps, currentStep }: { steps: MissionDetailType['workflow']['steps']; currentStep: number }) {
+function WorkflowTimeline({
+  steps,
+  currentStep,
+  onStepClick,
+}: {
+  steps: MissionDetailType['workflow']['steps']
+  currentStep: number
+  onStepClick?: (stepIndex: number) => void
+}) {
   return (
     <div data-testid="workflow-timeline" className="flex items-center gap-1 py-4 px-4 md:px-6 overflow-x-auto">
       {steps.map((step, i: number) => {
         const isCompleted = i < currentStep
         const isCurrent = i === currentStep
+        const isClickable = isCompleted && onStepClick
 
         return (
           <div key={step.step_id} data-testid={`workflow-step-${i}`} className="flex items-center">
             {/* Step Circle */}
             <div className="flex flex-col items-center">
-              <div
+              <button
+                type="button"
+                data-testid={`workflow-step-circle-${i}`}
+                onClick={() => isClickable && onStepClick(i)}
+                disabled={!isClickable}
                 className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border-2',
+                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border-2 transition-all',
                   isCompleted
                     ? 'bg-primary border-primary text-primary-foreground'
                     : isCurrent
                     ? 'bg-background border-primary text-primary'
-                    : 'bg-background border-muted text-muted-foreground'
+                    : 'bg-background border-muted text-muted-foreground',
+                  isClickable && 'cursor-pointer hover:ring-2 hover:ring-ring hover:ring-offset-2'
                 )}
+                aria-label={isClickable ? `View step ${i + 1}: ${step.name}` : undefined}
               >
                 {isCompleted ? <Check className="h-4 w-4" /> : i + 1}
-              </div>
+              </button>
               <span
                 className={cn(
                   'mt-1 text-xs whitespace-nowrap',
@@ -191,6 +207,19 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
   const [editorContent, setEditorContent] = useState('')
   const [originalContent, setOriginalContent] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
+  const [selectedHistoryStepIndex, setSelectedHistoryStepIndex] = useState<number | null>(null)
+
+  const handleHistoryStepClick = (stepIndex: number) => {
+    setSelectedHistoryStepIndex(stepIndex)
+  }
+
+  const handleCloseHistoryModal = () => {
+    setSelectedHistoryStepIndex(null)
+  }
+
+  const selectedHistoryStep = selectedHistoryStepIndex !== null
+    ? mission.workflow.steps[selectedHistoryStepIndex]
+    : null
 
   const currentStep = mission.workflow.steps[mission.current_step]
   const artifactName = currentStep?.type === 'human-gate'
@@ -237,7 +266,11 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
 
       {/* Workflow Timeline */}
       <div className="bg-background border-b">
-        <WorkflowTimeline steps={mission.workflow.steps} currentStep={mission.current_step} />
+        <WorkflowTimeline
+          steps={mission.workflow.steps}
+          currentStep={mission.current_step}
+          onStepClick={handleHistoryStepClick}
+        />
       </div>
 
       {/* Main Content */}
@@ -392,6 +425,16 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
           <ActivityHistory runs={mission.runs} />
         </div>
       </div>
+
+      {/* Step History Modal */}
+      <StepHistoryModal
+        isOpen={selectedHistoryStepIndex !== null}
+        onClose={handleCloseHistoryModal}
+        step={selectedHistoryStep}
+        stepIndex={selectedHistoryStepIndex ?? 0}
+        artifacts={mission.artifacts}
+        runs={mission.runs}
+      />
     </div>
   )
 }
