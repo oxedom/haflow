@@ -198,6 +198,13 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
     : currentStep?.outputArtifact
   const artifactContent = artifactName ? mission.artifacts[artifactName] : null
 
+  // Show human-gate editor for waiting_human, OR for ready/draft when current step is human-gate
+  const shouldShowHumanGateEditor =
+    artifactName && (
+      mission.status === 'waiting_human' ||
+      ((mission.status === 'ready' || mission.status === 'draft') && currentStep?.type === 'human-gate')
+    )
+
   useEffect(() => {
     if (artifactContent && !hasChanges) {
       setEditorContent(artifactContent)
@@ -249,7 +256,7 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
               </CardContent>
             </Card>
           </div>
-        ) : mission.status === 'waiting_human' && artifactName ? (
+        ) : shouldShowHumanGateEditor ? (
           // Editor for human gate
           <div className="flex-1 flex flex-col items-start p-4 md:p-6 overflow-hidden">
             <Card className="flex-1 flex flex-col overflow-hidden w-full max-w-6xl">

@@ -89,8 +89,8 @@ And update the agent start condition (line 357) to ensure no overlap:
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] TypeScript compiles without errors: `pnpm --filter frontend build`
-- [ ] Frontend lint passes: `pnpm --filter frontend lint`
+- [x] TypeScript compiles without errors: `pnpm --filter frontend build`
+- [x] Frontend lint passes: `pnpm --filter frontend lint` (pre-existing errors only, no new issues)
 - [ ] Existing tests pass (if any frontend tests exist)
 
 #### Manual Verification:
