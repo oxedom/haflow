@@ -20,7 +20,8 @@
       "WebFetch(domain:docs.k3s.io)",
       "Bash(CI=true npx playwright test:*)",
       "Bash(npx playwright test:*)",
-      "Skill(implement_plan)"
+      "Skill(implement_plan)",
+      "Bash(git remote get-url:*)"
     ]
   },
   "enabledPlugins": {
