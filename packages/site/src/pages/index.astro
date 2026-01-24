@@ -1,136 +1,26 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import Terminal from '../components/Terminal.astro';
 ---
 
-<BaseLayout title="Home">
-  <Header slot="header" />
+<BaseLayout title="haflow">
+  <div class="max-w-xl mx-auto px-6 py-24">
+    <h1 class="text-4xl font-bold mb-8" style="color: #33ff33;">haflow</h1>
 
-  <div class="max-w-5xl mx-auto px-4 py-12">
-    <!-- Hero -->
-    <section class="text-center mb-16">
-      <h1 class="text-4xl font-bold mb-4">
-        <span class="text-[var(--color-terminal-green)]">$</span> haflow
-      </h1>
-      <p class="text-xl text-[var(--color-terminal-text-muted)] max-w-2xl mx-auto">
-        Local-first orchestrator for AI-assisted missions with human gates and ephemeral sandboxes.
-      </p>
-    </section>
+    <p class="mb-12 text-gray-600">
+      Local-first orchestrator for AI-assisted missions.
+    </p>
 
-    <!-- Quick Start -->
-    <section class="mb-16">
-      <h2 class="text-2xl font-bold mb-6 prompt">Quick Start</h2>
-      <Terminal title="terminal">
-        <pre class="!bg-transparent !border-0 !p-0"><code><span class="text-[var(--color-terminal-text-muted)]"># Clone the repository</span>
-<span class="text-[var(--color-terminal-green)]">$</span> git clone https://github.com/oxedom/haflow.git
-<span class="text-[var(--color-terminal-green)]">$</span> cd haflow
+    <pre><code><span class="text-gray-400"># install</span>
+git clone https://github.com/oxedom/haflow.git
+cd haflow && pnpm install
 
-<span class="text-[var(--color-terminal-text-muted)]"># Install dependencies</span>
-<span class="text-[var(--color-terminal-green)]">$</span> pnpm install
+<span class="text-gray-400"># run</span>
+pnpm --filter @haflow/shared build
+pnpm --filter @haflow/backend dev
+pnpm --filter frontend dev</code></pre>
 
-<span class="text-[var(--color-terminal-text-muted)]"># Build shared package</span>
-<span class="text-[var(--color-terminal-green)]">$</span> pnpm --filter @haflow/shared build
-
-<span class="text-[var(--color-terminal-text-muted)]"># Run backend (port 4000)</span>
-<span class="text-[var(--color-terminal-green)]">$</span> pnpm --filter @haflow/backend dev
-
-<span class="text-[var(--color-terminal-text-muted)]"># Run frontend (port 5173) - in another terminal</span>
-<span class="text-[var(--color-terminal-green)]">$</span> pnpm --filter frontend dev</code></pre>
-      </Terminal>
-    </section>
-
-    <!-- What is Haflow -->
-    <section class="mb-16">
-      <h2 class="text-2xl font-bold mb-6 prompt">What is Haflow?</h2>
-      <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-[var(--color-terminal-bg-light)] border border-[var(--color-terminal-border)] rounded-lg p-6">
-          <h3 class="text-lg font-bold text-[var(--color-terminal-amber)] mb-2">Mission-Based</h3>
-          <p class="text-[var(--color-terminal-text-muted)]">
-            Organize AI-assisted work into missions with clear goals, artifacts, and completion criteria.
-          </p>
-        </div>
-        <div class="bg-[var(--color-terminal-bg-light)] border border-[var(--color-terminal-border)] rounded-lg p-6">
-          <h3 class="text-lg font-bold text-[var(--color-terminal-amber)] mb-2">Human Gates</h3>
-          <p class="text-[var(--color-terminal-text-muted)]">
-            Every AI step requires human review and approval before proceeding - you stay in control.
-          </p>
-        </div>
-        <div class="bg-[var(--color-terminal-bg-light)] border border-[var(--color-terminal-border)] rounded-lg p-6">
-          <h3 class="text-lg font-bold text-[var(--color-terminal-amber)] mb-2">Ephemeral Sandboxes</h3>
-          <p class="text-[var(--color-terminal-text-muted)]">
-            Agent steps run in isolated Docker containers that are destroyed after completion.
-          </p>
-        </div>
-        <div class="bg-[var(--color-terminal-bg-light)] border border-[var(--color-terminal-border)] rounded-lg p-6">
-          <h3 class="text-lg font-bold text-[var(--color-terminal-amber)] mb-2">Local-First</h3>
-          <p class="text-[var(--color-terminal-text-muted)]">
-            Everything runs on your machine. Missions stored in ~/.haflow - no cloud required.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Workflow -->
-    <section class="mb-16">
-      <h2 class="text-2xl font-bold mb-6 prompt">Workflow Pipeline</h2>
-      <Terminal title="workflow.ts">
-        <div class="space-y-2 text-sm">
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">1.</span>
-            <span class="text-[var(--color-terminal-cyan)]">[agent]</span>
-            <span>Cleanup raw input → structured text</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">2.</span>
-            <span class="text-[var(--color-terminal-amber)]">[human]</span>
-            <span>Review structured text</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">3.</span>
-            <span class="text-[var(--color-terminal-cyan)]">[agent]</span>
-            <span>Research → research output</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">4.</span>
-            <span class="text-[var(--color-terminal-amber)]">[human]</span>
-            <span>Review research</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">5.</span>
-            <span class="text-[var(--color-terminal-cyan)]">[agent]</span>
-            <span>Planning → implementation plan</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">6.</span>
-            <span class="text-[var(--color-terminal-amber)]">[human]</span>
-            <span>Review plan</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">7.</span>
-            <span class="text-[var(--color-terminal-cyan)]">[agent]</span>
-            <span>Implementation → result</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-[var(--color-terminal-purple)]">8.</span>
-            <span class="text-[var(--color-terminal-amber)]">[human]</span>
-            <span>Review implementation</span>
-          </div>
-        </div>
-      </Terminal>
-    </section>
-
-    <!-- CTA -->
-    <section class="text-center">
-      <a
-        href="/docs/getting-started"
-        class="inline-block bg-[var(--color-terminal-green)] text-[var(--color-terminal-bg)] px-6 py-3 rounded font-bold hover:bg-[var(--color-terminal-green)]/90 hover:no-underline"
-      >
-        Read the Docs →
-      </a>
-    </section>
+    <p class="mt-12 text-sm text-gray-400">
+      <a href="https://github.com/oxedom/haflow">github</a>
+    </p>
   </div>
-
-  <Footer slot="footer" />
 </BaseLayout>
