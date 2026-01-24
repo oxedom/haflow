@@ -104,7 +104,7 @@ describe('missions routes', () => {
       const res = await request(BASE_URL).get(`/api/missions/${missionId}`);
 
       expect(res.body.data.workflow).toBeDefined();
-      expect(res.body.data.workflow.workflow_id).toBe('standard-feature');
+      expect(res.body.data.workflow.workflow_id).toBe('raw-research-plan-implement');
       expect(res.body.data.workflow.steps).toHaveLength(8);
     });
 

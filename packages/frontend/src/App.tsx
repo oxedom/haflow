@@ -52,12 +52,14 @@ function AppContent() {
       title,
       type,
       rawInput,
+      workflowId,
     }: {
       title: string
       type: 'feature' | 'fix' | 'bugfix'
       rawInput: string
+      workflowId: string
     }) => {
-      return api.createMission(title, type, rawInput)
+      return api.createMission(title, type, rawInput, workflowId)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['missions'] })
@@ -111,9 +113,10 @@ function AppContent() {
   const handleCreateMission = async (
     title: string,
     type: 'feature' | 'fix' | 'bugfix',
-    rawInput: string
+    rawInput: string,
+    workflowId: string
   ) => {
-    const newMission = await createMissionMutation.mutateAsync({ title, type, rawInput })
+    const newMission = await createMissionMutation.mutateAsync({ title, type, rawInput, workflowId })
     setSelectedMissionId(newMission.mission_id)
   }
 

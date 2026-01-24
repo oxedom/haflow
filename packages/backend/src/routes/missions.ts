@@ -2,9 +2,21 @@ import { Router, type Router as RouterType } from 'express';
 import { CreateMissionRequestSchema, SaveArtifactRequestSchema } from '@haflow/shared';
 import { missionStore } from '../services/mission-store.js';
 import { missionEngine } from '../services/mission-engine.js';
+import { getWorkflows } from '../services/workflow.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 
 export const missionRoutes: RouterType = Router();
+export const workflowRoutes: RouterType = Router();
+
+// GET /api/workflows - List all workflows
+workflowRoutes.get('/', async (_req, res, next) => {
+  try {
+    const workflows = getWorkflows();
+    sendSuccess(res, workflows);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /api/missions - List all missions
 missionRoutes.get('/', async (_req, res, next) => {
@@ -40,8 +52,8 @@ missionRoutes.post('/', async (req, res, next) => {
       return sendError(res, parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '), 400);
     }
 
-    const { title, type, rawInput } = parsed.data;
-    const meta = await missionStore.createMission(title, type, rawInput);
+    const { title, type, rawInput, workflowId } = parsed.data;
+    const meta = await missionStore.createMission(title, type, rawInput, workflowId);
     sendSuccess(res, meta, 201);
   } catch (err) {
     next(err);

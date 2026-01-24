@@ -1,7 +1,7 @@
 import { join } from 'path';
 import type { MissionMeta, MissionStatus, WorkflowStep } from '@haflow/shared';
 import { missionStore } from './mission-store.js';
-import { getDefaultWorkflow, getStepPrompt } from './workflow.js';
+import { getDefaultWorkflow, getStepPrompt, getWorkflowById } from './workflow.js';
 import { dockerProvider } from './docker.js';
 import type { SandboxProvider } from './sandbox.js';
 import { config } from '../utils/config.js';
@@ -25,7 +25,7 @@ async function continueMission(missionId: string): Promise<void> {
   const meta = await missionStore.getMeta(missionId);
   if (!meta) throw new Error(`Mission not found: ${missionId}`);
 
-  const workflow = getDefaultWorkflow();
+  const workflow = getWorkflowById(meta.workflow_id) || getDefaultWorkflow();
   const currentStep = workflow.steps[meta.current_step];
 
   if (!currentStep) {
@@ -44,7 +44,7 @@ async function continueMission(missionId: string): Promise<void> {
 }
 
 async function advanceToNextStep(missionId: string, meta: MissionMeta): Promise<void> {
-  const workflow = getDefaultWorkflow();
+  const workflow = getWorkflowById(meta.workflow_id) || getDefaultWorkflow();
   const nextStepIndex = meta.current_step + 1;
   const nextStep = workflow.steps[nextStepIndex];
 

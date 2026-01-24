@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { MissionListItem, MissionDetail, MissionMeta, ApiResponse, TranscriptionResponse, TranscriptionStatus } from '@haflow/shared';
+import type { MissionListItem, MissionDetail, MissionMeta, ApiResponse, TranscriptionResponse, TranscriptionStatus, Workflow } from '@haflow/shared';
 
 const API_BASE = 'http://localhost:4000/api';
 
@@ -17,6 +17,12 @@ export const api = {
     return res.data.data!;
   },
 
+  getWorkflows: async (): Promise<Workflow[]> => {
+    const res = await client.get<ApiResponse<Workflow[]>>('/workflows');
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to list workflows');
+    return res.data.data!;
+  },
+
   getMission: async (id: string): Promise<MissionDetail> => {
     const res = await client.get<ApiResponse<MissionDetail>>(`/missions/${id}`);
     if (!res.data.success) throw new Error(res.data.error || 'Failed to get mission');
@@ -26,12 +32,14 @@ export const api = {
   createMission: async (
     title: string,
     type: string,
-    rawInput: string
+    rawInput: string,
+    workflowId?: string
   ): Promise<MissionMeta> => {
     const res = await client.post<ApiResponse<MissionMeta>>('/missions', {
       title,
       type,
       rawInput,
+      workflowId,
     });
     if (!res.data.success) throw new Error(res.data.error || 'Failed to create mission');
     return res.data.data!;

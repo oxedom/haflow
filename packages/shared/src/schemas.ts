@@ -90,6 +90,7 @@ export const CreateMissionRequestSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   type: MissionTypeSchema,
   rawInput: z.string().min(1, 'Raw input is required'),
+  workflowId: z.string().optional(),
 });
 
 export const SaveArtifactRequestSchema = z.object({

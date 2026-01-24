@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import type { Workflow } from '@haflow/shared'
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { VoiceRecorderButton } from './VoiceRecorderButton'
+import { api } from '@/api/client'
 
 interface NewMissionModalProps {
   isOpen: boolean
@@ -25,7 +27,8 @@ interface NewMissionModalProps {
   onSubmit: (
     title: string,
     type: 'feature' | 'fix' | 'bugfix',
-    rawInput: string
+    rawInput: string,
+    workflowId: string
   ) => void
 }
 
@@ -34,6 +37,18 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
   const [type, setType] = useState<'feature' | 'fix' | 'bugfix'>('feature')
   const [rawInput, setRawInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [workflows, setWorkflows] = useState<Workflow[]>([])
+  const [workflowId, setWorkflowId] = useState<string>('')
+
+  useEffect(() => {
+    if (isOpen) {
+      api.getWorkflows().then((wfs) => {
+        setWorkflows(wfs)
+        // Only set default on first load
+        setWorkflowId((prev) => prev || (wfs.length > 0 ? wfs[0].workflow_id : ''))
+      })
+    }
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,10 +56,11 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
 
     setIsSubmitting(true)
     try {
-      await onSubmit(title, type, rawInput)
+      await onSubmit(title, type, rawInput, workflowId)
       setTitle('')
       setType('feature')
       setRawInput('')
+      setWorkflowId(workflows[0]?.workflow_id || '')
       onClose()
     } finally {
       setIsSubmitting(false)
@@ -82,6 +98,23 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
                   <SelectItem value="feature">Feature</SelectItem>
                   <SelectItem value="fix">Fix</SelectItem>
                   <SelectItem value="bugfix">Bugfix</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Workflow */}
+            <div className="space-y-2">
+              <Label htmlFor="workflow">Workflow</Label>
+              <Select value={workflowId} onValueChange={setWorkflowId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select workflow" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workflows.map((wf) => (
+                    <SelectItem key={wf.workflow_id} value={wf.workflow_id}>
+                      {wf.name} ({wf.steps.length} steps)
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

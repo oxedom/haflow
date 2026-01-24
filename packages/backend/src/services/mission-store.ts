@@ -4,7 +4,7 @@ import { join } from 'path';
 import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType } from '@haflow/shared';
 import { config } from '../utils/config.js';
 import { generateMissionId, generateRunId } from '../utils/id.js';
-import { getDefaultWorkflow, getDefaultWorkflowId, getWorkflowStepName } from './workflow.js';
+import { getDefaultWorkflow, getDefaultWorkflowId, getWorkflowStepName, getWorkflowById } from './workflow.js';
 
 const missionsDir = () => config.missionsDir;
 const missionDir = (missionId: string) => join(missionsDir(), missionId);
@@ -23,7 +23,8 @@ async function init(): Promise<void> {
 async function createMission(
   title: string,
   type: MissionType,
-  rawInput: string
+  rawInput: string,
+  workflowId?: string
 ): Promise<MissionMeta> {
   const missionId = generateMissionId();
   const now = new Date().toISOString();
@@ -32,7 +33,7 @@ async function createMission(
     mission_id: missionId,
     title,
     type,
-    workflow_id: getDefaultWorkflowId(),
+    workflow_id: workflowId || getDefaultWorkflowId(),
     current_step: 0,
     status: 'ready',
     created_at: now,
@@ -67,7 +68,7 @@ async function getDetail(missionId: string): Promise<MissionDetail | null> {
   const meta = await getMeta(missionId);
   if (!meta) return null;
 
-  const workflow = getDefaultWorkflow();
+  const workflow = getWorkflowById(meta.workflow_id) || getDefaultWorkflow();
   const artifacts = await loadArtifacts(missionId);
   const runs = await loadRuns(missionId);
   const currentLogTail = await getCurrentLogTail(missionId, runs);

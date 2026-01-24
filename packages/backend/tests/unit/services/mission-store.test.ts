@@ -137,7 +137,7 @@ describe('mission-store service', () => {
       const detail = await missionStore.getDetail(created.mission_id);
 
       expect(detail!.workflow).toBeDefined();
-      expect(detail!.workflow.workflow_id).toBe('standard-feature');
+      expect(detail!.workflow.workflow_id).toBe('raw-research-plan-implement');
     });
 
     it('includes artifacts', async () => {

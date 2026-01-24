@@ -1,6 +1,6 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
-import { missionRoutes } from './routes/missions.js';
+import { missionRoutes, workflowRoutes } from './routes/missions.js';
 import { transcriptionRoutes } from './routes/transcription.js';
 
 export function createServer(): Express {
@@ -10,6 +10,7 @@ export function createServer(): Express {
   app.use(express.json());
 
   app.use('/api/missions', missionRoutes);
+  app.use('/api/workflows', workflowRoutes);
   app.use('/api/transcribe', transcriptionRoutes);
 
   // Error handler

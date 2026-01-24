@@ -8,20 +8,20 @@ import {
 
 describe('workflow service', () => {
   describe('getDefaultWorkflowId', () => {
-    it('returns standard-feature', () => {
-      expect(getDefaultWorkflowId()).toBe('standard-feature');
+    it('returns raw-research-plan-implement', () => {
+      expect(getDefaultWorkflowId()).toBe('raw-research-plan-implement');
     });
   });
 
   describe('getDefaultWorkflow', () => {
     it('returns valid Workflow with workflow_id', () => {
       const workflow = getDefaultWorkflow();
-      expect(workflow.workflow_id).toBe('standard-feature');
+      expect(workflow.workflow_id).toBe('raw-research-plan-implement');
     });
 
     it('returns valid Workflow with name', () => {
       const workflow = getDefaultWorkflow();
-      expect(workflow.name).toBe('Standard Feature');
+      expect(workflow.name).toBe('Raw Research Plan Implement');
     });
 
     it('has 8 steps', () => {
@@ -67,14 +67,14 @@ describe('workflow service', () => {
 
   describe('getWorkflowStepName', () => {
     it('returns correct name for valid stepIndex', () => {
-      expect(getWorkflowStepName('standard-feature', 0)).toBe('Cleanup');
-      expect(getWorkflowStepName('standard-feature', 1)).toBe('Review Structured');
-      expect(getWorkflowStepName('standard-feature', 7)).toBe('Review Implementation');
+      expect(getWorkflowStepName('raw-research-plan-implement', 0)).toBe('Cleanup');
+      expect(getWorkflowStepName('raw-research-plan-implement', 1)).toBe('Review Structured');
+      expect(getWorkflowStepName('raw-research-plan-implement', 7)).toBe('Review Implementation');
     });
 
     it('returns Complete for out-of-bounds stepIndex', () => {
-      expect(getWorkflowStepName('standard-feature', 8)).toBe('Complete');
-      expect(getWorkflowStepName('standard-feature', 100)).toBe('Complete');
+      expect(getWorkflowStepName('raw-research-plan-implement', 8)).toBe('Complete');
+      expect(getWorkflowStepName('raw-research-plan-implement', 100)).toBe('Complete');
     });
 
     it('falls back to default workflow for unknown workflowId', () => {

@@ -6,7 +6,7 @@ This document captures research for adding a fullstack feature to toggle between
 
 **Goal**:
 - Rename current workflow ID from `'standard-feature'` to `'raw-research-plan-implement'` and update display name to "Raw Research Plan Implement"
-- Add a new "test" workflow with 3 steps (raw-input → process → review)
+- Add a new "dummy" workflow with 3 steps (raw-input → process → review)
 - Allow users to select workflow when creating a mission
 
 ---

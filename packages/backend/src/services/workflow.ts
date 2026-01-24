@@ -1,10 +1,10 @@
 import type { Workflow, WorkflowStep } from '@haflow/shared';
 
-// Hardcoded for v0 - matches frontend mock exactly
+// Hardcoded for v0
 const WORKFLOWS: Record<string, Workflow> = {
-  'standard-feature': {
-    workflow_id: 'standard-feature',
-    name: 'Standard Feature',
+  'raw-research-plan-implement': {
+    workflow_id: 'raw-research-plan-implement',
+    name: 'Raw Research Plan Implement',
     steps: [
       { step_id: 'cleanup', name: 'Cleanup', type: 'agent', agent: 'cleanup-agent', inputArtifact: 'raw-input.md', outputArtifact: 'structured-text.md' },
       { step_id: 'review-structured', name: 'Review Structured', type: 'human-gate', reviewArtifact: 'structured-text.md' },
@@ -14,6 +14,15 @@ const WORKFLOWS: Record<string, Workflow> = {
       { step_id: 'review-plan', name: 'Review Plan', type: 'human-gate', reviewArtifact: 'implementation-plan.md' },
       { step_id: 'implementation', name: 'Implementation', type: 'agent', agent: 'impl-agent', inputArtifact: 'implementation-plan.md', outputArtifact: 'implementation-result.json' },
       { step_id: 'review-impl', name: 'Review Implementation', type: 'human-gate', reviewArtifact: 'implementation-result.json' },
+    ],
+  },
+  'simple': {
+    workflow_id: 'simple',
+    name: 'Simple',
+    steps: [
+      { step_id: 'raw-input', name: 'Raw Input', type: 'human-gate', reviewArtifact: 'raw-input.md' },
+      { step_id: 'process', name: 'Process', type: 'agent', agent: 'planning-agent', inputArtifact: 'raw-input.md', outputArtifact: 'output.md' },
+      { step_id: 'review', name: 'Review', type: 'human-gate', reviewArtifact: 'output.md' },
     ],
   },
 };
@@ -101,11 +110,19 @@ When you are satisfied with the output, include <promise>COMPLETE</promise> at t
 }
 
 export function getDefaultWorkflowId(): string {
-  return 'standard-feature';
+  return 'raw-research-plan-implement';
 }
 
 export function getDefaultWorkflow(): Workflow {
   return WORKFLOWS[getDefaultWorkflowId()]!;
+}
+
+export function getWorkflows(): Workflow[] {
+  return Object.values(WORKFLOWS);
+}
+
+export function getWorkflowById(workflowId: string): Workflow | undefined {
+  return WORKFLOWS[workflowId];
 }
 
 export function getWorkflowStepName(workflowId: string, stepIndex: number): string {
