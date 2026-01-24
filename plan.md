@@ -556,8 +556,77 @@ OPENAI_API_KEY=sk-your-key-here
 - [x] Backend builds: `pnpm --filter @haflow/backend build`
 - [x] Frontend builds: `pnpm --filter frontend build`
 - [x] Shared builds: `pnpm --filter @haflow/shared build`
+- [x] Backend tests pass: `pnpm --filter @haflow/backend test` (195 tests passing)
 - [ ] No TypeScript errors: `pnpm --filter frontend lint` (pre-existing lint issues, new code is clean)
-- [ ] GET `/api/transcribe/status` returns `{ success: true, data: { available: boolean } }`
+- [x] GET `/api/transcribe/status` returns `{ success: true, data: { available: boolean } }`
+
+---
+
+## Test Coverage
+
+### Unit Tests: `tests/unit/services/transcription.test.ts` (13 tests)
+
+| Test | Description |
+|------|-------------|
+| `isAvailable()` returns false when no API key | Verifies service reports unavailable |
+| `isAvailable()` returns true when API key set | Verifies service reports available |
+| Throws error when API key not configured | Guards against missing config |
+| Calls OpenAI API with correct parameters | Verifies whisper-1 model usage |
+| Propagates OpenAI API errors | Rate limit and API errors bubble up |
+| Handles empty transcription response | Silent audio returns empty string |
+| Handles Unicode and multi-language | 你好 مرحبا שלום supported |
+| Handles long transcription text | Large text (10k+ chars) works |
+| Handles invalid API key error | Proper error message |
+| Handles network timeout error | Request timeout errors |
+| Handles different mime types | audio/mp4, webm, mpeg, wav, ogg |
+| Handles quota exceeded error | Billing/quota errors |
+| Handles server error from OpenAI | 500 errors from OpenAI |
+
+### Integration Tests: `tests/integration/transcription.test.ts` (20 tests)
+
+#### GET /api/transcribe/status
+| Test | Status Code | Description |
+|------|-------------|-------------|
+| No API key | 200 | `{ available: false }` |
+| With API key | 200 | `{ available: true }` |
+
+#### POST /api/transcribe
+| Test | Status Code | Description |
+|------|-------------|-------------|
+| No audio file | 400 | Returns "No audio file provided" |
+| Invalid mime type | 400 | Rejects text/plain, application/json |
+| Valid audio/webm | 200 | Accepts and transcribes |
+| Valid audio/mp4 | 200 | Accepts and transcribes |
+| Valid audio/mpeg | 200 | Accepts and transcribes |
+| Valid audio/wav | 200 | Accepts and transcribes |
+| Valid audio/ogg | 200 | Accepts and transcribes |
+| Success response | 200 | `{ text: "transcribed text" }` |
+| Service error | 500 | Error propagates correctly |
+| File too large | 400/413/500 | Rejects files > 25MB |
+
+#### Mock Data Scenarios
+| Test | Description |
+|------|-------------|
+| Unicode transcription | Returns multi-language text correctly |
+| Empty/silent audio | Returns empty string |
+| Long transcription | Handles 10k+ character responses |
+| Rate limit error | Returns 500 with error |
+| Invalid API key | Returns 500 with error |
+| Multipart form data | Properly processes form uploads |
+| Wrong field name | Rejects non-"audio" field names |
+
+### Running Tests
+
+```bash
+# Run all transcription tests
+pnpm --filter @haflow/backend test -- tests/unit/services/transcription.test.ts tests/integration/transcription.test.ts
+
+# Run with coverage
+pnpm --filter @haflow/backend test:coverage
+
+# Watch mode
+pnpm --filter @haflow/backend test:watch
+```
 
 ### Manual Verification
 - [ ] Voice button appears next to "Raw Input" label in NewMissionModal

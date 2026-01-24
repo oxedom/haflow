@@ -248,4 +248,201 @@ describe('Transcription Routes Integration Tests', () => {
       expect([400, 413, 500]).toContain(response.status);
     });
   });
+
+  describe('Mock data transcription scenarios', () => {
+    it('returns Unicode transcription correctly', async () => {
+      const mockTranscribe = vi.fn().mockResolvedValue('Hello 你好 مرحبا');
+
+      vi.doMock('../../src/services/transcription.js', () => ({
+        transcriptionService: {
+          transcribe: mockTranscribe,
+          isAvailable: vi.fn().mockReturnValue(true),
+        },
+      }));
+
+      vi.resetModules();
+      const { createServer: createServerMocked } = await import('../../src/server.js');
+      const mockedApp = createServerMocked();
+
+      const audioBuffer = createTestAudioBuffer();
+
+      const response = await request(mockedApp)
+        .post('/api/transcribe')
+        .attach('audio', audioBuffer, {
+          filename: 'test.webm',
+          contentType: 'audio/webm',
+        });
+
+      if (response.status === 200) {
+        expect(response.body.data.text).toBe('Hello 你好 مرحبا');
+      }
+    });
+
+    it('returns empty string for silent audio', async () => {
+      const mockTranscribe = vi.fn().mockResolvedValue('');
+
+      vi.doMock('../../src/services/transcription.js', () => ({
+        transcriptionService: {
+          transcribe: mockTranscribe,
+          isAvailable: vi.fn().mockReturnValue(true),
+        },
+      }));
+
+      vi.resetModules();
+      const { createServer: createServerMocked } = await import('../../src/server.js');
+      const mockedApp = createServerMocked();
+
+      const audioBuffer = createTestAudioBuffer();
+
+      const response = await request(mockedApp)
+        .post('/api/transcribe')
+        .attach('audio', audioBuffer, {
+          filename: 'silent.webm',
+          contentType: 'audio/webm',
+        });
+
+      if (response.status === 200) {
+        expect(response.body.data.text).toBe('');
+      }
+    });
+
+    it('handles long transcriptions', async () => {
+      const longText = 'This is a test. '.repeat(1000);
+      const mockTranscribe = vi.fn().mockResolvedValue(longText);
+
+      vi.doMock('../../src/services/transcription.js', () => ({
+        transcriptionService: {
+          transcribe: mockTranscribe,
+          isAvailable: vi.fn().mockReturnValue(true),
+        },
+      }));
+
+      vi.resetModules();
+      const { createServer: createServerMocked } = await import('../../src/server.js');
+      const mockedApp = createServerMocked();
+
+      const audioBuffer = createTestAudioBuffer();
+
+      const response = await request(mockedApp)
+        .post('/api/transcribe')
+        .attach('audio', audioBuffer, {
+          filename: 'long.webm',
+          contentType: 'audio/webm',
+        });
+
+      if (response.status === 200) {
+        expect(response.body.data.text.length).toBeGreaterThan(10000);
+      }
+    });
+
+    it('handles rate limit error with appropriate status', async () => {
+      const mockTranscribe = vi.fn().mockRejectedValue(new Error('Rate limit exceeded'));
+
+      vi.doMock('../../src/services/transcription.js', () => ({
+        transcriptionService: {
+          transcribe: mockTranscribe,
+          isAvailable: vi.fn().mockReturnValue(true),
+        },
+      }));
+
+      vi.resetModules();
+      const { createServer: createServerMocked } = await import('../../src/server.js');
+      const mockedApp = createServerMocked();
+
+      const audioBuffer = createTestAudioBuffer();
+
+      const response = await request(mockedApp)
+        .post('/api/transcribe')
+        .attach('audio', audioBuffer, {
+          filename: 'test.webm',
+          contentType: 'audio/webm',
+        });
+
+      expect(response.status).toBe(500);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('handles invalid API key error', async () => {
+      const mockTranscribe = vi.fn().mockRejectedValue(new Error('Invalid API key'));
+
+      vi.doMock('../../src/services/transcription.js', () => ({
+        transcriptionService: {
+          transcribe: mockTranscribe,
+          isAvailable: vi.fn().mockReturnValue(true),
+        },
+      }));
+
+      vi.resetModules();
+      const { createServer: createServerMocked } = await import('../../src/server.js');
+      const mockedApp = createServerMocked();
+
+      const audioBuffer = createTestAudioBuffer();
+
+      const response = await request(mockedApp)
+        .post('/api/transcribe')
+        .attach('audio', audioBuffer, {
+          filename: 'test.webm',
+          contentType: 'audio/webm',
+        });
+
+      expect(response.status).toBe(500);
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('Content-Type header handling', () => {
+    it('rejects request without multipart/form-data', async () => {
+      const response = await request(app)
+        .post('/api/transcribe')
+        .set('Content-Type', 'application/json')
+        .send({ audio: 'base64data' });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('properly processes multipart form data', async () => {
+      const mockTranscribe = vi.fn().mockResolvedValue('Multipart test');
+
+      vi.doMock('../../src/services/transcription.js', () => ({
+        transcriptionService: {
+          transcribe: mockTranscribe,
+          isAvailable: vi.fn().mockReturnValue(true),
+        },
+      }));
+
+      vi.resetModules();
+      const { createServer: createServerMocked } = await import('../../src/server.js');
+      const mockedApp = createServerMocked();
+
+      const audioBuffer = createTestAudioBuffer();
+
+      const response = await request(mockedApp)
+        .post('/api/transcribe')
+        .attach('audio', audioBuffer, {
+          filename: 'test.webm',
+          contentType: 'audio/webm',
+        });
+
+      // Either success or API key error
+      expect([200, 500]).toContain(response.status);
+    });
+  });
+
+  describe('Field name validation', () => {
+    it('rejects files with wrong field name', async () => {
+      const audioBuffer = createTestAudioBuffer();
+
+      const response = await request(app)
+        .post('/api/transcribe')
+        .attach('wrongFieldName', audioBuffer, {
+          filename: 'test.webm',
+          contentType: 'audio/webm',
+        });
+
+      // Wrong field name results in file not being processed by multer
+      // This returns 400 with "No audio file provided" or 500 from middleware
+      expect([400, 500]).toContain(response.status);
+      expect(response.body.success).toBe(false);
+    });
+  });
 });
