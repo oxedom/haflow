@@ -152,7 +152,10 @@ function AppContent() {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <h1 className="flex-1 text-lg font-semibold">hafloo</h1>
+        <div className="flex-1 flex items-center gap-2">
+          <img src="/favicon-32x32.png" alt="Haflow logo" className="h-6 w-6 rounded" />
+          <h1 className="text-lg font-semibold tracking-tight">haflow</h1>
+        </div>
         <Button
           variant={showVoiceChat ? 'default' : 'outline'}
           size="icon"
