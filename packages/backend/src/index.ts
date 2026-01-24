@@ -11,7 +11,7 @@ async function main() {
   const app = createServer();
 
   app.listen(config.port, () => {
-    console.log(`Haflow backend listening on port ${config.port}`);
+    console.log(`haflow backend listening on port ${config.port}`);
     console.log(`Missions directory: ${config.missionsDir}`);
   });
 }

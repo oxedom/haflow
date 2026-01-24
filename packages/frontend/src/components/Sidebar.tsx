@@ -66,7 +66,7 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
       >
         {/* Header */}
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-sidebar-foreground">HAFLOW</h1>
+          <h1 className="text-lg font-semibold text-sidebar-foreground">haflow</h1>
           <Button
             variant="ghost"
             size="icon"
