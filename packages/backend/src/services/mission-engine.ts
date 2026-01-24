@@ -10,9 +10,6 @@ const provider: SandboxProvider = dockerProvider;
 const runningContainers: Map<string, string> = new Map(); // runId -> containerId
 const runningStreams: Map<string, AbortController> = new Map(); // runId -> abort controller
 
-// Default Ralph loop settings
-const DEFAULT_RALPH_MAX_ITERATIONS = 5;
-
 async function init(): Promise<void> {
   // Check provider availability
   const available = await provider.isAvailable();
@@ -210,44 +207,13 @@ async function runClaudeStreaming(
   }
 }
 
-// Handle agent completion with Ralph loop logic
+// Handle agent completion
 async function handleAgentCompletion(
   missionId: string,
   meta: MissionMeta,
   _step: WorkflowStep,
-  isComplete: boolean
+  _isComplete: boolean
 ): Promise<void> {
-  // Check if Ralph mode is enabled
-  if (meta.ralph_mode && !isComplete) {
-    const currentIteration = meta.ralph_current_iteration || 1;
-    const maxIterations = meta.ralph_max_iterations || DEFAULT_RALPH_MAX_ITERATIONS;
-
-    if (currentIteration < maxIterations) {
-      // Increment iteration and restart the workflow from step 0
-      console.log(`[Ralph] Iteration ${currentIteration} not complete, restarting (max: ${maxIterations})`);
-
-      await missionStore.updateMeta(missionId, {
-        current_step: 0,
-        status: 'ready',
-        ralph_current_iteration: currentIteration + 1,
-      });
-
-      // Start the first step again
-      const workflow = getDefaultWorkflow();
-      const firstStep = workflow.steps[0];
-      if (firstStep && firstStep.type === 'agent') {
-        const updatedMeta = await missionStore.getMeta(missionId);
-        if (updatedMeta) {
-          await startAgentStep(missionId, updatedMeta, firstStep);
-        }
-      }
-      return;
-    } else {
-      console.log(`[Ralph] Max iterations (${maxIterations}) reached without COMPLETE marker`);
-    }
-  }
-
-  // Normal completion - advance to next step
   await advanceToNextStep(missionId, meta);
 }
 

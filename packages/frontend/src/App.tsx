@@ -52,16 +52,12 @@ function AppContent() {
       title,
       type,
       rawInput,
-      ralphMode,
-      ralphMaxIterations,
     }: {
       title: string
       type: 'feature' | 'fix' | 'bugfix'
       rawInput: string
-      ralphMode?: boolean
-      ralphMaxIterations?: number
     }) => {
-      return api.createMission(title, type, rawInput, ralphMode, ralphMaxIterations)
+      return api.createMission(title, type, rawInput)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['missions'] })
@@ -115,11 +111,9 @@ function AppContent() {
   const handleCreateMission = async (
     title: string,
     type: 'feature' | 'fix' | 'bugfix',
-    rawInput: string,
-    ralphMode?: boolean,
-    ralphMaxIterations?: number
+    rawInput: string
   ) => {
-    const newMission = await createMissionMutation.mutateAsync({ title, type, rawInput, ralphMode, ralphMaxIterations })
+    const newMission = await createMissionMutation.mutateAsync({ title, type, rawInput })
     setSelectedMissionId(newMission.mission_id)
   }
 

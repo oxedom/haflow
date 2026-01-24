@@ -1,6 +1,7 @@
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as readline from 'readline';
+import { existsSync } from 'fs';
 import type { SandboxProvider, SandboxRunOptions, SandboxStatus, ClaudeSandboxOptions, StreamEvent } from './sandbox.js';
 
 const execAsync = promisify(exec);
@@ -44,6 +45,10 @@ async function start(options: SandboxRunOptions): Promise<string> {
 
   const envArgs = Object.entries(env).flatMap(([k, v]) => ['-e', `${k}=${v}`]);
 
+  // Git config file path from host
+  const homeDir = process.env.HOME || '/home/user';
+  const gitConfigPath = process.env.GIT_CONFIG_PATH || `${homeDir}/.gitconfig`;
+
   // Properly escape command arguments for shell execution
   // Special handling for 'sh -c <script>' pattern
   let escapedCommand: string[];
@@ -71,6 +76,13 @@ async function start(options: SandboxRunOptions): Promise<string> {
     image || defaultImage,
     ...escapedCommand,
   ];
+
+  // Mount git config if it exists on host
+  if (existsSync(gitConfigPath)) {
+    // Insert git config volume mount before the -w workingDir argument
+    const workingDirIndex = args.indexOf('-w');
+    args.splice(workingDirIndex, 0, '-v', `${gitConfigPath}:/home/agent/.gitconfig:ro`);
+  }
 
   const { stdout } = await execAsync(`docker ${args.join(' ')}`);
   const containerId = stdout.trim();
@@ -148,14 +160,27 @@ const COMPLETE_MARKER = '<promise>COMPLETE</promise>';
 // Parse a single line of stream-json output from Claude
 // Exported for testing
 export function parseStreamJsonLine(line: string): StreamEvent | null {
-  if (!line.trim()) return null;
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+
+  // Early validation: only process JSON lines (skip docker noise)
+  if (!trimmed.startsWith('{')) {
+    console.debug('[stream-json] Skipping non-JSON line:', trimmed.slice(0, 100));
+    return null;
+  }
 
   try {
-    const parsed = JSON.parse(line);
+    const parsed = JSON.parse(trimmed);
 
     // Handle different message types from Claude's stream-json output
     if (parsed.type === 'assistant') {
-      const text = parsed.message?.content?.[0]?.text || '';
+      // Extract text from ALL content blocks, not just the first
+      // Filter for blocks that are either type: 'text' or have no type (text is assumed)
+      const contentBlocks = parsed.message?.content || [];
+      const text = contentBlocks
+        .filter((c: { type?: string; text?: string }) => !c.type || c.type === 'text')
+        .map((c: { text?: string }) => c.text || '')
+        .join('');
       return {
         type: 'assistant',
         text,
@@ -205,12 +230,27 @@ export function parseStreamJsonLine(line: string): StreamEvent | null {
 
     return null;
   } catch {
-    // Not valid JSON, treat as plain text
-    return {
-      type: 'assistant',
-      text: line,
-      isComplete: line.includes(COMPLETE_MARKER),
-    };
+    // Malformed JSON (starts with '{' but isn't valid) - log and skip
+    console.debug('[stream-json] Failed to parse JSON line:', trimmed.slice(0, 100));
+    return null;
+  }
+}
+
+/**
+ * Copy files or directories from container to host using docker cp (works on stopped containers)
+ * @param containerId - Container ID or name
+ * @param containerPath - Path inside container (e.g., '/mission/some-file.txt' or '/mission')
+ * @param hostPath - Destination path on host
+ */
+async function copyFromContainer(containerId: string, containerPath: string, hostPath: string): Promise<void> {
+  try {
+    await execAsync(`docker cp ${containerId}:${containerPath} ${hostPath}`);
+  } catch (error) {
+    // Directory might not exist or be empty - that's okay for directory copies
+    if (error instanceof Error && error.message.includes('No such container')) {
+      throw error;
+    }
+    // Other errors (like file/directory not existing) are non-fatal for extraction
   }
 }
 
@@ -223,10 +263,17 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
   // Claude credentials file path from host
   const claudeAuthPath = process.env.CLAUDE_AUTH_PATH || `${homeDir}/.claude/.credentials.json`;
 
+  // Git config file path from host
+  const gitConfigPath = process.env.GIT_CONFIG_PATH || `${homeDir}/.gitconfig`;
+
+  // Generate a unique container name so we can reference it even after process exits
+  const containerName = `haflow-claude-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
   // Build docker run command with defaultImage
+  // Note: NOT using --rm so we can extract files after completion
   const args = [
     'run',
-    '--rm',
+    '--name', containerName,
     '-i',
     '--user', `${process.getuid?.() ?? 1000}:${process.getgid?.() ?? 1000}`,
     '-v', `${artifactsPath}:${workingDir}/artifacts`,
@@ -240,6 +287,13 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
     '--dangerously-skip-permissions',
     prompt,
   ];
+
+  // Mount git config if it exists on host
+  if (existsSync(gitConfigPath)) {
+    // Insert git config volume mount before the -w workingDir argument
+    const workingDirIndex = args.indexOf('-w');
+    args.splice(workingDirIndex, 0, '-v', `${gitConfigPath}:/home/agent/.gitconfig:ro`);
+  }
 
   const childProcess = spawn('docker', args, {
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -287,6 +341,69 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
     });
     childProcess.on('error', reject);
   });
+
+  // Extract any files created outside the artifacts directory
+  // Note: Files in /mission/artifacts are already on host via volume mount
+  // This step copies any files created directly in /mission or subdirectories (excluding artifacts)
+  try {
+    // Create a temp directory to copy the entire /mission directory
+    const { mkdtemp } = await import('fs/promises');
+    const { join } = await import('path');
+    const { tmpdir } = await import('os');
+    const tempDir = await mkdtemp(join(tmpdir(), 'haflow-extract-'));
+    
+    // Copy entire /mission directory from container
+    await copyFromContainer(containerName, workingDir, tempDir);
+    
+    // Move any files from tempDir/mission/* (excluding artifacts) to artifactsPath
+    const { readdir, stat, copyFile, rm } = await import('fs/promises');
+    const missionDir = join(tempDir, 'mission');
+    
+    try {
+      const entries = await readdir(missionDir);
+      for (const entry of entries) {
+        // Skip artifacts directory (already on host via volume mount)
+        if (entry === 'artifacts') continue;
+        
+        const sourcePath = join(missionDir, entry);
+        const stats = await stat(sourcePath);
+        
+        if (stats.isFile()) {
+          const destPath = join(artifactsPath, entry);
+          await copyFile(sourcePath, destPath);
+        } else if (stats.isDirectory()) {
+          // For directories, copy the entire directory contents
+          // docker cp container:src dest - if dest exists, copies contents into it
+          const destPath = join(artifactsPath, entry);
+          // Ensure destination directory exists
+          const { mkdir } = await import('fs/promises');
+          await mkdir(destPath, { recursive: true });
+          // Copy directory contents (docker cp copies into existing directory)
+          await copyFromContainer(containerName, `${workingDir}/${entry}/.`, destPath);
+        }
+      }
+      
+      // Clean up temp directory
+      await rm(tempDir, { recursive: true, force: true });
+    } catch (error) {
+      // Clean up temp directory even on error
+      await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      // Non-fatal - files in artifacts are already accessible
+    }
+  } catch (error) {
+    // Log but don't fail - extraction is best-effort
+    // Files in /mission/artifacts are already accessible via volume mount
+    if (error instanceof Error && !error.message.includes('No such container')) {
+      // Only log if it's not a container-not-found error (which is expected if container was already removed)
+    }
+  } finally {
+    // Always clean up the container
+    try {
+      await remove(containerName);
+    } catch (error) {
+      // Container might already be removed - that's okay
+    }
+  }
 
   // Final result event
   yield {

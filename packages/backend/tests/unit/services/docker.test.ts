@@ -411,6 +411,38 @@ describe('parseStreamJsonLine', () => {
       expect(event!.type).toBe('assistant');
       expect(event!.text).toBe('');
     });
+
+    it('extracts text from multiple content blocks', () => {
+      const line = JSON.stringify({
+        type: 'assistant',
+        message: {
+          content: [
+            { type: 'text', text: 'First part. ' },
+            { type: 'text', text: 'Second part.' },
+          ],
+        },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.type).toBe('assistant');
+      expect(event!.text).toBe('First part. Second part.');
+    });
+
+    it('filters out non-text content blocks', () => {
+      const line = JSON.stringify({
+        type: 'assistant',
+        message: {
+          content: [
+            { type: 'text', text: 'Text content' },
+            { type: 'tool_use', name: 'some_tool' },
+            { type: 'text', text: ' more text' },
+          ],
+        },
+      });
+      const event = parseStreamJsonLine(line);
+
+      expect(event!.text).toBe('Text content more text');
+    });
   });
 
   describe('content_block_delta messages', () => {
@@ -554,19 +586,15 @@ describe('parseStreamJsonLine', () => {
       expect(parseStreamJsonLine(line)).toBeNull();
     });
 
-    it('treats non-JSON as plain text assistant message', () => {
-      const line = 'This is plain text output';
-      const event = parseStreamJsonLine(line);
-
-      expect(event!.type).toBe('assistant');
-      expect(event!.text).toBe('This is plain text output');
+    it('returns null for non-JSON lines (docker noise)', () => {
+      expect(parseStreamJsonLine('This is plain text output')).toBeNull();
+      expect(parseStreamJsonLine('Warning: some docker message')).toBeNull();
+      expect(parseStreamJsonLine('error: not json formatted')).toBeNull();
     });
 
-    it('detects COMPLETE marker in plain text', () => {
-      const line = 'Task done <promise>COMPLETE</promise>';
-      const event = parseStreamJsonLine(line);
-
-      expect(event!.isComplete).toBe(true);
+    it('returns null for malformed JSON', () => {
+      expect(parseStreamJsonLine('{invalid json}')).toBeNull();
+      expect(parseStreamJsonLine('{ "type": ')).toBeNull();
     });
   });
 });

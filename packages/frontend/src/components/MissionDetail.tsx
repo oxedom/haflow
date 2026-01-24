@@ -224,11 +224,6 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
           <Badge variant={statusInfo.variant} className="w-fit">
             {statusInfo.label}
           </Badge>
-          {mission.ralph_mode && (
-            <Badge variant="outline" className="w-fit">
-              Ralph {mission.ralph_current_iteration || 1}/{mission.ralph_max_iterations || 5}
-            </Badge>
-          )}
         </div>
       </div>
 

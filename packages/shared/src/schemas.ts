@@ -47,10 +47,6 @@ export const MissionMetaSchema = z.object({
   updated_at: z.string(),
   errors: z.array(z.string()),
   last_error: z.string().optional(),
-  // Ralph loop mode
-  ralph_mode: z.boolean().optional(),           // Enable Ralph loop
-  ralph_max_iterations: z.number().optional(),  // Default: 5
-  ralph_current_iteration: z.number().optional(),
 });
 
 // Step run metadata (stored in runs/*.json)
@@ -94,8 +90,6 @@ export const CreateMissionRequestSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   type: MissionTypeSchema,
   rawInput: z.string().min(1, 'Raw input is required'),
-  ralphMode: z.boolean().optional(),
-  ralphMaxIterations: z.number().min(1).max(20).optional(),
 });
 
 export const SaveArtifactRequestSchema = z.object({

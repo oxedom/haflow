@@ -19,18 +19,11 @@ async function init(): Promise<void> {
   }
 }
 
-// Ralph mode options for mission creation
-interface RalphModeOptions {
-  ralph_mode?: boolean;
-  ralph_max_iterations?: number;
-}
-
 // --- Create ---
 async function createMission(
   title: string,
   type: MissionType,
-  rawInput: string,
-  ralphOptions?: RalphModeOptions
+  rawInput: string
 ): Promise<MissionMeta> {
   const missionId = generateMissionId();
   const now = new Date().toISOString();
@@ -45,10 +38,6 @@ async function createMission(
     created_at: now,
     updated_at: now,
     errors: [],
-    // Ralph mode fields
-    ralph_mode: ralphOptions?.ralph_mode,
-    ralph_max_iterations: ralphOptions?.ralph_max_iterations,
-    ralph_current_iteration: ralphOptions?.ralph_mode ? 1 : undefined,
   };
 
   // Create directories

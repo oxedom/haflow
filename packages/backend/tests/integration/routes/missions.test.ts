@@ -14,13 +14,11 @@ const createdMissionIds: string[] = [];
 async function createTestMission(
   title = 'Test',
   type = 'feature',
-  rawInput = 'Input',
-  ralphMode?: boolean,
-  ralphMaxIterations?: number
+  rawInput = 'Input'
 ) {
   const res = await request(BASE_URL)
     .post('/api/missions')
-    .send({ title, type, rawInput, ralphMode, ralphMaxIterations });
+    .send({ title, type, rawInput });
 
   if (res.body.data?.mission_id) {
     createdMissionIds.push(res.body.data.mission_id);
@@ -169,74 +167,6 @@ describe('missions routes', () => {
       const getRes = await request(BASE_URL).get(`/api/missions/${missionId}`);
       expect(getRes.status).toBe(200);
       expect(getRes.body.data.title).toBe('Persist Test');
-    });
-
-    it('creates mission with ralph mode enabled', async () => {
-      const createRes = await createTestMission('Ralph Test', 'feature', 'Input', true, 5);
-
-      expect(createRes.status).toBe(201);
-      expect(createRes.body.data.ralph_mode).toBe(true);
-      expect(createRes.body.data.ralph_max_iterations).toBe(5);
-      expect(createRes.body.data.ralph_current_iteration).toBe(1);
-    });
-
-    it('creates mission with ralph mode and custom iterations', async () => {
-      const createRes = await createTestMission('Ralph Custom', 'feature', 'Input', true, 15);
-
-      expect(createRes.status).toBe(201);
-      expect(createRes.body.data.ralph_max_iterations).toBe(15);
-    });
-
-    it('ralph mode persists in mission detail', async () => {
-      const createRes = await createTestMission('Ralph Persist', 'feature', 'Input', true, 7);
-      const missionId = createRes.body.data.mission_id;
-
-      const getRes = await request(BASE_URL).get(`/api/missions/${missionId}`);
-
-      expect(getRes.status).toBe(200);
-      expect(getRes.body.data.ralph_mode).toBe(true);
-      expect(getRes.body.data.ralph_max_iterations).toBe(7);
-      expect(getRes.body.data.ralph_current_iteration).toBe(1);
-    });
-
-    it('creates normal mission without ralph fields when not specified', async () => {
-      const createRes = await createTestMission('Normal Mission', 'feature', 'Input');
-
-      expect(createRes.status).toBe(201);
-      expect(createRes.body.data.ralph_mode).toBeUndefined();
-      expect(createRes.body.data.ralph_max_iterations).toBeUndefined();
-    });
-
-    it('validates ralph max iterations within range', async () => {
-      // Test with value above max (20)
-      const res = await request(BASE_URL)
-        .post('/api/missions')
-        .send({
-          title: 'Invalid Ralph',
-          type: 'feature',
-          rawInput: 'Input',
-          ralphMode: true,
-          ralphMaxIterations: 25,
-        });
-
-      expect(res.status).toBe(400);
-      expect(res.body.success).toBe(false);
-    });
-
-    it('validates ralph max iterations minimum', async () => {
-      // Test with value below min (1)
-      const res = await request(BASE_URL)
-        .post('/api/missions')
-        .send({
-          title: 'Invalid Ralph Min',
-          type: 'feature',
-          rawInput: 'Input',
-          ralphMode: true,
-          ralphMaxIterations: 0,
-        });
-
-      expect(res.status).toBe(400);
-      expect(res.body.success).toBe(false);
     });
   });
 

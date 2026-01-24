@@ -26,16 +26,12 @@ export const api = {
   createMission: async (
     title: string,
     type: string,
-    rawInput: string,
-    ralphMode?: boolean,
-    ralphMaxIterations?: number
+    rawInput: string
   ): Promise<MissionMeta> => {
     const res = await client.post<ApiResponse<MissionMeta>>('/missions', {
       title,
       type,
       rawInput,
-      ralphMode,
-      ralphMaxIterations,
     });
     if (!res.data.success) throw new Error(res.data.error || 'Failed to create mission');
     return res.data.data!;

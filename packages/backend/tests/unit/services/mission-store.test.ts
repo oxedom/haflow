@@ -94,57 +94,6 @@ describe('mission-store service', () => {
       const meta = await missionStore.createMission('Test Mission', 'feature', 'Raw input');
       expect(meta.current_step).toBe(0);
     });
-
-    it('creates mission with ralph_mode options', async () => {
-      const meta = await missionStore.createMission('Ralph Mission', 'feature', 'Raw input', {
-        ralph_mode: true,
-        ralph_max_iterations: 10,
-      });
-
-      expect(meta.ralph_mode).toBe(true);
-      expect(meta.ralph_max_iterations).toBe(10);
-      expect(meta.ralph_current_iteration).toBe(1);
-    });
-
-    it('sets ralph_current_iteration to 1 when ralph_mode enabled', async () => {
-      const meta = await missionStore.createMission('Ralph Mission', 'feature', 'Raw input', {
-        ralph_mode: true,
-      });
-
-      expect(meta.ralph_current_iteration).toBe(1);
-    });
-
-    it('does not set ralph_current_iteration when ralph_mode disabled', async () => {
-      const meta = await missionStore.createMission('Normal Mission', 'feature', 'Raw input', {
-        ralph_mode: false,
-      });
-
-      expect(meta.ralph_current_iteration).toBeUndefined();
-    });
-
-    it('does not set ralph fields when options not provided', async () => {
-      const meta = await missionStore.createMission('Normal Mission', 'feature', 'Raw input');
-
-      expect(meta.ralph_mode).toBeUndefined();
-      expect(meta.ralph_max_iterations).toBeUndefined();
-      expect(meta.ralph_current_iteration).toBeUndefined();
-    });
-
-    it('writes ralph fields to mission.json', async () => {
-      const meta = await missionStore.createMission('Ralph Mission', 'feature', 'Raw input', {
-        ralph_mode: true,
-        ralph_max_iterations: 7,
-      });
-
-      const testDir = getTestDir();
-      const metaPath = join(testDir, 'missions', meta.mission_id, 'mission.json');
-      const content = await readFile(metaPath, 'utf-8');
-      const parsed = JSON.parse(content);
-
-      expect(parsed.ralph_mode).toBe(true);
-      expect(parsed.ralph_max_iterations).toBe(7);
-      expect(parsed.ralph_current_iteration).toBe(1);
-    });
   });
 
   describe('getMeta', () => {
