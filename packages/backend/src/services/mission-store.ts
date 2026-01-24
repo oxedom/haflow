@@ -1,7 +1,7 @@
-import { mkdir, readdir, readFile, writeFile } from 'fs/promises';
+import { mkdir, readdir, readFile, writeFile, cp } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType } from '@haflow/shared';
+import type { MissionMeta, MissionDetail, MissionListItem, StepRun, MissionType, MissionStatus } from '@haflow/shared';
 import { config } from '../utils/config.js';
 import { generateMissionId, generateRunId } from '../utils/id.js';
 import { getDefaultWorkflow, getDefaultWorkflowId, getWorkflowStepName, getWorkflowById } from './workflow.js';
@@ -14,8 +14,21 @@ const logsDir = (missionId: string) => join(missionDir(missionId), 'logs');
 const metaPath = (missionId: string) => join(missionDir(missionId), 'mission.json');
 
 async function init(): Promise<void> {
+  const haflowHome = config.haflowHome;
+  const isNewInit = !existsSync(haflowHome);
+
   if (!existsSync(missionsDir())) {
     await mkdir(missionsDir(), { recursive: true });
+  }
+
+  // Copy .claude folder from haflow repo on first init
+  if (isNewInit) {
+    const srcClaudeDir = config.haflowClaudeDir;
+    const destClaudeDir = join(haflowHome, '.claude');
+
+    if (existsSync(srcClaudeDir) && !existsSync(destClaudeDir)) {
+      await cp(srcClaudeDir, destClaudeDir, { recursive: true });
+    }
   }
 }
 
@@ -28,14 +41,22 @@ async function createMission(
 ): Promise<MissionMeta> {
   const missionId = generateMissionId();
   const now = new Date().toISOString();
+  const resolvedWorkflowId = workflowId || getDefaultWorkflowId();
+  
+  // Determine initial status based on first step type
+  const workflow = getWorkflowById(resolvedWorkflowId) || getDefaultWorkflow();
+  const firstStep = workflow.steps[0];
+  const initialStatus: MissionStatus = firstStep?.type === 'human-gate'
+    ? 'waiting_human'
+    : 'ready';
 
   const meta: MissionMeta = {
     mission_id: missionId,
     title,
     type,
-    workflow_id: workflowId || getDefaultWorkflowId(),
+    workflow_id: resolvedWorkflowId,
     current_step: 0,
-    status: 'ready',
+    status: initialStatus,
     created_at: now,
     updated_at: now,
     errors: [],
