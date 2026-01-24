@@ -12,7 +12,7 @@ test.describe('Voice Transcription Feature', () => {
       await expect(page.getByText('Welcome to haflow')).toBeVisible({ timeout: 10000 });
 
       // Click the headphones button (desktop header)
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
       await headphonesButton.click();
 
       // Verify ChatVoice component is displayed
@@ -25,7 +25,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Open Voice Chat
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
       await headphonesButton.click();
 
       // Check for welcome message
@@ -37,7 +37,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Open Voice Chat
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
       await headphonesButton.click();
 
       // Type a message
@@ -59,7 +59,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Open Voice Chat
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
       await headphonesButton.click();
 
       // Type a message and press Enter
@@ -76,7 +76,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Open Voice Chat
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
       await headphonesButton.click();
 
       // Check for mic button (voice recorder)
@@ -88,7 +88,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.goto(BASE_URL);
       await page.waitForLoadState('networkidle');
 
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
 
       // Toggle on
       await headphonesButton.click();
@@ -140,7 +140,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Open Voice Chat
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
       await headphonesButton.click();
 
       // Check for idle state (mic icon, outline variant)
@@ -154,7 +154,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Open Voice Chat
-      const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+      const headphonesButton = page.getByTestId('voice-chat-button-desktop');
       await headphonesButton.click();
 
       // Get the voice button
@@ -202,7 +202,7 @@ test.describe('Voice Recording Permission Flow', () => {
     await page.waitForLoadState('networkidle');
 
     // Open Voice Chat
-    const headphonesButton = page.locator('button[title="Voice Chat"]').first();
+    const headphonesButton = page.getByTestId('voice-chat-button-desktop');
     await headphonesButton.click();
 
     // Get the voice button

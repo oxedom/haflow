@@ -23,9 +23,9 @@ test.describe('Home Page', () => {
     // Check for sidebar elements
     await expect(page.getByRole('button', { name: /new mission/i })).toBeVisible();
 
-    // Check for header voice chat button
-    const headphonesButton = page.locator('button[title="Voice Chat"]');
-    await expect(headphonesButton.first()).toBeVisible();
+    // Check for header voice chat button (desktop)
+    const headphonesButton = page.getByTestId('voice-chat-button-desktop');
+    await expect(headphonesButton).toBeVisible();
   });
 
   test('should open new mission modal', async ({ page }) => {

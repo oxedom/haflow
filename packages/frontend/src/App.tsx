@@ -160,6 +160,7 @@ function AppContent() {
           size="icon"
           onClick={() => setShowVoiceChat(!showVoiceChat)}
           title="Voice Chat"
+          data-testid="voice-chat-button-mobile"
         >
           <Headphones className="h-4 w-4" />
         </Button>
@@ -182,6 +183,7 @@ function AppContent() {
             size="icon"
             onClick={() => setShowVoiceChat(!showVoiceChat)}
             title="Voice Chat"
+            data-testid="voice-chat-button-desktop"
           >
             <Headphones className="h-4 w-4" />
           </Button>
