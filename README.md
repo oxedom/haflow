@@ -8,6 +8,16 @@
 
 Haflow runs AI-assisted workflows against your real projects, combining automated agent steps with human review gates. Each agent step executes in isolated Docker containers, keeping your environment clean and secure.
 
+## 🌐 Frontend
+
+Haflow includes a web-based frontend to give you full control over your workflows directly from your browser. This design enables:
+
+- **Browser-based control**: Manage and monitor your AI missions from any device with a web browser
+- **Mobile access**: Pair with [Tailscale VPN](https://tailscale.com/) to securely access and control your Haflow instance from your mobile device while on the go
+- **Remote deployment**: The web interface makes Haflow deployable to a VPS, allowing you to run missions on a remote server while maintaining full control through the browser
+
+This architecture provides flexibility to run Haflow locally, on a VPS, or anywhere you need it, while keeping the interface accessible and portable.
+
 ## 📋 Requirements
 
 - **Node.js** >= 18.0.0
