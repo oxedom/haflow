@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { Workflow } from '@haflow/shared'
 import {
   Dialog,
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { VoiceRecorderButton } from './VoiceRecorderButton'
 import { api } from '@/api/client'
+import { generateMissionTitle, validateMissionTitle, sanitizeMissionTitle } from '@/lib/mission-title-generator'
 
 interface NewMissionModalProps {
   isOpen: boolean
@@ -34,21 +35,42 @@ interface NewMissionModalProps {
 
 export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalProps) {
   const [title, setTitle] = useState('')
+  const [titleError, setTitleError] = useState<string | undefined>()
   const [type, setType] = useState<'feature' | 'fix' | 'bugfix'>('feature')
   const [rawInput, setRawInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [workflows, setWorkflows] = useState<Workflow[]>([])
   const [workflowId, setWorkflowId] = useState<string>('')
 
+  const regenerateTitle = useCallback(() => {
+    setTitle(generateMissionTitle())
+    setTitleError(undefined)
+  }, [])
+
+  const handleTitleChange = useCallback((value: string) => {
+    // Auto-sanitize as user types
+    const sanitized = sanitizeMissionTitle(value)
+    setTitle(sanitized)
+    
+    // Validate and show error if any
+    const validation = validateMissionTitle(sanitized)
+    setTitleError(validation.error)
+  }, [])
+
   useEffect(() => {
     if (isOpen) {
+      // Generate a random title when modal opens
+      if (!title) {
+        regenerateTitle()
+      }
+      
       api.getWorkflows().then((wfs) => {
         setWorkflows(wfs)
         // Only set default on first load
         setWorkflowId((prev) => prev || (wfs.length > 0 ? wfs[0].workflow_id : ''))
       })
     }
-  }, [isOpen])
+  }, [isOpen, title, regenerateTitle])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +80,7 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
     try {
       await onSubmit(title, type, rawInput, workflowId)
       setTitle('')
+      setTitleError(undefined)
       setType('feature')
       setRawInput('')
       setWorkflowId(workflows[0]?.workflow_id || '')
@@ -78,13 +101,31 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
           <div className="space-y-4 py-4">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="title">Title</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={regenerateTitle}
+                  className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  🎲 Regenerate
+                </Button>
+              </div>
               <Input
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="feat-user-auth"
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="fox-swift"
+                className={titleError ? 'border-red-500 focus-visible:ring-red-500' : ''}
               />
+              {titleError && (
+                <p className="text-xs text-red-500">{titleError}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Format: animal-mood (no spaces, branch-safe)
+              </p>
             </div>
 
             {/* Type */}
@@ -145,7 +186,7 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
             </Button>
             <Button
               type="submit"
-              disabled={!title.trim() || !rawInput.trim() || isSubmitting}
+              disabled={!title.trim() || !rawInput.trim() || isSubmitting || !!titleError}
             >
               {isSubmitting ? 'Creating...' : 'Create Mission'}
             </Button>

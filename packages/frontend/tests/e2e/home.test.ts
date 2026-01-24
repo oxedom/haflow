@@ -5,7 +5,7 @@ test.describe('Home Page', () => {
     await page.goto('/');
 
     // Wait for app to load
-    await expect(page.getByRole('heading', { name: 'HAFLOW', exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'haflow', exact: true })).toBeVisible({ timeout: 10000 });
   });
 
   test('should display welcome message when no mission selected', async ({ page }) => {
