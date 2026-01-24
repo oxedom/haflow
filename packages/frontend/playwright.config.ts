@@ -4,11 +4,17 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: 1,
+  retries: process.env.CI ? 2 : 1,
   workers: 1,
-  reporter: 'html',
+  reporter: process.env.CI ? 'github' : 'html',
+  timeout: 30000,
+  expect: {
+    timeout: 10000,
+  },
   use: {
+    baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
 
   projects: [
@@ -26,5 +32,24 @@ export default defineConfig({
     },
   ],
 
+  // Run local dev servers before tests
+  webServer: [
+    {
+      command: 'pnpm --filter @haflow/backend dev',
+      url: 'http://localhost:4000/api/missions',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+      cwd: '../../',
+    },
+    {
+      command: 'pnpm --filter frontend dev',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+      cwd: '../../',
+    },
+  ],
 
+  globalSetup: './tests/globalSetup.ts',
+  globalTeardown: './tests/globalTeardown.ts',
 });

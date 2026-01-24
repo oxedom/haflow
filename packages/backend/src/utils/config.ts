@@ -4,6 +4,7 @@ import { join } from 'path';
 export const config = {
   port: parseInt(process.env.PORT || '4000', 10),
   haflowHome: process.env.HAFLOW_HOME || join(homedir(), '.haflow'),
+  openaiApiKey: process.env.OPENAI_API_KEY || '',
   get missionsDir() {
     return join(this.haflowHome, 'missions');
   },

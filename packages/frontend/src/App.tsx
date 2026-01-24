@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Menu } from 'lucide-react'
+import { Menu, Headphones } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { MissionDetail as MissionDetailView } from '@/components/MissionDetail'
 import { NewMissionModal } from '@/components/NewMissionModal'
+import { ChatVoice } from '@/components/ChatVoice'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 
@@ -22,6 +23,7 @@ function AppContent() {
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null)
   const [isNewMissionModalOpen, setIsNewMissionModalOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [showVoiceChat, setShowVoiceChat] = useState(false)
 
   // Query: Fetch missions list with polling
   const { data: missions = [], isLoading: isLoadingMissions } = useQuery({
@@ -152,7 +154,15 @@ function AppContent() {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold">hafloo</h1>
+        <h1 className="flex-1 text-lg font-semibold">hafloo</h1>
+        <Button
+          variant={showVoiceChat ? 'default' : 'outline'}
+          size="icon"
+          onClick={() => setShowVoiceChat(!showVoiceChat)}
+          title="Voice Chat"
+        >
+          <Headphones className="h-4 w-4" />
+        </Button>
       </div>
 
       <Sidebar
@@ -164,21 +174,47 @@ function AppContent() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {selectedMission ? (
-        <MissionDetailView
-          mission={selectedMission}
-          onSaveArtifact={handleSaveArtifact}
-          onContinue={handleContinue}
-          onMarkCompleted={handleMarkCompleted}
-        />
-      ) : (
-        <div className="flex-1 flex items-center justify-center pt-14 md:pt-0">
-          <div className="text-center text-muted-foreground px-4">
-            <h2 className="text-xl font-semibold mb-2">Welcome to haflow</h2>
-            <p>Select a mission from the sidebar or create a new one.</p>
-          </div>
+      <div className="flex-1 flex flex-col pt-14 md:pt-0">
+        {/* Desktop Header with Voice Chat toggle */}
+        <div className="hidden md:flex items-center justify-end gap-2 px-4 py-2 border-b">
+          <Button
+            variant={showVoiceChat ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => setShowVoiceChat(!showVoiceChat)}
+            title="Voice Chat"
+          >
+            <Headphones className="h-4 w-4" />
+          </Button>
         </div>
-      )}
+
+        {/* Main Content Area */}
+        <div className="flex-1 min-h-0">
+          {showVoiceChat ? (
+            <ChatVoice
+              title="Voice Chat"
+              welcomeMessage="Hello! You can type or use voice input."
+              onSubmitMessage={async (msg) => {
+                // Echo for demo, or integrate with actual AI endpoint
+                return `You said: ${msg}`;
+              }}
+            />
+          ) : selectedMission ? (
+            <MissionDetailView
+              mission={selectedMission}
+              onSaveArtifact={handleSaveArtifact}
+              onContinue={handleContinue}
+              onMarkCompleted={handleMarkCompleted}
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center text-muted-foreground px-4">
+                <h2 className="text-xl font-semibold mb-2">Welcome to haflow</h2>
+                <p>Select a mission from the sidebar or create a new one.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <NewMissionModal
         isOpen={isNewMissionModalOpen}

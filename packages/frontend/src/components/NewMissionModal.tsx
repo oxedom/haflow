@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { VoiceRecorderButton } from './VoiceRecorderButton'
 
 interface NewMissionModalProps {
   isOpen: boolean
@@ -98,14 +99,20 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
               </Select>
             </div>
 
-            {/* Raw Input */}
+            {/* Raw Input with Voice Button */}
             <div className="space-y-2">
-              <Label htmlFor="rawInput">Raw Input</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="rawInput">Raw Input</Label>
+                <VoiceRecorderButton
+                  onTranscription={(text) => setRawInput(prev => prev ? prev + '\n\n' + text : text)}
+                  size="sm"
+                />
+              </div>
               <Textarea
                 id="rawInput"
                 value={rawInput}
                 onChange={(e) => setRawInput(e.target.value)}
-                placeholder="Describe the feature/fix in detail..."
+                placeholder="Describe the feature/fix in detail, or use the mic button to speak..."
                 rows={8}
                 className="font-mono text-sm resize-none"
               />

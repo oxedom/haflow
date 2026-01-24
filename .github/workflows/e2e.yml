@@ -32,11 +32,20 @@ jobs:
       - name: Build shared package
         run: pnpm --filter @haflow/shared build
 
+      - name: Build backend
+        run: pnpm --filter @haflow/backend build
+
+      - name: Build frontend
+        run: pnpm --filter frontend build
+
       - name: Install Playwright Browsers
-        run: pnpm --filter frontend exec playwright install --with-deps
+        run: pnpm --filter frontend exec playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: pnpm --filter frontend test:e2e
+        run: pnpm --filter frontend test:e2e --project=chromium
+        env:
+          CI: true
+          VITE_USE_MOCKS: 'false'
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4

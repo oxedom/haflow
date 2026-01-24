@@ -11,6 +11,8 @@ import {
   MissionDetailSchema,
   CreateMissionRequestSchema,
   SaveArtifactRequestSchema,
+  TranscriptionResponseSchema,
+  TranscriptionStatusSchema,
 } from './schemas.js';
 
 // Infer types from schemas
@@ -25,6 +27,8 @@ export type MissionListItem = z.infer<typeof MissionListItemSchema>;
 export type MissionDetail = z.infer<typeof MissionDetailSchema>;
 export type CreateMissionRequest = z.infer<typeof CreateMissionRequestSchema>;
 export type SaveArtifactRequest = z.infer<typeof SaveArtifactRequestSchema>;
+export type TranscriptionResponse = z.infer<typeof TranscriptionResponseSchema>;
+export type TranscriptionStatus = z.infer<typeof TranscriptionStatusSchema>;
 
 // API response wrapper (kept as interface for generic usage)
 export interface ApiResponse<T> {

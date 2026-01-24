@@ -101,3 +101,12 @@ export const CreateMissionRequestSchema = z.object({
 export const SaveArtifactRequestSchema = z.object({
   content: z.string(),
 });
+
+// Transcription schemas
+export const TranscriptionResponseSchema = z.object({
+  text: z.string(),
+});
+
+export const TranscriptionStatusSchema = z.object({
+  available: z.boolean(),
+});

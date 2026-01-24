@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { MissionListItem, MissionDetail, MissionMeta, ApiResponse } from '@haflow/shared';
+import type { MissionListItem, MissionDetail, MissionMeta, ApiResponse, TranscriptionResponse, TranscriptionStatus } from '@haflow/shared';
 
 const API_BASE = 'http://localhost:4000/api';
 
@@ -56,5 +56,21 @@ export const api = {
     if (!res.data.success) throw new Error(res.data.error || 'Failed to mark completed');
   },
 
+  transcribeAudio: async (audioBlob: Blob): Promise<string> => {
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+    const res = await client.post<ApiResponse<TranscriptionResponse>>(
+      '/transcribe',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    if (!res.data.success) throw new Error(res.data.error || 'Transcription failed');
+    return res.data.data!.text;
+  },
 
+  getTranscriptionStatus: async (): Promise<TranscriptionStatus> => {
+    const res = await client.get<ApiResponse<TranscriptionStatus>>('/transcribe/status');
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to get status');
+    return res.data.data!;
+  },
 };

@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <iterations>"
+  exit 1
+fi
+
+# jq filter to extract streaming text from assistant messages
+stream_text='select(.type == "assistant").message.content[]? | select(.type == "text").text // empty | gsub("\n"; "\r\n") | . + "\r\n\n"'
+
+# jq filter to extract final result
+final_result='select(.type == "result").result // empty'
+
+for ((i=1; i<=$1; i++)); do
+  echo "=== Iteration $i of $1 ==="
+
+  tmpfile=$(mktemp)
+  trap "rm -f $tmpfile" EXIT
+
+  docker sandbox run --credentials host claude \
+    --verbose \
+    --print \
+    --output-format stream-json \
+    -p "@prd.json @progress.txt \
+1. Find the highest-priority feature to work on and work only on that feature. \
+This should be the one YOU decide has the highest priority - not necessarily the first in the list. \
+2. Check that the types check via pnpm typecheck and that the tests pass via pnpm test. \
+3. Update the PRD with the work that was done. \
+4. Append your progress to the progress.txt file. \
+Use this to leave a note for the next person working in the codebase. \
+5. Make a git commit of that feature. \
+ONLY WORK ON A SINGLE FEATURE. \
+If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise>. \
+" \
+  | grep --line-buffered '^{' \
+  | tee "$tmpfile" \
+  | jq --unbuffered -rj "$stream_text"
+
+  result=$(jq -r "$final_result" "$tmpfile")
+
+  if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
+    echo "PRD complete after $i iterations."
+    exit 0
+  fi
+done
+
+echo "Completed $1 iterations without PRD completion."

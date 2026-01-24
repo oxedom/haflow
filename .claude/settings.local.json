@@ -13,7 +13,9 @@
       "Bash(ls:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(gh api:*)",
+      "Bash(chmod:*)"
     ]
   },
   "enabledPlugins": {

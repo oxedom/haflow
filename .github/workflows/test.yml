@@ -39,3 +39,9 @@ jobs:
 
       - name: Run CLI tests
         run: pnpm --filter @haflow/cli test
+
+      - name: Build backend
+        run: pnpm --filter @haflow/backend build
+
+      - name: Build frontend (type check)
+        run: pnpm --filter frontend build
