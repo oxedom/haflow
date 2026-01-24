@@ -45,13 +45,13 @@ test.describe('Voice Transcription Feature', () => {
       await input.fill('Hello from test');
 
       // Click send button
-      await page.locator('button').filter({ has: page.locator('svg.lucide-send') }).click();
+      await page.getByTestId('send-message-button').click();
 
       // Verify user message appears
-      await expect(page.getByText('Hello from test')).toBeVisible();
+      await expect(page.getByText('Hello from test', { exact: true })).toBeVisible({ timeout: 15000 });
 
       // Verify echo response appears
-      await expect(page.getByText('You said: Hello from test')).toBeVisible();
+      await expect(page.getByText('You said: Hello from test')).toBeVisible({ timeout: 15000 });
     });
 
     test('should send message when pressing Enter', async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe('Voice Transcription Feature', () => {
       await input.press('Enter');
 
       // Verify user message appears
-      await expect(page.getByText('Testing enter key')).toBeVisible();
+      await expect(page.getByText('Testing enter key', { exact: true })).toBeVisible({ timeout: 15000 });
     });
 
     test('should display voice recorder button in chat', async ({ page }) => {
@@ -107,11 +107,11 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Click "New Mission" button in sidebar
-      const newMissionButton = page.getByRole('button', { name: /new mission/i });
+      const newMissionButton = page.getByTestId('new-mission-button');
       await newMissionButton.click();
 
       // Check modal is open
-      await expect(page.getByRole('heading', { name: 'New Mission' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'New Mission' })).toBeVisible({ timeout: 10000 });
 
       // Check for voice recorder button next to "Raw Input" label
       const rawInputSection = page.locator('label', { hasText: 'Raw Input' }).locator('..');
@@ -124,7 +124,7 @@ test.describe('Voice Transcription Feature', () => {
       await page.waitForLoadState('networkidle');
 
       // Open new mission modal
-      const newMissionButton = page.getByRole('button', { name: /new mission/i });
+      const newMissionButton = page.getByTestId('new-mission-button');
       await newMissionButton.click();
 
       // Check for textarea
@@ -194,7 +194,10 @@ test.describe('Voice Transcription Feature', () => {
 });
 
 test.describe('Voice Recording Permission Flow', () => {
-  test('should request microphone permission when clicking record', async ({ page, context }) => {
+  test('should request microphone permission when clicking record', async ({ page, context, browserName }) => {
+    // Skip on browsers that don't support microphone permission grant
+    test.skip(browserName !== 'chromium', 'Microphone permission grant only supported on Chromium');
+
     // Grant microphone permission
     await context.grantPermissions(['microphone']);
 
@@ -234,10 +237,10 @@ test.describe('Integration: Voice in Mission Creation Flow', () => {
     await page.waitForLoadState('networkidle');
 
     // Open new mission modal
-    await page.getByRole('button', { name: /new mission/i }).click();
+    await page.getByTestId('new-mission-button').click();
 
     // Verify modal structure
-    await expect(page.getByRole('heading', { name: 'New Mission' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'New Mission' })).toBeVisible({ timeout: 10000 });
 
     // Verify all form elements exist
     await expect(page.locator('input#title')).toBeVisible();

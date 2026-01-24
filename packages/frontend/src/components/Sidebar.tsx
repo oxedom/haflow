@@ -84,6 +84,7 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
             onClick={onNewMission}
             variant="outline"
             className="w-full justify-start"
+            data-testid="new-mission-button"
           >
             <Plus className="mr-2 h-4 w-4" />
             New Mission

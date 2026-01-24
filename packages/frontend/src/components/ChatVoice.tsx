@@ -162,6 +162,7 @@ export function ChatVoice({
           size="icon"
           onClick={() => handleSendMessage(inputValue)}
           disabled={!inputValue.trim() || isLoading}
+          data-testid="send-message-button"
         >
           <Send className="h-4 w-4" />
         </Button>

@@ -37,6 +37,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
+    "dev:sandbox": "tsx scripts/dev-claude-sandbox.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -7,7 +7,7 @@ const execAsync = promisify(exec);
 
 const LABEL_PREFIX = 'haflow';
 
-const defaultImage = 'node:20-slim'; // Default agent image for v0
+const defaultImage = 'docker/sandbox-templates:claude-code';
 
 async function isAvailable(): Promise<boolean> {
   try {

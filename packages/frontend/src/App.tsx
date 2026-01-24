@@ -119,7 +119,8 @@ function AppContent() {
     ralphMode?: boolean,
     ralphMaxIterations?: number
   ) => {
-    await createMissionMutation.mutateAsync({ title, type, rawInput, ralphMode, ralphMaxIterations })
+    const newMission = await createMissionMutation.mutateAsync({ title, type, rawInput, ralphMode, ralphMaxIterations })
+    setSelectedMissionId(newMission.mission_id)
   }
 
   const handleSaveArtifact = async (filename: string, content: string) => {
