@@ -1,10 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
+import { ulid } from 'ulid';
 
-// Using UUID for v0; can switch to ULID later if sortability needed
+// Using ULID for sortable, time-based IDs
 export function generateMissionId(): string {
-  return `m-${uuidv4().slice(0, 8)}`;
+  return `m-${ulid()}`;
 }
 
 export function generateRunId(): string {
-  return `r-${uuidv4().slice(0, 8)}`;
+  return `r-${ulid()}`;
 }

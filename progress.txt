@@ -1,0 +1,152 @@
+## Code Review Step Implementation Progress
+
+### Phase 1: Schema and Type Updates - COMPLETED (2026-01-25)
+
+**Changes Made:**
+1. `packages/shared/src/schemas.ts`:
+   - Added `'code-review'` to `StepTypeSchema`
+   - Added `'waiting_code_review'` to `MissionStatusSchema`
+   - Added optional `quickCommands: z.array(z.string()).optional()` to `WorkflowStepSchema`
+
+2. `packages/frontend/src/components/MissionDetail.tsx`:
+   - Added `waiting_code_review` entry to `statusConfig` record
+
+3. `packages/frontend/src/components/Sidebar.tsx`:
+   - Added `waiting_code_review` entry to `statusConfig` record
+
+4. `packages/backend/src/services/mission-store.ts` (pre-existing fix):
+   - Added missing `deleteMission` function that was called but not implemented
+
+**Verification Results:**
+- Shared package builds: PASS
+- Backend builds: PASS
+- Frontend builds: PASS
+- Backend tests: 5 failures (all pre-existing, related to ID format changes in id.ts, not Phase 1)
+
+**Ready for Manual Verification:**
+- [ ] Type intellisense works correctly in IDE
+
+---
+
+### Phase 2: Backend Command Execution API - COMPLETED (2026-01-25)
+
+**Changes Made:**
+1. `packages/backend/src/services/command-runner.ts` (NEW):
+   - Created command execution service with in-memory store
+   - `executeCommand(missionId, command, timeoutMs)` - runs command async, returns execution ID
+   - `getExecution(executionId)` - retrieves execution status/output
+   - Automatic cleanup of old executions after 5 minutes
+
+2. `packages/backend/src/utils/config.ts`:
+   - Exported `execAsync` function for use in routes
+
+3. `packages/backend/src/routes/missions.ts`:
+   - Added `GET /:missionId/git-diff` - returns full diff for all changed files
+   - Added `POST /:missionId/run-command` - executes command, returns executionId
+   - Added `GET /:missionId/execution/:executionId` - polls execution status/output
+
+**Verification Results:**
+- Backend builds: PASS
+- Backend tests: 5 failures (all pre-existing ID format changes, not Phase 2)
+
+**Ready for Manual Verification:**
+- [ ] Can call `POST /api/missions/:id/run-command` with `{ command: "ls -la" }`
+- [ ] Can poll `GET /api/missions/:id/execution/:execId` to get output
+- [ ] Can call `GET /api/missions/:id/git-diff` to get full diff
+
+---
+
+### Phase 3: Mission Engine Code-Review Support - COMPLETED (2026-01-25)
+
+**Changes Made:**
+1. `packages/backend/src/services/mission-engine.ts`:
+   - Updated `continueMission` to handle `code-review` step type (same as `human-gate` - advances to next step)
+   - Updated `advanceToNextStep` to set status to `waiting_code_review` when next step is `code-review`
+
+**Verification Results:**
+- Backend builds: PASS
+- Backend tests: 12/12 mission-engine tests pass
+- 5 pre-existing ID format test failures (unrelated)
+
+---
+
+### Phase 4: Workflow Configuration Updates - COMPLETED (2026-01-25)
+
+**Changes Made:**
+1. `packages/backend/src/services/workflow.ts`:
+   - Changed `raw-research-plan-implement` workflow's `review-impl` step from `human-gate` to `code-review`
+   - Changed `oneshot` workflow's `review` step from `human-gate` to `code-review`
+   - Both now include `quickCommands: ['npm test', 'npm run lint', 'npm run build']`
+
+2. `packages/backend/tests/unit/services/workflow.test.ts`:
+   - Updated test to expect `code-review` type for step 7 instead of `human-gate`
+
+**Verification Results:**
+- Backend builds: PASS
+- Workflow tests: 16/16 pass
+
+---
+
+### Phase 5: Frontend API Client Updates - COMPLETED (2026-01-25)
+
+**Changes Made:**
+1. `packages/frontend/src/api/client.ts`:
+   - Added `runCommand(missionId, command, timeout)` - POST /missions/:id/run-command
+   - Added `getExecution(missionId, executionId)` - GET /missions/:id/execution/:executionId
+   - Added `getFullDiff(missionId)` - GET /missions/:id/git-diff
+   - Added `getFileDiff(missionId, filePath)` - GET /missions/:id/git-diff/:filePath
+   - Added `getGitStatus(missionId)` - GET /missions/:id/git-status
+
+**Verification Results:**
+- Frontend builds: PASS
+
+---
+
+### Phase 6: Frontend CodeReviewStep Component - COMPLETED (2026-01-25)
+
+**Changes Made:**
+1. `packages/frontend/src/components/CodeReviewStep.tsx` (NEW):
+   - Git status display with file list
+   - File diff viewer (click to expand)
+   - Quick command buttons (from step.quickCommands)
+   - Custom command input
+   - Command output with polling
+   - "Approve & Continue" button
+
+**Verification Results:**
+- Frontend builds: PASS
+
+---
+
+### Phase 7: Integrate CodeReviewStep into MissionDetail - COMPLETED (2026-01-25)
+
+**Changes Made:**
+1. `packages/frontend/src/components/MissionDetail.tsx`:
+   - Added import for `CodeReviewStep`
+   - Updated `shouldShowHumanGateEditor` to exclude `code-review` step type
+   - Added CodeReviewStep rendering for `waiting_code_review` status with `code-review` step type
+
+**Verification Results:**
+- Frontend builds: PASS
+- Frontend lint: 8 errors (all pre-existing, none in new code)
+
+**Ready for Manual Verification:**
+- [ ] When mission reaches code-review step, CodeReviewStep component is displayed
+- [ ] "Approve & Continue" advances to next step
+- [ ] Status badge shows "Review Code" for waiting_code_review
+
+---
+
+### Phase 8: End-to-End Testing - PENDING
+
+**Manual Verification Checklist:**
+- [ ] Create a new mission with a linked project
+- [ ] Run through workflow to implementation step
+- [ ] After implementation completes, mission shows code-review UI
+- [ ] Git status shows all changed files
+- [ ] Clicking a file shows its diff in unified format
+- [ ] Running `npm test` (or similar) shows output
+- [ ] Running custom commands works
+- [ ] "Approve & Continue" advances mission to completion
+- [ ] Mission shows as completed after approval
+

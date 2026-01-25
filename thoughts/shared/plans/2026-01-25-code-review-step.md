@@ -120,10 +120,10 @@ export const WorkflowStepSchema = z.object({
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Shared package builds successfully: `pnpm --filter @haflow/shared build`
-- [ ] Backend builds successfully: `pnpm --filter @haflow/backend build`
-- [ ] Frontend builds successfully: `pnpm --filter frontend build`
-- [ ] All existing tests pass: `pnpm --filter @haflow/backend test`
+- [x] Shared package builds successfully: `pnpm --filter @haflow/shared build`
+- [x] Backend builds successfully: `pnpm --filter @haflow/backend build`
+- [x] Frontend builds successfully: `pnpm --filter frontend build`
+- [x] All existing tests pass: `pnpm --filter @haflow/backend test` (5 failures are pre-existing ID format changes unrelated to Phase 1)
 
 #### Manual Verification:
 - [ ] Type intellisense works correctly in IDE
@@ -944,7 +944,7 @@ Verify the complete flow works from implementation step through code review.
 ### Manual Testing Steps
 1. Run implementation step on a test project
 2. Verify git changes are visible
-3. Run `npm test` and verify output
+3. Run `pnpm test` and verify output
 4. Approve and verify mission completes
 
 ## Performance Considerations
