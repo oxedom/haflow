@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { MissionDetail as MissionDetailView } from '@/components/MissionDetail'
 import { NewMissionModal } from '@/components/NewMissionModal'
 import { ChatVoice } from '@/components/ChatVoice'
+import { ProjectIndicator } from '@/components/ProjectIndicator'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -198,26 +199,29 @@ function AppContent() {
       />
 
       <div className="flex-1 flex flex-col pt-14 md:pt-0">
-        {/* Desktop Header with Voice Chat toggle */}
-        <div className="hidden md:flex items-center justify-end gap-2 px-4 py-2 border-b">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsCleanupDialogOpen(true)}
-            title="Cleanup Docker Containers"
-            data-testid="cleanup-containers-button"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={showVoiceChat ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setShowVoiceChat(!showVoiceChat)}
-            title="Voice Chat"
-            data-testid="voice-chat-button-desktop"
-          >
-            <Headphones className="h-4 w-4" />
-          </Button>
+        {/* Desktop Header with Voice Chat toggle and Project Indicator */}
+        <div className="hidden md:flex items-center justify-between gap-2 px-4 py-2 border-b">
+          <ProjectIndicator />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsCleanupDialogOpen(true)}
+              title="Cleanup Docker Containers"
+              data-testid="cleanup-containers-button"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={showVoiceChat ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => setShowVoiceChat(!showVoiceChat)}
+              title="Voice Chat"
+              data-testid="voice-chat-button-desktop"
+            >
+              <Headphones className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Main Content Area */}
