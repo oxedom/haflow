@@ -14,12 +14,13 @@ Add support for code-generation mode where Claude containers can work directly o
 
 **Code-Gen Mode** (new):
 
-- Linked project mounted at `/workspace`
-- Claude works directly in the project root (`/workspace`)
+- Linked project is **cloned** to `~/.haflow/missions/{missionId}/project/`
+- Clone mounted at `/workspace` (Claude's working directory)
+- Original project's `node_modules` mounted at `/workspace/node_modules` (for runtime)
 - Artifacts mounted at `/workspace/artifacts` (from mission dir)
-- Symlink created in mission dir pointing to project for git tracking
-- Output is actual code changes to the project
-- Claude links project `/mission/artifacts/{LINKED-PROJECT}` to docker instance, so we can see code changes
+- Output is actual code changes in the cloned project
+- Original project remains untouched; changes isolated to clone
+- User reviews changes via git diff in clone, commits manually
 
 ## Current State Analysis
 
@@ -36,11 +37,11 @@ Add support for code-generation mode where Claude containers can work directly o
 - `ClaudeSandboxOptions` has no `workspacePath` field
 - Docker `startClaudeStreaming()` never mounts `/workspace`
 - No git status check before code-gen steps
-- No symlink in mission dir to track which project was modified
+- No project cloning logic (git clone --local)
+- No git status on code changes API endpoint for frontend
 
 ### Key Discoveries:
 
-- Entrypoint ready: `packages/backend/docker/sandbox-templates/claude-code/entrypoint.sh:51-54`
 - Docker mount logic: `packages/backend/src/services/docker.ts:274-289`
 - Sandbox options: `packages/backend/src/services/sandbox.ts:14-20`
 - Workflow step schema: `packages/shared/src/schemas.ts:21-29`
@@ -52,16 +53,19 @@ After implementation:
 
 1. Workflow steps can specify `workspaceMode: 'document' | 'codegen'`
 2. When `workspaceMode: 'codegen'`:
-   - Container mounts linked project at `/workspace`
-   - Claude's working directory is `/workspace`
+   - Project cloned via `git clone --local` to `~/.haflow/missions/{missionId}/project/`
+   - Clone mounted at `/workspace` (Claude's working directory)
+   - Original's `node_modules` mounted at `/workspace/node_modules` (read-only for runtime)
    - Artifacts mounted at `/workspace/artifacts` (from mission artifacts dir)
-   - Symlink created at `~/.haflow/missions/{missionId}/project` → linked project path
 3. Before starting a codegen step:
    - Validate linked project exists
-   - Check for uncommitted git changes (error if dirty)
+   - Check for uncommitted git changes in original (error if dirty)
+   - Remove existing clone if present (fresh start)
+   - Clone project to mission directory
 4. After codegen step:
-   - Git status/diff available to see what changed
-   - Changes tracked in the actual project (not copied out)
+   - Git status/diff available via API endpoint
+   - Changes isolated in clone; original project unchanged
+   - User can `cd ~/.haflow/missions/{id}/project && git commit` manually
 5. Existing document-processing workflows continue to work unchanged
 
 **Verification:**
@@ -70,14 +74,14 @@ After implementation:
 - Integration test: codegen step mounts project correctly
 - E2E test: implementation step modifies files in linked project
 - Existing tests still pass (no regression)
-- Git diff shows changes after codegen step
+- Git diff shows changes after codegen step in frontend UI
 
 ## What We're NOT Doing
 
-- NOT cloning the project (use linked project directly via mount)
-- NOT mission-level project override (step uses global linkedProject)
+- NOT duplicating node_modules (clone excludes gitignored files; mount original's node_modules)
 - NOT multiple linked projects (single global linkedProject for now)
-- NOT auto-commit after codegen (user reviews changes first via git diff)
+- NOT auto-commit after codegen (user reviews changes first via git diff on frontend)
+- NOT syncing changes back to original (user commits in clone, applies manually for now)
 
 ## Implementation Approach
 
@@ -85,10 +89,11 @@ Minimal changes following existing patterns:
 
 1. Share config between CLI and backend (read same file)
 2. Add `workspaceMode` to step schema (shared package)
-3. Add `workspacePath` to sandbox options (backend)
-4. Conditionally mount `/workspace` in Docker (backend)
+3. Add `workspacePath` + `nodeModulesPath` to sandbox options (backend)
+4. Conditionally mount `/workspace` and `/workspace/node_modules` in Docker (backend)
 5. Add pre-flight git status check (backend)
-6. Create symlink in mission dir to linked project
+6. Clone project to mission dir via `git clone --local` (fresh start each time)
+7. Add git status API endpoint for frontend
 
 ---
 
@@ -106,53 +111,62 @@ Minimal changes following existing patterns:
 │          ├── mission.json                                                   │
 │          ├── artifacts/           ← research.md, plan.md, result.json       │
 │          │   └── implementation-plan.md                                     │
-│          └── project → /home/user/myapp   ← SYMLINK (new)                   │
+│          └── project/             ← CLONE of linked project (git clone)     │
+│              ├── src/             ← Claude's changes go here                │
+│              ├── package.json                                               │
+│              └── .git/            ← Full git history preserved              │
 │                                                                             │
-│  /home/user/myapp/                ← Actual project (linked)                 │
+│  /home/user/myapp/                ← Original project (UNTOUCHED)            │
 │  ├── src/                                                                   │
 │  ├── package.json                                                           │
-│  └── ...                                                                    │
+│  └── node_modules/                ← Mounted into container for runtime      │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
-                                    │ Docker bind mounts
+                                    │ Docker bind mounts (3 mounts)
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           DOCKER CONTAINER                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  /workspace/                      ← PROJECT mounted here (working dir)      │
+│  /workspace/                      ← CLONE mounted here (working dir)        │
 │  ├── src/                         ← Claude can modify these files           │
 │  ├── package.json                                                           │
+│  ├── node_modules/                ← Original's node_modules (read-only)     │
 │  ├── artifacts/                   ← Mission artifacts mounted here          │
 │  │   └── implementation-plan.md   ← Claude reads the plan                   │
 │  └── ...                                                                    │
 │                                                                             │
-│  Claude runs: `claude --dangerously-skip-permissions "<prompt>"`            │
+│  Claude runs: `claude --dangerously-skip-permissions "<prompt> @implementation-plan.md "`            │
 │  - Reads: ./artifacts/implementation-plan.md                                │
 │  - Writes: ./src/*, ./tests/*, etc.                                         │
 │  - Writes: ./artifacts/implementation-result.json                           │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
-                                    │ Changes via bind mount
+                                    │ Changes written to CLONE (not original)
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                            AFTER COMPLETION                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  $ cd /home/user/myapp                                                      │
+│  $ cd /home/user/myapp            ← Original project                        │
 │  $ git status                                                               │
 │  On branch main                                                             │
+│  nothing to commit, working tree clean   ← UNCHANGED!                       │
+│                                                                             │
+│  $ cd ~/.haflow/missions/abc123/project   ← Clone with changes              │
+│  $ git status                                                               │
 │  Changes not staged for commit:                                             │
 │    modified:   src/components/Button.tsx                                    │
 │    modified:   src/utils/helpers.ts                                         │
 │                                                                             │
-│  $ git diff                                                                 │
+│  $ git diff                       ← Review Claude's changes                 │
 │  ... see exactly what Claude changed ...                                    │
 │                                                                             │
-│  $ git add -p   # selectively stage changes                                 │
-│  $ git commit -m "feat: implement button component"                         │
+│  $ git add -p && git commit -m "feat: implement button component"           │
+│                                                                             │
+│  # Later: apply changes to original via cherry-pick, patch, or manual copy  │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -201,7 +215,7 @@ export type WorkspaceMode = z.infer<typeof WorkspaceModeSchema>;
 #### 3. Backend - Sandbox Options Interface
 
 **File**: `packages/backend/src/services/sandbox.ts`
-**Changes**: Add `workspacePath` to `ClaudeSandboxOptions`
+**Changes**: Add `workspacePath` and `nodeModulesPath` to `ClaudeSandboxOptions`
 
 ```typescript
 export interface ClaudeSandboxOptions {
@@ -210,7 +224,8 @@ export interface ClaudeSandboxOptions {
   stepId: string;
   artifactsPath: string;
   prompt: string;
-  workspacePath?: string; // NEW - linked project path to mount at /workspace
+  workspacePath?: string; // NEW - cloned project path to mount at /workspace
+  nodeModulesPath?: string; // NEW - original's node_modules to mount (read-only)
 }
 ```
 
@@ -218,10 +233,10 @@ export interface ClaudeSandboxOptions {
 
 #### Automated Verification:
 
-- [ ] Shared package builds: `pnpm --filter @haflow/shared build`
-- [ ] Backend builds: `pnpm --filter @haflow/backend build`
-- [ ] TypeScript types compile correctly
-- [ ] Existing tests pass: `pnpm --filter @haflow/backend test`
+- [x] Shared package builds: `pnpm --filter @haflow/shared build`
+- [x] Backend builds: `pnpm --filter @haflow/backend build`
+- [x] TypeScript types compile correctly
+- [x] Existing tests pass: `pnpm --filter @haflow/backend test`
 
 #### Manual Verification:
 
@@ -231,24 +246,25 @@ export interface ClaudeSandboxOptions {
 
 ---
 
-## Phase 2: Backend Config & Project Linking Utils
+## Phase 2: Backend Config & Project Cloning Utils
 
 ### Overview
 
-Enable the backend to read the `linkedProject` path from the CLI config file (`~/.haflow/config.json`). Add utilities for git status checking and project symlink creation. This bridges the gap between CLI and backend.
+Enable the backend to read the `linkedProject` path from the CLI config file (`~/.haflow/config.json`). Add utilities for git status checking and project cloning. This bridges the gap between CLI and backend.
 
 ### Changes Required:
 
 #### 1. Backend Config Utility
 
 **File**: `packages/backend/src/utils/config.ts`
-**Changes**: Add functions to read linked project, check git status, and create project symlink
+**Changes**: Add functions to read linked project, check git status, and clone project
 
 ```typescript
-import { readFile, symlink, unlink, stat } from "fs/promises";
+import { readFile, rm } from "fs/promises";
 import { existsSync } from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { join } from "path";
 
 const execAsync = promisify(exec);
 
@@ -300,26 +316,24 @@ export async function checkGitStatus(
   }
 }
 
-// Create symlink in mission directory to linked project
-// This allows git status/diff to be run from mission context
-export async function createProjectSymlink(
+// Clone project to mission directory (fresh start - removes existing clone)
+// Uses git clone --local for fast local cloning (hard links objects)
+export async function cloneProjectToMission(
   missionId: string,
-  projectPath: string
-): Promise<void> {
-  const symlinkPath = join(config.missionsDir, missionId, "project");
+  sourcePath: string
+): Promise<string> {
+  const clonePath = join(config.missionsDir, missionId, "project");
 
-  // Remove existing symlink if present
-  try {
-    const stats = await stat(symlinkPath);
-    if (stats) {
-      await unlink(symlinkPath);
-    }
-  } catch {
-    // File doesn't exist, that's fine
+  // Remove existing clone if present (fresh start)
+  if (existsSync(clonePath)) {
+    await rm(clonePath, { recursive: true, force: true });
   }
 
-  // Create symlink: mission/project -> /path/to/linked/project
-  await symlink(projectPath, symlinkPath);
+  // Clone using --local for speed (uses hard links for .git objects)
+  // This preserves full git history for proper diff/status
+  await execAsync(`git clone --local "${sourcePath}" "${clonePath}"`);
+
+  return clonePath;
 }
 
 // Get git diff summary for a project (for UI display)
@@ -327,14 +341,15 @@ export async function getGitDiff(
   projectPath: string
 ): Promise<{ files: string[]; summary: string }> {
   try {
-    // Get list of changed files
-    const { stdout: filesOutput } = await execAsync("git diff --name-only", {
-      cwd: projectPath,
-    });
+    // Get list of changed files (staged + unstaged)
+    const { stdout: filesOutput } = await execAsync(
+      "git diff --name-only HEAD",
+      { cwd: projectPath }
+    );
     const files = filesOutput.trim().split("\n").filter(Boolean);
 
     // Get diff stat summary
-    const { stdout: statOutput } = await execAsync("git diff --stat", {
+    const { stdout: statOutput } = await execAsync("git diff --stat HEAD", {
       cwd: projectPath,
     });
 
@@ -344,6 +359,63 @@ export async function getGitDiff(
     };
   } catch {
     return { files: [], summary: "" };
+  }
+}
+
+// Get full git diff for a specific file (for UI display)
+export async function getFileDiff(
+  projectPath: string,
+  filePath: string
+): Promise<string> {
+  try {
+    const { stdout } = await execAsync(`git diff HEAD -- "${filePath}"`, {
+      cwd: projectPath,
+    });
+    return stdout;
+  } catch {
+    return "";
+  }
+}
+
+// Get git status for a cloned project (for API endpoint)
+export async function getProjectGitStatus(missionId: string): Promise<{
+  hasChanges: boolean;
+  files: Array<{ path: string; status: string }>;
+  summary: string;
+}> {
+  const clonePath = join(config.missionsDir, missionId, "project");
+
+  if (!existsSync(clonePath)) {
+    return { hasChanges: false, files: [], summary: "" };
+  }
+
+  try {
+    // Get porcelain status for parsing
+    const { stdout: statusOutput } = await execAsync("git status --porcelain", {
+      cwd: clonePath,
+    });
+
+    const files = statusOutput
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => ({
+        status: line.slice(0, 2).trim(),
+        path: line.slice(3),
+      }));
+
+    // Get diff stat for summary
+    const { stdout: statOutput } = await execAsync("git diff --stat HEAD", {
+      cwd: clonePath,
+    });
+
+    return {
+      hasChanges: files.length > 0,
+      files,
+      summary: statOutput.trim(),
+    };
+  } catch {
+    return { hasChanges: false, files: [], summary: "" };
   }
 }
 ```
@@ -372,9 +444,16 @@ describe("checkGitStatus", () => {
   // Test non-git directory
 });
 
-describe("createProjectSymlink", () => {
-  // Test symlink creation
-  // Test symlink replacement
+describe("cloneProjectToMission", () => {
+  // Test fresh clone
+  // Test clone replaces existing (fresh start)
+  // Test git history preserved
+});
+
+describe("getProjectGitStatus", () => {
+  // Test no changes
+  // Test with modified files
+  // Test with new files
 });
 ```
 
@@ -382,25 +461,28 @@ describe("createProjectSymlink", () => {
 
 #### Automated Verification:
 
-- [ ] Backend builds: `pnpm --filter @haflow/backend build`
-- [ ] New unit tests pass: `pnpm --filter @haflow/backend vitest run tests/unit/utils/config.test.ts`
-- [ ] All existing tests pass: `pnpm --filter @haflow/backend test`
+- [x] Backend builds: `pnpm --filter @haflow/backend build`
+- [x] New unit tests pass: `pnpm --filter @haflow/backend vitest run tests/unit/utils/config.test.ts`
+- [x] All existing tests pass: `pnpm --filter @haflow/backend test`
 
 #### Manual Verification:
 
 - [ ] Run `haflow link /some/path` then verify backend can read it
 - [ ] Test with dirty git repo - should report not clean
-- [ ] Verify symlink created in mission directory
+- [ ] Verify clone created in mission directory with full git history
+- [ ] Verify re-running clone removes old clone (fresh start)
 
 **Implementation Note**: After completing this phase and all automated verification passes, proceed to Phase 3.
 
 ---
 
+f
+
 ## Phase 3: Docker Mount Changes
 
 ### Overview
 
-Modify `startClaudeStreaming()` to conditionally mount the linked project at `/workspace` when `workspacePath` is provided. The key insight: project is mounted at `/workspace`, artifacts are mounted at `/workspace/artifacts`.
+Modify `startClaudeStreaming()` to conditionally mount the cloned project at `/workspace` when `workspacePath` is provided. The key insight: clone is mounted at `/workspace`, original's `node_modules` mounted separately for runtime, artifacts at `/workspace/artifacts`.
 
 ### Mount Strategy
 
@@ -411,25 +493,43 @@ Modify `startClaudeStreaming()` to conditionally mount the linked project at `/w
 /mission/artifacts/    <- artifacts mount (from ~/.haflow/missions/{id}/artifacts)
 ```
 
-**Code-Gen Mode** (with workspacePath):
+**Code-Gen Mode** (with workspacePath + nodeModulesPath):
 
 ```
-/workspace/            <- project mount + working directory
-/workspace/artifacts/  <- artifacts mount (overlays on project if dir exists)
+/workspace/              <- CLONE mounted here (working dir)
+/workspace/node_modules/ <- Original's node_modules (read-only, for runtime)
+/workspace/artifacts/    <- artifacts mount (overlays on clone's artifacts if any)
 ```
 
 ### Changes Required:
 
-#### 1. Docker Provider - Workspace Mount
+#### 1. Update ClaudeSandboxOptions
+
+**File**: `packages/backend/src/services/sandbox.ts`
+**Changes**: Add `nodeModulesPath` for mounting original's node_modules
+
+```typescript
+export interface ClaudeSandboxOptions {
+  missionId: string;
+  runId: string;
+  stepId: string;
+  artifactsPath: string;
+  prompt: string;
+  workspacePath?: string; // Cloned project path to mount at /workspace
+  nodeModulesPath?: string; // Original project's node_modules to mount (read-only)
+}
+```
+
+#### 2. Docker Provider - Workspace Mount
 
 **File**: `packages/backend/src/services/docker.ts`
-**Changes**: Update `startClaudeStreaming()` to handle workspace mount
+**Changes**: Update `startClaudeStreaming()` to handle workspace + node_modules mount
 
 ```typescript
 async function* startClaudeStreaming(
   options: ClaudeSandboxOptions
 ): AsyncGenerator<StreamEvent, void, unknown> {
-  const { artifactsPath, prompt, workspacePath } = options;
+  const { artifactsPath, prompt, workspacePath, nodeModulesPath } = options;
 
   // Determine working directory based on mode
   const workingDir = workspacePath ? "/workspace" : "/mission";
@@ -447,13 +547,19 @@ async function* startClaudeStreaming(
     `${claudeAuthPath}:/home/agent/.claude/.credentials.json:ro`,
   ];
 
-  // NEW: Mount workspace FIRST if in codegen mode (project root)
+  // NEW: Mount cloned workspace if in codegen mode
   if (workspacePath) {
     args.push("-v", `${workspacePath}:/workspace`);
+
+    // Mount original's node_modules for runtime (read-only)
+    // This avoids duplicating node_modules in the clone
+    if (nodeModulesPath && existsSync(nodeModulesPath)) {
+      args.push("-v", `${nodeModulesPath}:/workspace/node_modules:ro`);
+    }
   }
 
   // Mount artifacts at {workingDir}/artifacts
-  // In codegen mode: /workspace/artifacts (overlays project's artifacts dir if any)
+  // In codegen mode: /workspace/artifacts (overlays clone's artifacts dir if any)
   // In document mode: /mission/artifacts
   args.push("-v", `${artifactsPath}:${workingDir}/artifacts`);
 
@@ -485,12 +591,16 @@ async function* startClaudeStreaming(
 }
 ```
 
-**Important**: Order matters! Mount project first, then artifacts overlays `/workspace/artifacts`.
+**Important**: Mount order matters!
 
-#### 2. Update SandboxRunOptions (for non-Claude containers)
+1. Clone first (`/workspace`)
+2. node_modules overlays (`/workspace/node_modules`)
+3. Artifacts overlays (`/workspace/artifacts`)
+
+#### 3. Update SandboxRunOptions (for non-Claude containers)
 
 **File**: `packages/backend/src/services/sandbox.ts`
-**Changes**: Add optional workspacePath
+**Changes**: Add optional workspacePath and nodeModulesPath
 
 ```typescript
 export interface SandboxRunOptions {
@@ -502,7 +612,8 @@ export interface SandboxRunOptions {
   env?: Record<string, string>;
   workingDir?: string;
   artifactsPath: string;
-  workspacePath?: string; // NEW - linked project path
+  workspacePath?: string; // Cloned project path
+  nodeModulesPath?: string; // Original's node_modules
   labels?: Record<string, string>;
 }
 ```
@@ -511,15 +622,17 @@ export interface SandboxRunOptions {
 
 #### Automated Verification:
 
-- [ ] Backend builds: `pnpm --filter @haflow/backend build`
-- [ ] Existing tests pass: `pnpm --filter @haflow/backend test`
+- [x] Backend builds: `pnpm --filter @haflow/backend build`
+- [x] Existing tests pass: `pnpm --filter @haflow/backend test`
 
 #### Manual Verification:
 
-- [ ] Start a container with workspacePath and verify `/workspace` is mounted with project files
+- [ ] Start a container with workspacePath and verify `/workspace` is mounted with cloned files
+- [ ] Verify `/workspace/node_modules` contains original's packages (read-only)
 - [ ] Verify container working directory is `/workspace`
 - [ ] Verify artifacts are at `/workspace/artifacts`
-- [ ] Verify changes in container appear in linked project on host (bind mount)
+- [ ] Verify changes in container appear in clone (not original)
+- [ ] Verify `npm run <script>` works in container (node_modules accessible)
 
 **Implementation Note**: After completing this phase and all automated verification passes, proceed to Phase 4.
 
@@ -529,7 +642,7 @@ export interface SandboxRunOptions {
 
 ### Overview
 
-Wire everything together: mission engine reads step's `workspaceMode`, fetches `linkedProject`, checks git status, creates project symlink, and passes `workspacePath` to the sandbox.
+Wire everything together: mission engine reads step's `workspaceMode`, fetches `linkedProject`, checks git status, clones the project, and passes `workspacePath` + `nodeModulesPath` to the sandbox.
 
 ### Flow for Code-Gen Step
 
@@ -537,13 +650,15 @@ Wire everything together: mission engine reads step's `workspaceMode`, fetches `
 1. Step has workspaceMode: 'codegen'
 2. Read linkedProject from ~/.haflow/config.json
 3. If no linkedProject → throw error
-4. Check git status --porcelain in linkedProject
+4. Check git status --porcelain in linkedProject (original must be clean)
 5. If dirty → throw error with helpful message
-6. Create symlink: ~/.haflow/missions/{id}/project → linkedProject
-7. Start Claude container with workspacePath = linkedProject
-8. Claude works in /workspace (the project), reads plan from ./artifacts/
-9. Changes written directly to project files
-10. After completion, user can run git status/diff to see changes
+6. Clone project: git clone --local → ~/.haflow/missions/{id}/project/
+7. Start Claude container with:
+   - workspacePath = clone path
+   - nodeModulesPath = original's node_modules
+8. Claude works in /workspace (the clone), reads plan from ./artifacts/
+9. Changes written to clone (original unchanged)
+10. After completion, git status API returns changes in clone
 ```
 
 ### Changes Required:
@@ -554,7 +669,8 @@ Wire everything together: mission engine reads step's `workspaceMode`, fetches `
 **Changes**: Update `runClaudeStreaming()` to handle codegen mode
 
 ```typescript
-import { getLinkedProject, checkGitStatus, createProjectSymlink } from '../utils/config.js';
+import { getLinkedProject, checkGitStatus, cloneProjectToMission } from '../utils/config.js';
+import { join } from 'path';
 
 async function runClaudeStreaming(
   missionId: string,
@@ -567,6 +683,7 @@ async function runClaudeStreaming(
 
   // Determine workspace path based on step mode
   let workspacePath: string | undefined;
+  let nodeModulesPath: string | undefined;
 
   if (step.workspaceMode === 'codegen') {
     const linkedProject = await getLinkedProject();
@@ -581,10 +698,11 @@ async function runClaudeStreaming(
       throw new Error(gitStatus.error || 'Linked project has uncommitted changes');
     }
 
-    // Create symlink in mission dir for git tracking
-    await createProjectSymlink(missionId, linkedProject);
+    // Clone project to mission dir (fresh start - removes existing clone)
+    workspacePath = await cloneProjectToMission(missionId, linkedProject);
 
-    workspacePath = linkedProject;
+    // Use original's node_modules for runtime
+    nodeModulesPath = join(linkedProject, 'node_modules');
   }
 
   // ... existing abort controller setup ...
@@ -596,12 +714,48 @@ async function runClaudeStreaming(
       stepId: step.step_id,
       artifactsPath,
       prompt,
-      workspacePath,  // NEW - pass to sandbox
+      workspacePath,     // Clone path
+      nodeModulesPath,   // Original's node_modules
     });
 
     // ... rest of existing streaming logic ...
   }
 }
+```
+
+#### 2. Git Status API Endpoint
+
+**File**: `packages/backend/src/routes/missions.ts`
+**Changes**: Add endpoint for getting git status of cloned project
+
+```typescript
+import { getProjectGitStatus, getFileDiff } from "../utils/config.js";
+
+// GET /missions/:id/git-status
+router.get("/:id/git-status", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const status = await getProjectGitStatus(id);
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get git status" });
+  }
+});
+
+// GET /missions/:id/git-diff/:file
+router.get("/:id/git-diff/*", async (req, res) => {
+  const { id } = req.params;
+  const filePath = req.params[0]; // Everything after git-diff/
+
+  try {
+    const clonePath = join(config.missionsDir, id, "project");
+    const diff = await getFileDiff(clonePath, filePath);
+    res.json({ diff });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get file diff" });
+  }
+});
 ```
 
 ### Success Criteria:
@@ -614,11 +768,12 @@ async function runClaudeStreaming(
 #### Manual Verification:
 
 - [ ] Create mission, reach implementation step with `workspaceMode: 'codegen'`
-- [ ] Verify linked project is mounted
+- [ ] Verify project is cloned to `~/.haflow/missions/{id}/project/`
 - [ ] Verify error thrown if no linked project
-- [ ] Verify error thrown if uncommitted changes
-- [ ] Verify symlink created at `~/.haflow/missions/{id}/project`
-- [ ] After step completes, verify `git diff` in linked project shows changes
+- [ ] Verify error thrown if uncommitted changes in original
+- [ ] Verify clone is fresh (old clone removed)
+- [ ] After step completes, verify `GET /missions/{id}/git-status` returns changes
+- [ ] Verify original project is unchanged
 
 **Implementation Note**: After completing this phase and all automated verification passes, proceed to Phase 5.
 
@@ -775,10 +930,11 @@ When you are satisfied with the output, include <promise>COMPLETE</promise> at t
 
 - [ ] Create a mission with linked project
 - [ ] Progress through to implementation step
-- [ ] Verify Claude works in project root directory
-- [ ] Verify code changes appear in linked project
+- [ ] Verify Claude works in cloned project root directory
+- [ ] Verify code changes appear in clone (not original)
 - [ ] Verify implementation-result.json is written to artifacts
-- [ ] Run `git diff` in linked project to see all changes
+- [ ] Verify `GET /missions/{id}/git-status` shows changes
+- [ ] Verify original project remains unchanged
 
 **Implementation Note**: After completing this phase, all functionality is complete. Proceed to verification.
 
@@ -790,17 +946,20 @@ When you are satisfied with the output, include <promise>COMPLETE</promise> at t
 
 - `getLinkedProject()`: reads config, handles missing file, handles malformed JSON
 - `checkGitStatus()`: clean repo, dirty repo, non-git directory, execution errors
-- `createProjectSymlink()`: creates symlink, replaces existing symlink
+- `cloneProjectToMission()`: fresh clone, replaces existing clone, preserves git history
 - `getGitDiff()`: returns changed files list
+- `getProjectGitStatus()`: returns status with file list
 - Workflow step mode detection
 
 ### Integration Tests:
 
 - Docker container mounts `/workspace` when `workspacePath` provided
+- Docker container mounts node_modules at `/workspace/node_modules`
 - Docker container mounts artifacts at `/workspace/artifacts`
 - Mission engine throws on dirty git state
 - Mission engine throws when no linked project for codegen step
-- Mission engine creates symlink in mission directory
+- Mission engine clones project to mission directory
+- Git status API returns correct changes
 
 ### Manual Testing Steps:
 
@@ -808,24 +967,29 @@ When you are satisfied with the output, include <promise>COMPLETE</promise> at t
 2. Create a new mission with the default workflow
 3. Progress through document-mode steps (cleanup, research, planning)
 4. Verify implementation step:
-   - Project is mounted at `/workspace` in container
-   - Claude can read/write project files
-   - Changes appear in linked project on host (bind mount)
+   - Project cloned to `~/.haflow/missions/{id}/project/`
+   - Clone mounted at `/workspace` in container
+   - node_modules from original mounted (can run npm scripts)
+   - Claude can read/write project files in clone
    - implementation-result.json created in artifacts
 5. After completion:
-   - Run `git status` in linked project to see changes
-   - Run `git diff` to review what was modified
-   - Symlink exists at `~/.haflow/missions/{id}/project`
+   - Original project unchanged: `cd /path/to/test-project && git status` shows clean
+   - Clone has changes: `cd ~/.haflow/missions/{id}/project && git status`
+   - API shows changes: `GET /missions/{id}/git-status`
 6. Test error cases:
    - No linked project → error before implementation step
-   - Dirty git state → error with helpful message
+   - Dirty git state in original → error with helpful message
+7. Test fresh start:
+   - Re-run codegen step → old clone removed, fresh clone created
 
 ## Performance Considerations
 
 - Git status check adds ~100-500ms before codegen steps (acceptable)
+- `git clone --local` is fast (~1-5s) as it uses hard links for .git objects
+- Clone size is small (no node_modules, no gitignored files)
+- node_modules mount is a bind mount (no copy overhead)
+- Fresh start (re-clone) ensures clean state, acceptable tradeoff for simplicity
 - No additional overhead for document-mode steps
-- Linked project mount is a bind mount (no copy overhead)
-- Symlink creation is instant
 
 ## Migration Notes
 
@@ -836,9 +1000,11 @@ When you are satisfied with the output, include <promise>COMPLETE</promise> at t
 ## Future Enhancements (Not in Scope)
 
 - Auto-commit after successful codegen step
-- UI showing git diff directly in haflow
+- UI showing git diff directly in haflow (API ready, UI not in scope)
+- Sync changes from clone back to original (git format-patch, cherry-pick, etc.)
 - Multiple linked projects per workspace
 - Mission-level project override
+- Incremental mode (reuse clone instead of fresh start)
 
 ## References
 

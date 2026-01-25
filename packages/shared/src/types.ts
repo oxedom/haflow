@@ -3,6 +3,7 @@ import {
   MissionTypeSchema,
   MissionStatusSchema,
   StepTypeSchema,
+  WorkspaceModeSchema,
   WorkflowStepSchema,
   WorkflowSchema,
   MissionMetaSchema,
@@ -19,6 +20,7 @@ import {
 export type MissionType = z.infer<typeof MissionTypeSchema>;
 export type MissionStatus = z.infer<typeof MissionStatusSchema>;
 export type StepType = z.infer<typeof StepTypeSchema>;
+export type WorkspaceMode = z.infer<typeof WorkspaceModeSchema>;
 export type WorkflowStep = z.infer<typeof WorkflowStepSchema>;
 export type Workflow = z.infer<typeof WorkflowSchema>;
 export type MissionMeta = z.infer<typeof MissionMetaSchema>;

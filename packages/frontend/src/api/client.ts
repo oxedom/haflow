@@ -1,7 +1,9 @@
 import axios from 'axios';
 import type { MissionListItem, MissionDetail, MissionMeta, ApiResponse, TranscriptionResponse, TranscriptionStatus, Workflow } from '@haflow/shared';
 
-const API_BASE = 'http://localhost:4000/api';
+const host = window.location.hostname
+// const API_BASE = 'http://localhost:4000/api';
+const API_BASE = `http://${host}:4000/api`;
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -75,6 +77,12 @@ export const api = {
   getTranscriptionStatus: async (): Promise<TranscriptionStatus> => {
     const res = await client.get<ApiResponse<TranscriptionStatus>>('/transcribe/status');
     if (!res.data.success) throw new Error(res.data.error || 'Failed to get status');
+    return res.data.data!;
+  },
+
+  cleanupContainers: async (): Promise<{ removed: number; total?: number; message: string }> => {
+    const res = await client.delete<ApiResponse<{ removed: number; total?: number; message: string }>>('/system/cleanup-containers');
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to cleanup containers');
     return res.data.data!;
   },
 };

@@ -1,12 +1,20 @@
 import { useState } from 'react'
-import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Menu, Headphones } from 'lucide-react'
+import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { Menu, Headphones, Trash2 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { MissionDetail as MissionDetailView } from '@/components/MissionDetail'
 import { NewMissionModal } from '@/components/NewMissionModal'
 import { ChatVoice } from '@/components/ChatVoice'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 // Create QueryClient with polling defaults
 const queryClient = new QueryClient({
@@ -24,6 +32,7 @@ function AppContent() {
   const [isNewMissionModalOpen, setIsNewMissionModalOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showVoiceChat, setShowVoiceChat] = useState(false)
+  const [isCleanupDialogOpen, setIsCleanupDialogOpen] = useState(false)
 
   // Query: Fetch missions list with polling
   const { data: missions = [], isLoading: isLoadingMissions } = useQuery({
@@ -97,6 +106,18 @@ function AppContent() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['missions'] })
+    },
+  })
+
+  // Mutation: Cleanup containers
+  const cleanupContainersMutation = useMutation({
+    mutationFn: api.cleanupContainers,
+    onSuccess: (data) => {
+      setIsCleanupDialogOpen(false)
+      alert(data.message)
+    },
+    onError: (error) => {
+      alert(`Failed to cleanup: ${error instanceof Error ? error.message : 'Unknown error'}`)
     },
   })
 
@@ -180,6 +201,15 @@ function AppContent() {
         {/* Desktop Header with Voice Chat toggle */}
         <div className="hidden md:flex items-center justify-end gap-2 px-4 py-2 border-b">
           <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsCleanupDialogOpen(true)}
+            title="Cleanup Docker Containers"
+            data-testid="cleanup-containers-button"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <Button
             variant={showVoiceChat ? 'default' : 'outline'}
             size="icon"
             onClick={() => setShowVoiceChat(!showVoiceChat)}
@@ -224,6 +254,34 @@ function AppContent() {
         onClose={() => setIsNewMissionModalOpen(false)}
         onSubmit={handleCreateMission}
       />
+
+      {/* Cleanup Containers Confirm Dialog */}
+      <Dialog open={isCleanupDialogOpen} onOpenChange={setIsCleanupDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cleanup Docker Containers</DialogTitle>
+            <DialogDescription>
+              This will remove all Docker containers with names starting with "haflow-claude".
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCleanupDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => cleanupContainersMutation.mutate()}
+              disabled={cleanupContainersMutation.isPending}
+            >
+              {cleanupContainersMutation.isPending ? 'Cleaning...' : 'Cleanup Containers'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

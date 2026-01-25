@@ -17,6 +17,9 @@ export const MissionStatusSchema = z.enum([
 // Step types in a workflow
 export const StepTypeSchema = z.enum(['llm', 'agent', 'human-gate']);
 
+// Workspace mode for workflow steps
+export const WorkspaceModeSchema = z.enum(['document', 'codegen']);
+
 // Workflow step definition
 export const WorkflowStepSchema = z.object({
   step_id: z.string(),
@@ -26,6 +29,7 @@ export const WorkflowStepSchema = z.object({
   inputArtifact: z.string().optional(),   // e.g., "raw-input.md"
   outputArtifact: z.string().optional(),  // e.g., "structured-text.md"
   reviewArtifact: z.string().optional(),  // For human-gate steps
+  workspaceMode: WorkspaceModeSchema, // 'document' (default) or 'codegen'
 });
 
 // Workflow definition

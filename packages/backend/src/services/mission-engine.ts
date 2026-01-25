@@ -4,7 +4,7 @@ import { missionStore } from './mission-store.js';
 import { getDefaultWorkflow, getStepPrompt, getWorkflowById } from './workflow.js';
 import { dockerProvider } from './docker.js';
 import type { SandboxProvider } from './sandbox.js';
-import { config } from '../utils/config.js';
+import { config, getLinkedProject, checkGitStatus, cloneProjectToMission } from '../utils/config.js';
 
 const provider: SandboxProvider = dockerProvider;
 const runningContainers: Map<string, string> = new Map(); // runId -> containerId
@@ -90,10 +90,13 @@ async function startAgentStep(
 
     // Check if Claude streaming is available
     if (provider.startClaudeStreaming) {
-      // Use Claude sandbox with streaming
-      await runClaudeStreaming(missionId, meta, step, run.run_id, artifactsPath);
+      // Use Claude sandbox with streaming - run in background (fire-and-forget)
+      // This allows the /continue endpoint to return immediately
+      runClaudeStreaming(missionId, meta, step, run.run_id, artifactsPath).catch((err) => {
+        console.error(`Claude streaming failed for mission ${missionId}:`, err);
+      });
     } else {
-      // Fallback to mock agent for testing
+      // Fallback to mock agent for testing - also runs in background via monitorContainer
       await runMockAgent(missionId, meta, step, run.run_id, artifactsPath);
     }
   } catch (err) {
@@ -121,6 +124,30 @@ async function runClaudeStreaming(
 ): Promise<void> {
   const prompt = getStepPrompt(step);
 
+  // Determine workspace path based on step mode
+  let workspacePath: string | undefined;
+  let nodeModulesPath: string | undefined;
+
+  if (step.workspaceMode === 'codegen') {
+    const linkedProject = await getLinkedProject();
+
+    if (!linkedProject) {
+      throw new Error('Code-generation step requires a linked project. Run: haflow link <project-path>');
+    }
+
+    // Check for uncommitted changes before starting
+    const gitStatus = await checkGitStatus(linkedProject);
+    if (!gitStatus.clean) {
+      throw new Error(gitStatus.error || 'Linked project has uncommitted changes');
+    }
+
+    // Clone project to mission dir (fresh start - removes existing clone)
+    workspacePath = await cloneProjectToMission(missionId, linkedProject);
+
+    // Use original's node_modules for runtime
+    nodeModulesPath = join(linkedProject, 'node_modules');
+  }
+
   // Create abort controller for this run
   const abortController = new AbortController();
   runningStreams.set(runId, abortController);
@@ -135,6 +162,8 @@ async function runClaudeStreaming(
       stepId: step.step_id,
       artifactsPath,
       prompt,
+      workspacePath,
+      nodeModulesPath,
     });
 
     for await (const event of stream) {

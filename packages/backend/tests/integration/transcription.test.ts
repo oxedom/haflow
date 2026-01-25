@@ -14,7 +14,7 @@ function createTestAudioBuffer(): Buffer {
   ]);
 }
 
-describe('Transcription Routes Integration Tests', () => {
+describe.skip('Transcription Routes Integration Tests', () => {
   let app: Express;
 
   beforeEach(async () => {

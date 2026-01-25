@@ -1,9 +1,11 @@
 import { Router, type Router as RouterType } from 'express';
+import { join } from 'path';
 import { CreateMissionRequestSchema, SaveArtifactRequestSchema } from '@haflow/shared';
 import { missionStore } from '../services/mission-store.js';
 import { missionEngine } from '../services/mission-engine.js';
 import { getWorkflows } from '../services/workflow.js';
 import { sendSuccess, sendError } from '../utils/response.js';
+import { config, getProjectGitStatus, getFileDiff } from '../utils/config.js';
 
 export const missionRoutes: RouterType = Router();
 export const workflowRoutes: RouterType = Router();
@@ -112,6 +114,46 @@ missionRoutes.post('/:missionId/mark-completed', async (req, res, next) => {
 
     await missionStore.updateMeta(missionId, { status: 'completed' });
     sendSuccess(res, null);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/missions/:missionId/git-status - Get git status of cloned project
+missionRoutes.get('/:missionId/git-status', async (req, res, next) => {
+  try {
+    const missionId = req.params.missionId as string;
+
+    const meta = await missionStore.getMeta(missionId);
+    if (!meta) {
+      return sendError(res, `Mission not found: ${missionId}`, 404);
+    }
+
+    const status = await getProjectGitStatus(missionId);
+    sendSuccess(res, status);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/missions/:missionId/git-diff/:filePath - Get file diff from cloned project
+missionRoutes.get('/:missionId/git-diff/:filePath(*)', async (req, res, next) => {
+  try {
+    const missionId = req.params.missionId as string;
+    const filePath = req.params.filePath as string;
+
+    const meta = await missionStore.getMeta(missionId);
+    if (!meta) {
+      return sendError(res, `Mission not found: ${missionId}`, 404);
+    }
+
+    if (!filePath) {
+      return sendError(res, 'File path is required', 400);
+    }
+
+    const clonePath = join(config.missionsDir, missionId, 'project');
+    const diff = await getFileDiff(clonePath, filePath);
+    sendSuccess(res, { diff });
   } catch (err) {
     next(err);
   }

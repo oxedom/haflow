@@ -7,6 +7,8 @@ export interface SandboxRunOptions {
   env?: Record<string, string>;
   workingDir?: string;
   artifactsPath: string;  // Host path to mount
+  workspacePath?: string;  // Cloned project path
+  nodeModulesPath?: string; // Original's node_modules
   labels?: Record<string, string>;
 }
 
@@ -17,6 +19,8 @@ export interface ClaudeSandboxOptions {
   stepId: string;
   artifactsPath: string;   // Working directory for Claude
   prompt: string;          // The prompt to send to Claude
+  workspacePath?: string;  // Cloned project path to mount at /workspace
+  nodeModulesPath?: string; // Original project's node_modules to mount (read-only)
 }
 
 // Stream events from Claude sandbox output
