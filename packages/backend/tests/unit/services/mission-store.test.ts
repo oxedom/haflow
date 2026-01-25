@@ -41,7 +41,7 @@ describe('mission-store service', () => {
 
     it('returns MissionMeta with generated ID', async () => {
       const meta = await missionStore.createMission('Test Mission', 'feature', 'Raw input');
-      expect(meta.mission_id).toMatch(/^m-[a-f0-9]{8}$/);
+      expect(meta.mission_id).toMatch(/^m-[a-f0-9]{16}$/);
     });
 
     it('returns MissionMeta with timestamps', async () => {
@@ -289,7 +289,7 @@ describe('mission-store service', () => {
       const created = await missionStore.createMission('Test', 'feature', 'Input');
       const run = await missionStore.createRun(created.mission_id, 'cleanup');
 
-      expect(run.run_id).toMatch(/^r-[a-f0-9]{8}$/);
+      expect(run.run_id).toMatch(/^r-[a-f0-9]{16}$/);
       expect(run.step_id).toBe('cleanup');
     });
 

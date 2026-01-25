@@ -8,10 +8,10 @@ describe('id utils', () => {
       expect(id).toMatch(/^m-/);
     });
 
-    it('returns 10-char ID (m- + 8 hex chars)', () => {
+    it('returns 18-char ID (m- + 16 hex chars)', () => {
       const id = generateMissionId();
-      expect(id).toHaveLength(10);
-      expect(id).toMatch(/^m-[a-f0-9]{8}$/);
+      expect(id).toHaveLength(18);
+      expect(id).toMatch(/^m-[a-f0-9]{16}$/);
     });
 
     it('returns unique IDs on multiple calls', () => {
@@ -32,10 +32,10 @@ describe('id utils', () => {
       expect(id).toMatch(/^r-/);
     });
 
-    it('returns 10-char ID (r- + 8 hex chars)', () => {
+    it('returns 18-char ID (r- + 16 hex chars)', () => {
       const id = generateRunId();
-      expect(id).toHaveLength(10);
-      expect(id).toMatch(/^r-[a-f0-9]{8}$/);
+      expect(id).toHaveLength(18);
+      expect(id).toMatch(/^r-[a-f0-9]{16}$/);
     });
   });
 });

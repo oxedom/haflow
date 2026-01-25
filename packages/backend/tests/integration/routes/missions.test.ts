@@ -155,7 +155,7 @@ describe('missions routes', () => {
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.mission_id).toMatch(/^m-[a-f0-9]{8}$/);
+      expect(res.body.data.mission_id).toMatch(/^m-[a-f0-9]{16}$/);
       expect(res.body.data.title).toBe('New Mission');
       expect(res.body.data.status).toBe('ready');
     });
