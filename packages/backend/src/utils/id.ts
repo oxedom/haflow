@@ -1,10 +1,17 @@
-import { ulid } from 'ulid';
+import { randomBytes } from 'crypto';
 
-// Using ULID for sortable, time-based IDs
+// Generate sortable IDs with timestamp prefix + random suffix
+// Format: {prefix}-{timestamp_hex_12}{random_hex_4} = 18 chars total
+function generateId(prefix: string): string {
+  const timestamp = Date.now().toString(16).padStart(12, '0');
+  const random = randomBytes(2).toString('hex');
+  return `${prefix}-${timestamp}${random}`;
+}
+
 export function generateMissionId(): string {
-  return `m-${ulid()}`;
+  return generateId('m');
 }
 
 export function generateRunId(): string {
-  return `r-${ulid()}`;
+  return generateId('r');
 }
