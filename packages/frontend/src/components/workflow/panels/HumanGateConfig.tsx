@@ -1,4 +1,4 @@
-import { WorkflowStepWithStatus } from '@/types/workflow';
+import type { WorkflowStepWithStatus } from '@/types/workflow';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {

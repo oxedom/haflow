@@ -1,5 +1,5 @@
-import { useState, KeyboardEvent } from 'react';
-import { WorkflowStepWithStatus } from '@/types/workflow';
+import { useState, type KeyboardEvent } from 'react';
+import type { WorkflowStepWithStatus } from '@/types/workflow';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

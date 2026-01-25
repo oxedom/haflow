@@ -3,13 +3,13 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
-  Connection,
-  Node,
-  Edge,
-  NodeChange,
-  EdgeChange,
+  type Connection,
+  type Node,
+  type Edge,
+  type NodeChange,
+  type EdgeChange,
 } from 'reactflow';
-import {
+import type {
   WorkflowNode,
   WorkflowEdge,
   WorkflowStepWithStatus,
@@ -19,7 +19,6 @@ import type { Workflow } from '@haflow/shared';
 import {
   generateNodeId,
   generateEdgeId,
-  createEmptyWorkflow,
   createDefaultNodeData,
   convertNodesToWorkflow,
   convertWorkflowToNodes,
@@ -47,7 +46,7 @@ export function useWorkflowState(initialWorkflow?: Workflow) {
   const [isDirty, setIsDirty] = useState(false);
 
   const handleNodesChange = useCallback(
-    (changes: NodeChange<Node<WorkflowStepWithStatus>>[]) => {
+    (changes: NodeChange[]) => {
       onNodesChange(changes);
       // Mark dirty on any node change except selection
       const isOnlySelection = changes.every((c) => c.type === 'select');

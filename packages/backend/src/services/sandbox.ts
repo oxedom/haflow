@@ -77,6 +77,12 @@ export interface SandboxProvider {
   cleanupOrphaned(): Promise<void>;
 
   /**
+   * Remove all containers associated with a specific mission
+   * Returns the number of containers removed
+   */
+  removeByMissionId(missionId: string): Promise<number>;
+
+  /**
    * Start Claude sandbox with streaming output
    * Returns an async generator that yields StreamEvents
    */

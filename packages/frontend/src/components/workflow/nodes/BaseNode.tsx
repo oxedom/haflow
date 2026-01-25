@@ -1,5 +1,5 @@
-import { Handle, Position, NodeProps } from 'reactflow';
-import { WorkflowStepWithStatus, ExecutionStatus } from '@/types/workflow';
+import { Handle, Position, type NodeProps } from 'reactflow';
+import type { WorkflowStepWithStatus, ExecutionStatus } from '@/types/workflow';
 import { cn } from '@/lib/utils';
 import { Check, X, Loader2 } from 'lucide-react';
 

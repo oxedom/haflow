@@ -1,4 +1,4 @@
-import { useCallback, useRef, DragEvent, useState } from 'react';
+import { useCallback, useRef, useState, type DragEvent } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -13,7 +13,7 @@ import { WorkflowToolbar } from './toolbar/WorkflowToolbar';
 import { NodeConfigPanel } from './panels/NodeConfigPanel';
 import { ValidationErrors } from './ValidationErrors';
 import { REACT_FLOW_CONFIG, NODE_DIMENSIONS } from './config';
-import { NodeType, WorkflowNode, ValidationError } from '@/types/workflow';
+import type { NodeType, WorkflowNode, ValidationError } from '@/types/workflow';
 import type { Workflow } from '@haflow/shared';
 import { validateWorkflowForExecution } from '@/utils/workflowValidation';
 import 'reactflow/dist/style.css';

@@ -1,6 +1,6 @@
-import { NodeProps } from 'reactflow';
+import type { NodeProps } from 'reactflow';
 import { BaseNode } from './BaseNode';
-import { WorkflowStepWithStatus } from '@/types/workflow';
+import type { WorkflowStepWithStatus } from '@/types/workflow';
 import { User } from 'lucide-react';
 import { NODE_TYPE_COLORS } from '../config';
 import { Badge } from '@/components/ui/badge';

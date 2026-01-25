@@ -1,4 +1,4 @@
-import { ValidationError } from '@/types/workflow';
+import type { ValidationError } from '@/types/workflow';
 import { AlertTriangle } from 'lucide-react';
 
 interface ValidationErrorsProps {

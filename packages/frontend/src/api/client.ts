@@ -86,6 +86,17 @@ export const api = {
     return res.data.data!;
   },
 
+  deleteMission: async (missionId: string): Promise<void> => {
+    const res = await client.delete<ApiResponse<void>>(`/missions/${missionId}`);
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to delete mission');
+  },
+
+  deleteAllMissions: async (): Promise<{ deleted: number; message: string }> => {
+    const res = await client.delete<ApiResponse<{ deleted: number; message: string }>>('/missions');
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to delete all missions');
+    return res.data.data!;
+  },
+
   // Code review step APIs
   runCommand: async (
     missionId: string,

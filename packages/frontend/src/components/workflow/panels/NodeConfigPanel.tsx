@@ -1,4 +1,4 @@
-import { WorkflowStepWithStatus, NodeType } from '@/types/workflow';
+import type { WorkflowStepWithStatus, NodeType } from '@/types/workflow';
 import { AgentConfig } from './AgentConfig';
 import { HumanGateConfig } from './HumanGateConfig';
 import { CodeReviewConfig } from './CodeReviewConfig';

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Menu, Headphones, Trash2 } from 'lucide-react'
+import { Menu, Headphones, Trash2, FolderX } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { MissionDetail as MissionDetailView } from '@/components/MissionDetail'
 import { NewMissionModal } from '@/components/NewMissionModal'
@@ -33,6 +33,7 @@ function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showVoiceChat, setShowVoiceChat] = useState(false)
   const [isCleanupDialogOpen, setIsCleanupDialogOpen] = useState(false)
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false)
 
   // Query: Fetch missions list with polling
   const { data: missions = [], isLoading: isLoadingMissions } = useQuery({
@@ -121,6 +122,34 @@ function AppContent() {
     },
   })
 
+  // Mutation: Delete single mission
+  const deleteMissionMutation = useMutation({
+    mutationFn: async (missionId: string) => {
+      return api.deleteMission(missionId)
+    },
+    onSuccess: () => {
+      setSelectedMissionId(null)
+      queryClient.invalidateQueries({ queryKey: ['missions'] })
+    },
+    onError: (error) => {
+      alert(`Failed to delete mission: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    },
+  })
+
+  // Mutation: Delete all missions
+  const deleteAllMissionsMutation = useMutation({
+    mutationFn: api.deleteAllMissions,
+    onSuccess: (data) => {
+      setIsDeleteAllDialogOpen(false)
+      setSelectedMissionId(null)
+      queryClient.invalidateQueries({ queryKey: ['missions'] })
+      alert(data.message)
+    },
+    onError: (error) => {
+      alert(`Failed to delete missions: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    },
+  })
+
   // Handlers
   const handleSelectMission = (id: string) => {
     setSelectedMissionId(id)
@@ -151,6 +180,11 @@ function AppContent() {
 
   const handleMarkCompleted = async () => {
     await markCompletedMutation.mutateAsync()
+  }
+
+  const handleDeleteMission = async () => {
+    if (!selectedMissionId) return
+    await deleteMissionMutation.mutateAsync(selectedMissionId)
   }
 
   if (isLoadingMissions) {
@@ -203,6 +237,15 @@ function AppContent() {
           <Button
             variant="outline"
             size="icon"
+            onClick={() => setIsDeleteAllDialogOpen(true)}
+            title="Delete All Missions"
+            data-testid="delete-all-missions-button"
+          >
+            <FolderX className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => setIsCleanupDialogOpen(true)}
             title="Cleanup Docker Containers"
             data-testid="cleanup-containers-button"
@@ -237,6 +280,8 @@ function AppContent() {
               onSaveArtifact={handleSaveArtifact}
               onContinue={handleContinue}
               onMarkCompleted={handleMarkCompleted}
+              onDelete={handleDeleteMission}
+              isDeleting={deleteMissionMutation.isPending}
             />
           ) : (
             <div className="h-full flex items-center justify-center">
@@ -278,6 +323,34 @@ function AppContent() {
               disabled={cleanupContainersMutation.isPending}
             >
               {cleanupContainersMutation.isPending ? 'Cleaning...' : 'Cleanup Containers'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete All Missions Confirm Dialog */}
+      <Dialog open={isDeleteAllDialogOpen} onOpenChange={setIsDeleteAllDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete All Missions</DialogTitle>
+            <DialogDescription>
+              This will permanently delete all missions and their associated Docker containers.
+              All mission data in ~/.haflow/missions/ will be removed. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteAllDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteAllMissionsMutation.mutate()}
+              disabled={deleteAllMissionsMutation.isPending}
+            >
+              {deleteAllMissionsMutation.isPending ? 'Deleting...' : 'Delete All Missions'}
             </Button>
           </DialogFooter>
         </DialogContent>

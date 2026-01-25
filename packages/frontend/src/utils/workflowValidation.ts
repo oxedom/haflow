@@ -1,4 +1,4 @@
-import { WorkflowNode, WorkflowEdge, ValidationError, ValidationResult } from '@/types/workflow';
+import type { WorkflowNode, WorkflowEdge, ValidationError, ValidationResult } from '@/types/workflow';
 
 export function validateWorkflowForExecution(
   nodes: WorkflowNode[],

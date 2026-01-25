@@ -68,14 +68,17 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
       >
         {/* Header */}
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+          <button 
+            onClick={() => window.location.reload()} 
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+          >
             <img 
               src="/favicon-32x32.png" 
               alt="Haflow logo" 
               className="h-7 w-7 rounded"
             />
             <h1 className="text-lg font-semibold text-sidebar-foreground tracking-tight">haflow</h1>
-          </div>
+          </button>
           <Button
             variant="ghost"
             size="icon"

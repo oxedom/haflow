@@ -4,6 +4,7 @@ import { existsSync } from 'fs';
 import { CreateMissionRequestSchema, SaveArtifactRequestSchema } from '@haflow/shared';
 import { missionStore } from '../services/mission-store.js';
 import { missionEngine } from '../services/mission-engine.js';
+import { dockerProvider } from '../services/docker.js';
 import { getWorkflows } from '../services/workflow.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { config, execAsync, getProjectGitStatus, getFileDiff } from '../utils/config.js';
@@ -121,7 +122,21 @@ missionRoutes.post('/:missionId/mark-completed', async (req, res, next) => {
   }
 });
 
-// DELETE /api/missions/:missionId - Delete mission
+// DELETE /api/missions - Delete ALL missions
+missionRoutes.delete('/', async (_req, res, next) => {
+  try {
+    // First cleanup all haflow containers
+    await dockerProvider.cleanupOrphaned();
+    
+    // Then delete all mission directories
+    const deletedCount = await missionStore.deleteAllMissions();
+    sendSuccess(res, { deleted: deletedCount, message: `Deleted ${deletedCount} mission(s)` });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/missions/:missionId - Delete mission and its containers
 missionRoutes.delete('/:missionId', async (req, res, next) => {
   try {
     const { missionId } = req.params;
@@ -131,6 +146,10 @@ missionRoutes.delete('/:missionId', async (req, res, next) => {
       return sendError(res, `Mission not found: ${missionId}`, 404);
     }
 
+    // First cleanup containers associated with this mission
+    await dockerProvider.removeByMissionId(missionId);
+    
+    // Then delete the mission directory
     await missionStore.deleteMission(missionId);
     sendSuccess(res, null);
   } catch (err) {

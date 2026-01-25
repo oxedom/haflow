@@ -179,6 +179,22 @@ async function cleanupOrphaned(): Promise<void> {
   }
 }
 
+async function removeByMissionId(missionId: string): Promise<number> {
+  try {
+    const { stdout } = await execAsync(
+      `docker ps -aq --filter="label=${LABEL_PREFIX}.mission_id=${missionId}"`
+    );
+    const ids = stdout.trim().split('\n').filter(Boolean);
+    for (const id of ids) {
+      await remove(id);
+    }
+    return ids.length;
+  } catch {
+    // Ignore errors - containers may not exist
+    return 0;
+  }
+}
+
 // COMPLETE marker for Ralph loop detection
 const COMPLETE_MARKER = '<promise>COMPLETE</promise>';
 
@@ -485,5 +501,6 @@ export const dockerProvider: SandboxProvider = {
   remove,
   isAvailable,
   cleanupOrphaned,
+  removeByMissionId,
   startClaudeStreaming,
 };

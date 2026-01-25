@@ -1,5 +1,5 @@
-import { DragEvent } from 'react';
-import { NodeType } from '@/types/workflow';
+import type { DragEvent } from 'react';
+import type { NodeType } from '@/types/workflow';
 import { Bot, User, Code2 } from 'lucide-react';
 
 interface NodeTypeInfo {

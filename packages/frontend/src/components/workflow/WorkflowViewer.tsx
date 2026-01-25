@@ -9,7 +9,7 @@ import { nodeTypes } from './nodes';
 import { convertWorkflowToNodes } from '@/utils/workflowConverter';
 import type { Workflow } from '@haflow/shared';
 import { REACT_FLOW_CONFIG } from './config';
-import { WorkflowNode, ExecutionStatus } from '@/types/workflow';
+import type { WorkflowNode, ExecutionStatus } from '@/types/workflow';
 import 'reactflow/dist/style.css';
 
 interface WorkflowViewerProps {

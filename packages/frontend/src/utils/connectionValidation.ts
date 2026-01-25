@@ -1,5 +1,5 @@
-import { Connection } from 'reactflow';
-import { WorkflowNode, WorkflowEdge, NodeType } from '@/types/workflow';
+import type { Connection } from 'reactflow';
+import type { WorkflowNode, WorkflowEdge, NodeType } from '@/types/workflow';
 
 interface ConnectionRules {
   canConnectTo: NodeType[];
