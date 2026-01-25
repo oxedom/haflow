@@ -36,7 +36,6 @@ interface NewMissionModalProps {
 export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalProps) {
   const [title, setTitle] = useState('')
   const [titleError, setTitleError] = useState<string | undefined>()
-  const [type, setType] = useState<'feature' | 'fix' | 'bugfix'>('feature')
   const [rawInput, setRawInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [workflows, setWorkflows] = useState<Workflow[]>([])
@@ -78,10 +77,9 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
 
     setIsSubmitting(true)
     try {
-      await onSubmit(title, type, rawInput, workflowId)
+      await onSubmit(title, 'feature', rawInput, workflowId)
       setTitle('')
       setTitleError(undefined)
-      setType('feature')
       setRawInput('')
       setWorkflowId(workflows[0]?.workflow_id || '')
       onClose()
@@ -127,21 +125,6 @@ export function NewMissionModal({ isOpen, onClose, onSubmit }: NewMissionModalPr
               <p className="text-xs text-muted-foreground">
                 Format: animal-mood (no spaces, branch-safe)
               </p>
-            </div>
-
-            {/* Type */}
-            <div className="space-y-2">
-              <Label htmlFor="type">Type</Label>
-              <Select value={type} onValueChange={(v) => setType(v as 'feature' | 'fix' | 'bugfix')}>
-                <SelectTrigger data-testid="mission-type-select">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="feature">Feature</SelectItem>
-                  <SelectItem value="fix">Fix</SelectItem>
-                  <SelectItem value="bugfix">Bugfix</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Workflow */}
