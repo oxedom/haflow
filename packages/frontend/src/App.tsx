@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Menu, Headphones, Trash2 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { MissionDetail as MissionDetailView } from '@/components/MissionDetail'

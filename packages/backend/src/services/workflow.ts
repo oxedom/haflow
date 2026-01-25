@@ -6,23 +6,14 @@ const WORKFLOWS: Record<string, Workflow> = {
     workflow_id: 'raw-research-plan-implement',
     name: 'Raw Research Plan Implement',
     steps: [
-      { step_id: 'cleanup', name: 'Cleanup', type: 'agent', agent: 'cleanup-agent', inputArtifact: 'raw-input.md', outputArtifact: 'structured-text.md' },
-      { step_id: 'review-structured', name: 'Review Structured', type: 'human-gate', reviewArtifact: 'structured-text.md' },
-      { step_id: 'research', name: 'Research', type: 'agent', agent: 'research-agent', inputArtifact: 'structured-text.md', outputArtifact: 'research-output.md' },
-      { step_id: 'review-research', name: 'Review Research', type: 'human-gate', reviewArtifact: 'research-output.md' },
-      { step_id: 'planning', name: 'Planning', type: 'agent', agent: 'planning-agent', inputArtifact: 'research-output.md', outputArtifact: 'implementation-plan.md' },
-      { step_id: 'review-plan', name: 'Review Plan', type: 'human-gate', reviewArtifact: 'implementation-plan.md' },
+      { step_id: 'cleanup', name: 'Cleanup', type: 'agent', agent: 'cleanup-agent', inputArtifact: 'raw-input.md', outputArtifact: 'structured-text.md', workspaceMode: 'document' },
+      { step_id: 'review-structured', name: 'Review Structured', type: 'human-gate', reviewArtifact: 'structured-text.md', workspaceMode: 'document' },
+      { step_id: 'research', name: 'Research', type: 'agent', agent: 'research-agent', inputArtifact: 'structured-text.md', outputArtifact: 'research-output.md', workspaceMode: 'document' },
+      { step_id: 'review-research', name: 'Review Research', type: 'human-gate', reviewArtifact: 'research-output.md', workspaceMode: 'document' },
+      { step_id: 'planning', name: 'Planning', type: 'agent', agent: 'planning-agent', inputArtifact: 'research-output.md', outputArtifact: 'implementation-plan.md', workspaceMode: 'document' },
+      { step_id: 'review-plan', name: 'Review Plan', type: 'human-gate', reviewArtifact: 'implementation-plan.md', workspaceMode: 'document' },
       { step_id: 'implementation', name: 'Implementation', type: 'agent', agent: 'impl-agent', inputArtifact: 'implementation-plan.md', outputArtifact: 'implementation-result.json', workspaceMode: 'codegen' },
-      { step_id: 'review-impl', name: 'Review Implementation', type: 'human-gate', reviewArtifact: 'implementation-result.json' },
-    ],
-  },
-  'simple': {
-    workflow_id: 'simple',
-    name: 'Simple',
-    steps: [
-      { step_id: 'raw-input', name: 'Raw Input', type: 'human-gate', reviewArtifact: 'raw-input.md' },
-      { step_id: 'process', name: 'Process', type: 'agent', agent: 'planning-agent', inputArtifact: 'raw-input.md', outputArtifact: 'output.md' },
-      { step_id: 'review', name: 'Review', type: 'human-gate', reviewArtifact: 'output.md' },
+      { step_id: 'review-impl', name: 'Review Implementation', type: 'human-gate', reviewArtifact: 'implementation-result.json', workspaceMode: 'document' },
     ],
   },
   'oneshot': {
@@ -30,7 +21,7 @@ const WORKFLOWS: Record<string, Workflow> = {
     name: 'Oneshot',
     steps: [
       { step_id: 'codegen', name: 'Code Generation', type: 'agent', agent: 'impl-agent', inputArtifact: 'raw-input.md', outputArtifact: 'implementation-result.json', workspaceMode: 'codegen' },
-      { step_id: 'review', name: 'Review', type: 'human-gate', reviewArtifact: 'implementation-result.json' },
+      { step_id: 'review', name: 'Review', type: 'human-gate', reviewArtifact: 'implementation-result.json', workspaceMode: 'document' },
     ],
   },
 };
