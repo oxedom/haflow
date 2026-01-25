@@ -4,6 +4,8 @@ import {
   getDefaultWorkflow,
   getWorkflowStepName,
   getStepPrompt,
+  getWorkflows,
+  getWorkflowById,
 } from '../../../src/services/workflow.js';
 
 describe('workflow service', () => {
@@ -146,6 +148,120 @@ describe('workflow service', () => {
         const prompt = getStepPrompt(step);
         expect(prompt).toContain('<promise>COMPLETE</promise>');
       }
+    });
+  });
+
+  describe('raw-plan-implement workflow', () => {
+    it('workflow is registered and discoverable', () => {
+      const workflows = getWorkflows();
+      const rawPlanImpl = workflows.find(w => w.workflow_id === 'raw-plan-implement');
+      expect(rawPlanImpl).toBeDefined();
+    });
+
+    it('can be retrieved by ID', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      expect(workflow).toBeDefined();
+      expect(workflow?.workflow_id).toBe('raw-plan-implement');
+    });
+
+    it('has correct name', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      expect(workflow?.name).toBe('Raw - Plan → Implement');
+    });
+
+    it('has 4 steps', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      expect(workflow?.steps).toHaveLength(4);
+    });
+
+    it('steps are in correct order: plan → review-plan → implement → review-impl', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      expect(workflow?.steps[0].step_id).toBe('plan');
+      expect(workflow?.steps[1].step_id).toBe('review-plan');
+      expect(workflow?.steps[2].step_id).toBe('implement');
+      expect(workflow?.steps[3].step_id).toBe('review-impl');
+    });
+
+    it('step types are correct: agent → human-gate → agent → code-review', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      expect(workflow?.steps[0].type).toBe('agent');
+      expect(workflow?.steps[1].type).toBe('human-gate');
+      expect(workflow?.steps[2].type).toBe('agent');
+      expect(workflow?.steps[3].type).toBe('code-review');
+    });
+
+    it('planning phase uses document mode', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      expect(workflow?.steps[0].workspaceMode).toBe('document');
+      expect(workflow?.steps[1].workspaceMode).toBe('document');
+    });
+
+    it('implementation phase uses codegen mode', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      expect(workflow?.steps[2].workspaceMode).toBe('codegen');
+      expect(workflow?.steps[3].workspaceMode).toBe('codegen');
+    });
+
+    it('agent steps have inputArtifact and outputArtifact', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      const agentSteps = workflow?.steps.filter(s => s.type === 'agent');
+
+      for (const step of agentSteps || []) {
+        expect(step.inputArtifact).toBeDefined();
+        expect(step.outputArtifact).toBeDefined();
+      }
+    });
+
+    it('human-gate steps have reviewArtifact', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      const humanGateSteps = workflow?.steps.filter(s => s.type === 'human-gate');
+
+      for (const step of humanGateSteps || []) {
+        expect(step.reviewArtifact).toBeDefined();
+      }
+    });
+
+    it('planning output is input to implementation phase (context passing)', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      const planningStep = workflow?.steps[0];
+      const implementationStep = workflow?.steps[2];
+
+      expect(planningStep?.outputArtifact).toBe('planning-output.md');
+      expect(implementationStep?.inputArtifact).toBe('planning-output.md');
+    });
+
+    it('planning step has planning-focused prompt', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      const planStep = workflow?.steps[0];
+      const prompt = getStepPrompt(planStep!);
+
+      expect(prompt).toContain('PLANNING & DESIGN phase');
+      expect(prompt).toContain('raw-input.md');
+      expect(prompt).toContain('planning-output.md');
+      expect(prompt).toContain('plan');
+      expect(prompt).toContain('<promise>COMPLETE</promise>');
+    });
+
+    it('implementation step has implementation-focused prompt with plan reference', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      const implStep = workflow?.steps[2];
+      const prompt = getStepPrompt(implStep!);
+
+      expect(prompt).toContain('IMPLEMENTATION phase');
+      expect(prompt).toContain('planning-output.md');
+      expect(prompt).toContain('planning document');
+      expect(prompt).toContain('implementation-result.json');
+      expect(prompt).toContain('<promise>COMPLETE</promise>');
+    });
+
+    it('code-review step has appropriate quick commands', () => {
+      const workflow = getWorkflowById('raw-plan-implement');
+      const reviewStep = workflow?.steps[3];
+
+      expect(reviewStep?.quickCommands).toBeDefined();
+      expect(reviewStep?.quickCommands).toContain('npm test');
+      expect(reviewStep?.quickCommands).toContain('npm run lint');
+      expect(reviewStep?.quickCommands).toContain('npm run build');
     });
   });
 });

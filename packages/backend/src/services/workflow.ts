@@ -24,6 +24,16 @@ const WORKFLOWS: Record<string, Workflow> = {
       { step_id: 'review', name: 'Review', type: 'code-review', workspaceMode: 'codegen', quickCommands: ['git status'] },
     ],
   },
+  'raw-plan-implement': {
+    workflow_id: 'raw-plan-implement',
+    name: 'Raw - Plan → Implement',
+    steps: [
+      { step_id: 'plan', name: 'Phase 1: Planning & Design', type: 'agent', agent: 'planning-agent', inputArtifact: 'raw-input.md', outputArtifact: 'planning-output.md', workspaceMode: 'document' },
+      { step_id: 'review-plan', name: 'Review Planning', type: 'human-gate', reviewArtifact: 'planning-output.md', workspaceMode: 'document' },
+      { step_id: 'implement', name: 'Phase 2: Implementation', type: 'agent', agent: 'impl-agent', inputArtifact: 'planning-output.md', outputArtifact: 'implementation-result.json', workspaceMode: 'codegen' },
+      { step_id: 'review-impl', name: 'Review Implementation', type: 'code-review', workspaceMode: 'codegen', quickCommands: ['npm test', 'npm run lint', 'npm run build'] },
+    ],
+  },
 };
 
 // Step-specific prompts for Claude agents
@@ -119,6 +129,60 @@ Your task:
 Focus on: correctness, code quality, following project patterns.
 
 When you are satisfied with the implementation, include <promise>COMPLETE</promise> at the end of your response.`,
+
+  'plan': `You are in the PLANNING & DESIGN phase of a two-phase workflow. Your role is to thoroughly understand the requirements, explore the codebase, and design a comprehensive implementation approach.
+
+Read the file "raw-input.md" and create a detailed planning document.
+
+Your task:
+1. Read raw-input.md to understand the user's request
+2. Explore the codebase to understand existing architecture, patterns, and conventions
+3. Analyze the requirements and identify key challenges
+4. Design a comprehensive implementation approach with clear architecture
+5. Document all findings and create a detailed planning document
+6. Write the planning document to "planning-output.md"
+
+The planning document should include:
+- Problem statement and requirements summary
+- Codebase architecture overview and relevant patterns
+- Proposed implementation approach with architecture decisions
+- List of files to create/modify with specific changes
+- Dependencies and integration points
+- Known risks and mitigation strategies
+- Testing strategy and success criteria
+
+DO NOT implement or write code during this phase. Focus on thorough exploration and clear documentation.
+
+When you have completed the planning document, include <promise>COMPLETE</promise> at the end of your response.`,
+
+  'implement': `You are in the IMPLEMENTATION phase of a two-phase workflow. You have completed planning in Phase 1.
+
+You have the following planning document from Phase 1: "planning-output.md"
+
+Your task:
+1. Read the planning document (planning-output.md) to understand the design and approach
+2. Explore the codebase to understand existing patterns (referenced in the planning document)
+3. Implement the planned changes by modifying files in the project according to the plan
+4. Write tests as specified in the planning document
+5. Ensure code quality and follows existing project conventions
+6. Document what was done in "artifacts/implementation-result.json" with format:
+   {
+     "status": "completed" | "partial" | "blocked",
+     "filesCreated": ["path/to/file1", ...],
+     "filesModified": ["path/to/file2", ...],
+     "testsAdded": ["test descriptions..."],
+     "notes": "any important notes about the implementation"
+   }
+
+Implementation guidelines:
+- Reference the planning document for architecture and approach
+- Implement changes exactly according to the plan
+- Follow existing code patterns and conventions documented in the plan
+- Create tests as specified
+- If you encounter issues requiring plan adjustment, explicitly note and propose solutions aligned with the original intent
+- Focus on correctness, code quality, and plan adherence
+
+When you are satisfied with the implementation and all success criteria from the plan are met, include <promise>COMPLETE</promise> at the end of your response.`,
 };
 
 // Get the prompt for a specific step
