@@ -1,12 +1,20 @@
 import { beforeEach, afterEach, vi } from 'vitest';
-import { mkdtemp, rm } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import { mkdtemp, rm, mkdir } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Use project-local .test-tmp directory to avoid Docker Desktop file sharing issues
+// Docker Desktop (on macOS/Windows/Linux) restricts which host paths can be mounted
+const projectTmpDir = join(__dirname, '..', '.test-tmp');
 
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = await mkdtemp(join(tmpdir(), 'haflow-test-'));
+  // Ensure the project-local temp directory exists
+  await mkdir(projectTmpDir, { recursive: true });
+  testDir = await mkdtemp(join(projectTmpDir, 'haflow-test-'));
   vi.stubEnv('HAFLOW_HOME', testDir);
 });
 

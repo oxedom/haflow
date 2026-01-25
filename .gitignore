@@ -2,3 +2,4 @@
 node_modules/*
 dist/*
 .claude-auth.json
+.test-tmp/

@@ -37,7 +37,8 @@ describe('frontend container runtime', () => {
     const fixturePath = resolve(__dirname, '../../resource/vue-frontend');
 
     // Build on host first (much faster than building inside Docker)
-    await execAsync('npm install && npm run build', { cwd: fixturePath });
+    // Use --ignore-workspace to install deps locally in the fixture directory
+    await execAsync('pnpm install --ignore-workspace && pnpm run build', { cwd: fixturePath });
 
     // Start container serving pre-built dist folder
     const { stdout } = await execAsync(
