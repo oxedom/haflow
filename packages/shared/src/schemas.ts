@@ -8,6 +8,7 @@ export const MissionStatusSchema = z.enum([
   'draft',              // Initial state, not started
   'ready',              // Ready to run
   'waiting_human',      // At a human gate
+  'waiting_code_review', // At a code-review gate
   'running_code_agent', // Agent container running
   'running_root_llm',   // root LLM running
   'failed',             // Agent failed
@@ -15,7 +16,7 @@ export const MissionStatusSchema = z.enum([
 ]);
 
 // Step types in a workflow
-export const StepTypeSchema = z.enum(['llm', 'agent', 'human-gate']);
+export const StepTypeSchema = z.enum(['llm', 'agent', 'human-gate', 'code-review']);
 
 // Workspace mode for workflow steps
 export const WorkspaceModeSchema = z.enum(['document', 'codegen']);
@@ -30,6 +31,7 @@ export const WorkflowStepSchema = z.object({
   outputArtifact: z.string().optional(),  // e.g., "structured-text.md"
   reviewArtifact: z.string().optional(),  // For human-gate steps
   workspaceMode: WorkspaceModeSchema, // 'document' (default) or 'codegen'
+  quickCommands: z.array(z.string()).optional(), // For code-review steps
 });
 
 // Workflow definition

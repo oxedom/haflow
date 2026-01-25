@@ -6,7 +6,7 @@ import { existsSync } from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+export const execAsync = promisify(exec);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Navigate from packages/backend/src/utils/ up to repo root

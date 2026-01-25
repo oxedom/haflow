@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import type { MissionDetail as MissionDetailType, MissionStatus, StepRun } from '@haflow/shared'
+import type { MissionDetail as MissionDetailType, MissionStatus, StepRun, StepType } from '@haflow/shared'
 import { Check, ChevronDown, ChevronUp, ArrowRight, Play } from 'lucide-react'
 import * as Diff from 'diff'
 import ReactMarkdown from 'react-markdown'
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { StepHistoryModal } from './StepHistoryModal'
+import { CodeReviewStep } from './CodeReviewStep'
 
 interface MissionDetailProps {
   mission: MissionDetailType
@@ -22,10 +23,25 @@ const statusConfig: Record<MissionStatus, { label: string; variant: 'default' | 
   draft: { label: 'Draft', variant: 'secondary' },
   ready: { label: 'Ready', variant: 'info' },
   waiting_human: { label: 'Waiting for Human Review', variant: 'warning' },
+  waiting_code_review: { label: 'Review Code', variant: 'secondary' },
   running_code_agent: { label: 'Running Agent', variant: 'success' },
   running_root_llm: { label: 'Running LLM', variant: 'success' },
   failed: { label: 'Failed', variant: 'destructive' },
   completed: { label: 'Completed', variant: 'outline' },
+}
+
+function getStepEmoji(type: StepType): string {
+  switch (type) {
+    case 'human-gate':
+    case 'code-review':
+      return '👋'
+    case 'agent':
+      return '🤖'
+    case 'llm':
+      return '🧠'
+    default:
+      return ''
+  }
 }
 
 function WorkflowTimeline({
@@ -72,7 +88,7 @@ function WorkflowTimeline({
                   isCurrent ? 'text-foreground font-medium' : 'text-muted-foreground'
                 )}
               >
-                {step.name}
+                {getStepEmoji(step.type)} {step.name}
               </span>
             </div>
             {/* Connector Line */}
@@ -228,8 +244,10 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
   const artifactContent = artifactName ? mission.artifacts[artifactName] : null
 
   // Show human-gate editor for waiting_human, OR for ready/draft when current step is human-gate
+  // Exclude code-review step type (handled by CodeReviewStep)
   const shouldShowHumanGateEditor =
-    artifactName && (
+    artifactName &&
+    currentStep?.type !== 'code-review' && (
       mission.status === 'waiting_human' ||
       ((mission.status === 'ready' || mission.status === 'draft') && currentStep?.type === 'human-gate')
     )
@@ -288,6 +306,15 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
                 </pre>
               </CardContent>
             </Card>
+          </div>
+        ) : mission.status === 'waiting_code_review' && currentStep?.type === 'code-review' ? (
+          // Code review step UI
+          <div className="flex-1 p-4 md:p-6 overflow-auto">
+            <CodeReviewStep
+              mission={mission}
+              step={currentStep}
+              onContinue={onContinue}
+            />
           </div>
         ) : shouldShowHumanGateEditor ? (
           // Editor for human gate

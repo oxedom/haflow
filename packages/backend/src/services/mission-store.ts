@@ -129,6 +129,16 @@ async function listMissions(): Promise<MissionListItem[]> {
   return items;
 }
 
+// --- Delete ---
+async function deleteMission(missionId: string): Promise<void> {
+  const dir = missionDir(missionId);
+  if (!existsSync(dir)) {
+    throw new Error(`Mission not found: ${missionId}`);
+  }
+  const { rm } = await import('fs/promises');
+  await rm(dir, { recursive: true, force: true });
+}
+
 // --- Update ---
 async function updateMeta(missionId: string, updates: Partial<MissionMeta>): Promise<void> {
   const meta = await getMeta(missionId);
@@ -275,6 +285,7 @@ export const missionStore = {
   getMeta,
   getDetail,
   listMissions,
+  deleteMission,
   updateMeta,
   loadArtifacts,
   getArtifact,

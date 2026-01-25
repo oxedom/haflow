@@ -34,7 +34,7 @@ async function continueMission(missionId: string): Promise<void> {
     return;
   }
 
-  if (currentStep.type === 'human-gate') {
+  if (currentStep.type === 'human-gate' || currentStep.type === 'code-review') {
     // Human approved - advance to next step
     await advanceToNextStep(missionId, meta);
   } else if (currentStep.type === 'agent') {
@@ -58,9 +58,14 @@ async function advanceToNextStep(missionId: string, meta: MissionMeta): Promise<
   }
 
   // Determine new status based on next step type
-  const newStatus: MissionStatus = nextStep.type === 'human-gate'
-    ? 'waiting_human'
-    : 'ready';
+  let newStatus: MissionStatus;
+  if (nextStep.type === 'human-gate') {
+    newStatus = 'waiting_human';
+  } else if (nextStep.type === 'code-review') {
+    newStatus = 'waiting_code_review';
+  } else {
+    newStatus = 'ready';
+  }
 
   await missionStore.updateMeta(missionId, {
     status: newStatus,

@@ -1,11 +1,13 @@
 import { Router, type Router as RouterType } from 'express';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { CreateMissionRequestSchema, SaveArtifactRequestSchema } from '@haflow/shared';
 import { missionStore } from '../services/mission-store.js';
 import { missionEngine } from '../services/mission-engine.js';
 import { getWorkflows } from '../services/workflow.js';
 import { sendSuccess, sendError } from '../utils/response.js';
-import { config, getProjectGitStatus, getFileDiff } from '../utils/config.js';
+import { config, execAsync, getProjectGitStatus, getFileDiff } from '../utils/config.js';
+import { executeCommand, getExecution } from '../services/command-runner.js';
 
 export const missionRoutes: RouterType = Router();
 export const workflowRoutes: RouterType = Router();
@@ -171,6 +173,77 @@ missionRoutes.get('/:missionId/git-diff/:filePath(*)', async (req, res, next) =>
     const clonePath = join(config.missionsDir, missionId, 'project');
     const diff = await getFileDiff(clonePath, filePath);
     sendSuccess(res, { diff });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/missions/:missionId/git-diff - Get full diff for all changed files
+missionRoutes.get('/:missionId/git-diff', async (req, res, next) => {
+  try {
+    const missionId = req.params.missionId as string;
+
+    const meta = await missionStore.getMeta(missionId);
+    if (!meta) {
+      return sendError(res, `Mission not found: ${missionId}`, 404);
+    }
+
+    const clonePath = join(config.missionsDir, missionId, 'project');
+    if (!existsSync(clonePath)) {
+      return sendSuccess(res, { diff: '' });
+    }
+
+    const { stdout } = await execAsync('git diff HEAD', { cwd: clonePath });
+    sendSuccess(res, { diff: stdout });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/missions/:missionId/run-command - Execute a command in the mission's cloned project
+missionRoutes.post('/:missionId/run-command', async (req, res, next) => {
+  try {
+    const missionId = req.params.missionId as string;
+    const { command, timeout } = req.body as { command: string; timeout?: number };
+
+    const meta = await missionStore.getMeta(missionId);
+    if (!meta) {
+      return sendError(res, `Mission not found: ${missionId}`, 404);
+    }
+
+    if (!command || typeof command !== 'string') {
+      return sendError(res, 'Command is required', 400);
+    }
+
+    // Check if project clone exists
+    const projectPath = join(config.missionsDir, missionId, 'project');
+    if (!existsSync(projectPath)) {
+      return sendError(res, 'No project clone exists for this mission', 400);
+    }
+
+    const executionId = await executeCommand(missionId, command, timeout);
+    sendSuccess(res, { executionId });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/missions/:missionId/execution/:executionId - Get command execution status/output
+missionRoutes.get('/:missionId/execution/:executionId', async (req, res, next) => {
+  try {
+    const { missionId, executionId } = req.params;
+
+    const meta = await missionStore.getMeta(missionId);
+    if (!meta) {
+      return sendError(res, `Mission not found: ${missionId}`, 404);
+    }
+
+    const execution = getExecution(executionId);
+    if (!execution) {
+      return sendError(res, `Execution not found: ${executionId}`, 404);
+    }
+
+    sendSuccess(res, execution);
   } catch (err) {
     next(err);
   }

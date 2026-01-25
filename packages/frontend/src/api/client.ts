@@ -85,4 +85,71 @@ export const api = {
     if (!res.data.success) throw new Error(res.data.error || 'Failed to cleanup containers');
     return res.data.data!;
   },
+
+  // Code review step APIs
+  runCommand: async (
+    missionId: string,
+    command: string,
+    timeout?: number
+  ): Promise<{ executionId: string }> => {
+    const res = await client.post<ApiResponse<{ executionId: string }>>(
+      `/missions/${missionId}/run-command`,
+      { command, timeout }
+    );
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to run command');
+    return res.data.data!;
+  },
+
+  getExecution: async (
+    missionId: string,
+    executionId: string
+  ): Promise<{
+    id: string;
+    command: string;
+    status: 'running' | 'completed' | 'failed';
+    output: string;
+    exitCode?: number;
+    startedAt: string;
+    finishedAt?: string;
+  }> => {
+    const res = await client.get<ApiResponse<{
+      id: string;
+      command: string;
+      status: 'running' | 'completed' | 'failed';
+      output: string;
+      exitCode?: number;
+      startedAt: string;
+      finishedAt?: string;
+    }>>(`/missions/${missionId}/execution/${executionId}`);
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to get execution');
+    return res.data.data!;
+  },
+
+  getFullDiff: async (missionId: string): Promise<{ diff: string }> => {
+    const res = await client.get<ApiResponse<{ diff: string }>>(`/missions/${missionId}/git-diff`);
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to get diff');
+    return res.data.data!;
+  },
+
+  getFileDiff: async (missionId: string, filePath: string): Promise<{ diff: string }> => {
+    const res = await client.get<ApiResponse<{ diff: string }>>(
+      `/missions/${missionId}/git-diff/${encodeURIComponent(filePath)}`
+    );
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to get file diff');
+    return res.data.data!;
+  },
+
+  getGitStatus: async (missionId: string): Promise<{
+    hasChanges: boolean;
+    files: Array<{ path: string; status: string }>;
+    summary: string;
+  }> => {
+    const res = await client.get<ApiResponse<{
+      hasChanges: boolean;
+      files: Array<{ path: string; status: string }>;
+      summary: string;
+    }>>(`/missions/${missionId}/git-status`);
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to get git status');
+    return res.data.data!;
+  },
 };

@@ -29,7 +29,7 @@ describe('workflow service', () => {
       expect(workflow.steps).toHaveLength(8);
     });
 
-    it('alternates between agent and human-gate steps', () => {
+    it('alternates between agent and review steps', () => {
       const workflow = getDefaultWorkflow();
 
       // Even indices (0,2,4,6) should be agent
@@ -38,11 +38,11 @@ describe('workflow service', () => {
       expect(workflow.steps[4].type).toBe('agent');
       expect(workflow.steps[6].type).toBe('agent');
 
-      // Odd indices (1,3,5,7) should be human-gate
+      // Odd indices (1,3,5) should be human-gate, 7 is code-review
       expect(workflow.steps[1].type).toBe('human-gate');
       expect(workflow.steps[3].type).toBe('human-gate');
       expect(workflow.steps[5].type).toBe('human-gate');
-      expect(workflow.steps[7].type).toBe('human-gate');
+      expect(workflow.steps[7].type).toBe('code-review');
     });
 
     it('agent steps have inputArtifact and outputArtifact', () => {

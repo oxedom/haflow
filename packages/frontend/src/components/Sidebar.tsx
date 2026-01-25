@@ -19,6 +19,7 @@ const statusConfig: Record<MissionStatus, { label: string; variant: 'default' | 
   draft: { label: 'Draft', variant: 'secondary' },
   ready: { label: 'Ready', variant: 'info' },
   waiting_human: { label: 'Waiting', variant: 'warning' },
+  waiting_code_review: { label: 'Review', variant: 'secondary' },
   running_code_agent: { label: 'Running', variant: 'success' },
   running_root_llm: { label: 'Running', variant: 'success' },
   failed: { label: 'Failed', variant: 'destructive' },

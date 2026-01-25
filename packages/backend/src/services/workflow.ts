@@ -13,7 +13,7 @@ const WORKFLOWS: Record<string, Workflow> = {
       { step_id: 'planning', name: 'Planning', type: 'agent', agent: 'planning-agent', inputArtifact: 'research-output.md', outputArtifact: 'implementation-plan.md', workspaceMode: 'document' },
       { step_id: 'review-plan', name: 'Review Plan', type: 'human-gate', reviewArtifact: 'implementation-plan.md', workspaceMode: 'document' },
       { step_id: 'implementation', name: 'Implementation', type: 'agent', agent: 'impl-agent', inputArtifact: 'implementation-plan.md', outputArtifact: 'implementation-result.json', workspaceMode: 'codegen' },
-      { step_id: 'review-impl', name: 'Review Implementation', type: 'human-gate', reviewArtifact: 'implementation-result.json', workspaceMode: 'document' },
+      { step_id: 'review-impl', name: 'Review Implementation', type: 'code-review', workspaceMode: 'codegen', quickCommands: ['npm test', 'npm run lint', 'npm run build'] },
     ],
   },
   'oneshot': {
@@ -21,7 +21,7 @@ const WORKFLOWS: Record<string, Workflow> = {
     name: 'Oneshot',
     steps: [
       { step_id: 'codegen', name: 'Code Generation', type: 'agent', agent: 'impl-agent', inputArtifact: 'raw-input.md', outputArtifact: 'implementation-result.json', workspaceMode: 'codegen' },
-      { step_id: 'review', name: 'Review', type: 'human-gate', reviewArtifact: 'implementation-result.json', workspaceMode: 'document' },
+      { step_id: 'review', name: 'Review', type: 'code-review', workspaceMode: 'codegen', quickCommands: ['git status'] },
     ],
   },
 };
