@@ -1,8 +1,32 @@
 {
-  "name": "frontend",
+  "name": "@haflow/frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
+  "description": "Frontend UI for Haflow - multi-project Claude Code orchestrator",
+  "author": "oxedom",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxedom/haflow.git",
+    "directory": "packages/frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/oxedom/haflow/issues"
+  },
+  "homepage": "https://github.com/oxedom/haflow#readme",
+  "keywords": [
+    "haflow",
+    "claude",
+    "frontend",
+    "ui"
+  ],
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",

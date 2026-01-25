@@ -1,5 +1,6 @@
 {
   "name": "@haflow/backend",
+  "private": true,
   "version": "0.0.1",
   "type": "module",
   "description": "Backend server for Haflow - multi-project Claude Code orchestrator",
