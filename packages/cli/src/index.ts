@@ -4,6 +4,9 @@ import { spawn } from 'child_process';
 import { resolve } from 'path';
 import { existsSync } from 'fs';
 import { paths, ensureHome, loadConfig, saveConfig } from './config.js';
+import { linkCommand } from './commands/link.js';
+import { unlinkCommand } from './commands/unlink.js';
+import { statusCommand } from './commands/status.js';
 
 const program = new Command();
 
@@ -21,14 +24,17 @@ program
 // link
 program
   .command('link [path]')
-  .description('Link a project')
+  .description('Link a project for synchronization to frontend')
   .action(async (path?: string) => {
-    const target = resolve(path || process.cwd());
+    await linkCommand(path);
+  });
 
-
-
-    await saveConfig({ linkedProject: target });
-    console.log(`Linked: ${target}`);
+// unlink
+program
+  .command('unlink')
+  .description('Unlink the currently linked project')
+  .action(async () => {
+    await unlinkCommand();
   });
 
 // start
@@ -65,20 +71,9 @@ program
 // status
 program
   .command('status')
-  .description('Show status')
+  .description('Show project linking status')
   .action(async () => {
-    const config = await loadConfig();
-
-    console.log('haflow Status\n');
-    console.log(`Home:    ${paths.home}`);
-    console.log(`Project: ${config.linkedProject || '(none)'}`);
-
-    // Simple port check
-    const backendUp = await checkPort(4000);
-    const frontendUp = await checkPort(5173);
-
-    console.log(`\nBackend:  ${backendUp ? 'Running' : 'Stopped'} (port 4000)`);
-    console.log(`Frontend: ${frontendUp ? 'Running' : 'Stopped'} (port 5173)`);
+    await statusCommand();
   });
 
 async function checkPort(port: number): Promise<boolean> {
