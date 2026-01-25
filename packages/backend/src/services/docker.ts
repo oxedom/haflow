@@ -323,12 +323,12 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
   // In codegen mode: /workspace/artifacts (overlays clone's artifacts if any)
   // In document mode: /mission/artifacts
   args.push('-v', `${artifactsPath}:${workingDir}/artifacts`);
+  // '--model', 'claude-haiku-4-5',
 
   args.push(
     '-w', workingDir,
     defaultImage,
     'claude',
-    '--model', 'claude-haiku-4-5',
     '--verbose',
     '--print',
     '--output-format', 'stream-json',

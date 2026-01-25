@@ -1,23 +1,56 @@
 {
   "name": "haflow",
-  "private": true,
-  "version": "1.0.0",
+  "version": "0.0.1",
   "type": "module",
+  "description": "Local-first orchestrator for AI-assisted missions with human gates and ephemeral sandboxes",
+  "author": "oxedom",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oxedom/haflow.git"
   },
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oxedom/haflow/issues"
+  },
+  "homepage": "https://github.com/oxedom/haflow#readme",
+  "keywords": [
+    "haflow",
+    "claude",
+    "ai",
+    "orchestrator",
+    "missions"
+  ],
+  "files": [
+    "packages/shared/dist",
+    "packages/backend/dist",
+    "packages/frontend/dist"
+  ],
+  "main": "./packages/backend/dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./packages/backend/dist/index.js"
+    },
+    "./shared": {
+      "import": "./packages/shared/dist/index.js"
+    },
+    "./frontend": {
+      "import": "./packages/frontend/dist"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "packageManager": "pnpm@10.28.0",
   "scripts": {
-    "dev": "pnpm --filter @haflow/shared build && pnpm --parallel --filter @haflow/backend --filter frontend dev",
-    "build:all": "pnpm --filter @haflow/shared build && pnpm --filter @haflow/backend build && pnpm --filter frontend build && pnpm --filter @haflow/cli build && pnpm --filter site build",
-    "test": "pnpm --filter @haflow/backend test && pnpm --filter @haflow/cli test && pnpm --filter frontend test:e2e",
+    "dev": "pnpm --filter @haflow/shared build && pnpm --parallel --filter @haflow/backend --filter @haflow/frontend dev",
+    "build:all": "pnpm --filter @haflow/shared build && pnpm --filter @haflow/backend build && pnpm --filter @haflow/frontend build && pnpm --filter @haflow/cli build && pnpm --filter site build",
+    "test": "pnpm --filter @haflow/backend test && pnpm --filter @haflow/cli test && pnpm --filter @haflow/frontend test:e2e",
     "site:dev": "pnpm --filter site dev",
     "site:build": "pnpm --filter site build",
-    "site:preview": "pnpm --filter site preview"
+    "site:preview": "pnpm --filter site preview",
+    "prepublishOnly": "pnpm --filter @haflow/shared build && pnpm --filter @haflow/backend build && pnpm --filter @haflow/frontend build"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
