@@ -23,6 +23,61 @@ workflowRoutes.get('/', async (_req, res, next) => {
   }
 });
 
+// GET /api/workflows/templates - Alias for listing workflows
+workflowRoutes.get('/templates', async (_req, res, next) => {
+  try {
+    const workflows = getWorkflows();
+    sendSuccess(res, workflows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/workflows/execute - Validate and execute a workflow
+workflowRoutes.post('/execute', async (req, res, next) => {
+  try {
+    const { workflowId, workflow } = req.body;
+
+    // Must provide either workflowId or workflow
+    if (!workflowId && !workflow) {
+      return sendError(res, 'workflowId or workflow required', 400);
+    }
+
+    let resolvedWorkflow;
+
+    if (workflowId) {
+      // Look up template workflow by ID
+      const workflows = getWorkflows();
+      resolvedWorkflow = workflows.find(w => w.workflow_id === workflowId);
+      if (!resolvedWorkflow) {
+        return sendError(res, `Workflow not found: ${workflowId}`, 404);
+      }
+    } else {
+      // Use provided dynamic workflow
+      resolvedWorkflow = workflow;
+    }
+
+    // Validate workflow has at least one step
+    if (!resolvedWorkflow.steps || resolvedWorkflow.steps.length === 0) {
+      return sendError(res, 'Workflow must have at least one step', 400);
+    }
+
+    // Validate agent steps have agent type
+    for (const step of resolvedWorkflow.steps) {
+      if (step.type === 'agent' && !step.agent) {
+        return sendError(res, `Step "${step.name}" is type "agent" but missing agent type`, 400);
+      }
+    }
+
+    sendSuccess(res, {
+      workflow_id: resolvedWorkflow.workflow_id,
+      steps_count: resolvedWorkflow.steps.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/missions - List all missions
 missionRoutes.get('/', async (_req, res, next) => {
   try {
