@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { MissionDetail as MissionDetailType, MissionStatus, StepRun, StepType } from '@haflow/shared'
-import { Check, ChevronDown, ChevronUp, ArrowRight, Play } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, ArrowRight, Play, Trash2 } from 'lucide-react'
 import * as Diff from 'diff'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -8,6 +8,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { StepHistoryModal } from './StepHistoryModal'
 import { CodeReviewStep } from './CodeReviewStep'
@@ -17,6 +25,8 @@ interface MissionDetailProps {
   onSaveArtifact: (filename: string, content: string) => void
   onContinue: () => void
   onMarkCompleted: () => void
+  onDelete: () => void
+  isDeleting?: boolean
 }
 
 const statusConfig: Record<MissionStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' }> = {
@@ -218,12 +228,13 @@ function DiffViewer({ original, modified }: DiffViewerProps) {
   )
 }
 
-export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompleted }: MissionDetailProps) {
+export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompleted, onDelete, isDeleting }: MissionDetailProps) {
   const [viewMode, setViewMode] = useState<'editor' | 'diff' | 'preview'>('editor')
   const [editorContent, setEditorContent] = useState('')
   const [originalContent, setOriginalContent] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
   const [selectedHistoryStepIndex, setSelectedHistoryStepIndex] = useState<number | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const handleHistoryStepClick = (stepIndex: number) => {
     setSelectedHistoryStepIndex(stepIndex)
@@ -272,13 +283,24 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
     <div className="flex-1 flex flex-col h-screen bg-muted/30 pt-14 md:pt-0">
       {/* Header */}
       <div data-testid="mission-detail-header" className="bg-background border-b px-4 md:px-6 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <h2 data-testid="mission-title" className="text-lg md:text-xl font-semibold truncate">
-            Mission: {mission.title}
-          </h2>
-          <Badge data-testid="mission-status-badge" variant={statusInfo.variant} className="w-fit">
-            {statusInfo.label}
-          </Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <h2 data-testid="mission-title" className="text-lg md:text-xl font-semibold truncate">
+              Mission: {mission.title}
+            </h2>
+            <Badge data-testid="mission-status-badge" variant={statusInfo.variant} className="w-fit">
+              {statusInfo.label}
+            </Badge>
+          </div>
+          <Button
+            data-testid="delete-mission-button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
@@ -462,6 +484,36 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
         artifacts={mission.artifacts}
         runs={mission.runs}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Mission</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{mission.title}"? This will also remove any associated Docker containers. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                onDelete()
+                setIsDeleteDialogOpen(false)
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Mission'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

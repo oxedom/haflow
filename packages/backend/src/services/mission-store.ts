@@ -139,6 +139,21 @@ async function deleteMission(missionId: string): Promise<void> {
   await rm(dir, { recursive: true, force: true });
 }
 
+async function deleteAllMissions(): Promise<number> {
+  const dir = missionsDir();
+  if (!existsSync(dir)) {
+    return 0;
+  }
+  const entries = await readdir(dir, { withFileTypes: true });
+  const dirs = entries.filter(e => e.isDirectory());
+  
+  const { rm } = await import('fs/promises');
+  for (const entry of dirs) {
+    await rm(join(dir, entry.name), { recursive: true, force: true });
+  }
+  return dirs.length;
+}
+
 // --- Update ---
 async function updateMeta(missionId: string, updates: Partial<MissionMeta>): Promise<void> {
   const meta = await getMeta(missionId);
@@ -286,6 +301,7 @@ export const missionStore = {
   getDetail,
   listMissions,
   deleteMission,
+  deleteAllMissions,
   updateMeta,
   loadArtifacts,
   getArtifact,
