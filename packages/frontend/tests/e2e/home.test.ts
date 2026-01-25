@@ -21,7 +21,7 @@ test.describe('Home Page', () => {
     await page.waitForLoadState('networkidle');
 
     // Check for sidebar elements
-    await expect(page.getByRole('button', { name: /new mission/i })).toBeVisible();
+    await expect(page.getByTestId('new-mission-button')).toBeVisible();
 
     // Check for header voice chat button (desktop)
     const headphonesButton = page.getByTestId('voice-chat-button-desktop');
@@ -33,7 +33,7 @@ test.describe('Home Page', () => {
     await page.waitForLoadState('networkidle');
 
     // Click new mission button
-    await page.getByRole('button', { name: /new mission/i }).click();
+    await page.getByTestId('new-mission-button').click();
 
     // Modal should be visible
     await expect(page.getByRole('heading', { name: 'New Mission' })).toBeVisible();
@@ -46,7 +46,7 @@ test.describe('Home Page', () => {
     await page.waitForLoadState('networkidle');
 
     // Open modal
-    await page.getByRole('button', { name: /new mission/i }).click();
+    await page.getByTestId('new-mission-button').click();
     await expect(page.getByRole('heading', { name: 'New Mission' })).toBeVisible();
 
     // Close modal
