@@ -26,99 +26,32 @@ const WORKFLOWS: Record<string, Workflow> = {
   },
 };
 
-// Step-specific prompts for Claude agents
+// Step-specific prompts for Claude agents - references to .claude/ files
 const STEP_PROMPTS: Record<string, string> = {
-  'cleanup': `You are a technical writer helping to structure raw feature requests.
+  'cleanup': `@.claude/skills/small-to-before-research/SKILL.md
 
-Read the file "raw-input.md" and restructure it into a clear, well-organized document.
+Read: raw-input.md
+Output: structured-text.md`,
 
-Your task:
-1. Read raw-input.md carefully
-2. Organize the content with clear sections and headings
-3. Remove ambiguity and clarify vague requirements
-4. Add structure: Problem Statement, Goals, Requirements, Constraints
-5. Write the result to "structured-text.md"
+  'research': `@.claude/commands/research_codebase_generic.md
 
-Focus on: clarity, organization, completeness, removing ambiguity.
+Read: structured-text.md
+Output: research-output.md`,
 
-When you are satisfied with the output, include <promise>COMPLETE</promise> at the end of your response.`,
+  'planning': `@.claude/commands/create_plan_generic.md
 
-  'research': `You are a senior engineer researching implementation approaches.
+Read: research-output.md
+Output: implementation-plan.md`,
 
-Read the file "structured-text.md" and perform research to inform the implementation.
+  'implementation': `@.claude/commands/implement_plan.md
 
-Your task:
-1. Read structured-text.md to understand the requirements
-2. Research the codebase for relevant patterns, APIs, and existing implementations
-3. Identify dependencies, potential challenges, and architectural considerations
-4. Document findings with references to specific files and code
-5. Write the research findings to "research-output.md"
+Read: implementation-plan.md
+Output: implementation-result.json`,
 
-Focus on: thorough research, concrete references, actionable insights.
+  'codegen': `@.claude/commands/oneshot.md
 
-When you are satisfied with the output, include <promise>COMPLETE</promise> at the end of your response.`,
-
-  'planning': `You are a software architect creating an implementation plan.
-
-Read the file "research-output.md" and create a detailed implementation plan.
-
-Your task:
-1. Read research-output.md to understand the research findings
-2. Design the implementation approach based on findings
-3. Break down into specific, actionable tasks
-4. Identify files to create/modify with specific changes
-5. Include testing strategy and success criteria
-6. Write the plan to "implementation-plan.md"
-
-Focus on: specificity, actionability, testability, clear acceptance criteria.
-
-When you are satisfied with the output, include <promise>COMPLETE</promise> at the end of your response.`,
-
-  'implementation': `You are a senior software engineer implementing a feature.
-
-You are working in the project root directory. The implementation plan is at ./artifacts/implementation-plan.md.
-
-Your task:
-1. Read artifacts/implementation-plan.md to understand what to build
-2. Explore the codebase to understand the existing patterns and conventions
-3. Implement each task in the plan by modifying files in the project
-4. Write tests as specified
-5. Ensure code quality and follows project conventions
-6. Document what was done in "artifacts/implementation-result.json" with format:
-   {
-     "status": "completed" | "partial" | "blocked",
-     "filesCreated": ["path/to/file1", ...],
-     "filesModified": ["path/to/file2", ...],
-     "testsAdded": ["test descriptions..."],
-     "notes": "any important notes about the implementation"
-   }
-
-Focus on: correctness, code quality, following the plan, thorough testing.
-
-When you are satisfied with the implementation, include <promise>COMPLETE</promise> at the end of your response.`,
-
-  'codegen': `You are a senior software engineer implementing a feature request.
-
-You are working in the project root directory. The user's request is at ./artifacts/raw-input.md.
-
-Your task:
-1. Read artifacts/raw-input.md to understand what to build
-2. Explore the codebase to understand the existing patterns and conventions
-3. Implement the requested feature by modifying files in the project
-4. Write tests if appropriate
-5. Ensure code quality and follows project conventions
-6. Document what was done in "artifacts/implementation-result.json" with format:
-   {
-     "status": "completed" | "partial" | "blocked",
-     "filesCreated": ["path/to/file1", ...],
-     "filesModified": ["path/to/file2", ...],
-     "testsAdded": ["test descriptions..."],
-     "notes": "any important notes about the implementation"
-   }
-
-Focus on: correctness, code quality, following project patterns.
-
-When you are satisfied with the implementation, include <promise>COMPLETE</promise> at the end of your response.`,
+Read: raw-input.md
+Output: implementation-result.json`,
 };
 
 // Get the prompt for a specific step

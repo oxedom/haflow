@@ -28,7 +28,7 @@ export const WorkflowStepSchema = z.object({
   type: StepTypeSchema,
   agent: z.string().optional(),           // Agent name from agents.json
   inputArtifact: z.string().optional(),   // e.g., "raw-input.md"
-  outputArtifact: z.string().optional(),  // e.g., "structured-text.md"
+  outputArtifact: z.string().optional(),  // e.g., 
   reviewArtifact: z.string().optional(),  // For human-gate steps
   workspaceMode: WorkspaceModeSchema, // 'document' (default) or 'codegen'
   quickCommands: z.array(z.string()).optional(), // For code-review steps
