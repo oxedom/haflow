@@ -342,8 +342,8 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] TypeScript compiles: `pnpm --filter frontend build`
-- [ ] Linting passes: `pnpm --filter frontend lint`
+- [x] TypeScript compiles: `pnpm --filter frontend build`
+- [x] Linting passes: `pnpm --filter frontend lint` (pre-existing errors in unrelated files)
 
 #### Manual Verification:
 - [ ] Start both backend and frontend

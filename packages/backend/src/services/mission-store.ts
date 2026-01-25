@@ -233,6 +233,26 @@ async function appendLog(missionId: string, runId: string, data: string): Promis
   await writeFile(path, existing + data);
 }
 
+async function appendDockerStdout(missionId: string, runId: string, data: string): Promise<void> {
+  const dir = logsDir(missionId);
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
+  }
+  const path = join(dir, `${runId}-docker-stdout.log`);
+  const existing = existsSync(path) ? await readFile(path, 'utf-8') : '';
+  await writeFile(path, existing + data);
+}
+
+async function appendDockerStderr(missionId: string, runId: string, data: string): Promise<void> {
+  const dir = logsDir(missionId);
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
+  }
+  const path = join(dir, `${runId}-docker-stderr.log`);
+  const existing = existsSync(path) ? await readFile(path, 'utf-8') : '';
+  await writeFile(path, existing + data);
+}
+
 async function getLogTail(missionId: string, runId: string, bytes = 2000): Promise<string> {
   const path = join(logsDir(missionId), `${runId}.log`);
   if (!existsSync(path)) return '';
@@ -263,5 +283,7 @@ export const missionStore = {
   createRun,
   updateRun,
   appendLog,
+  appendDockerStdout,
+  appendDockerStderr,
   getLogTail,
 };

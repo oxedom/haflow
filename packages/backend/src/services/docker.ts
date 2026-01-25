@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import * as readline from 'readline';
 import { existsSync } from 'fs';
 import type { SandboxProvider, SandboxRunOptions, SandboxStatus, ClaudeSandboxOptions, StreamEvent } from './sandbox.js';
+import { missionStore } from './mission-store.js';
 
 const execAsync = promisify(exec);
 
@@ -123,7 +124,7 @@ async function getStatus(containerId: string): Promise<SandboxStatus> {
     const [status, exitCode, startedAt, finishedAt] = stdout.trim().split('|');
 
     const state = status === 'running' ? 'running' :
-                  status === 'exited' ? 'exited' : 'unknown';
+      status === 'exited' ? 'exited' : 'unknown';
 
     return {
       state,
@@ -279,7 +280,7 @@ async function copyFromContainer(containerId: string, containerPath: string, hos
 }
 
 async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenerator<StreamEvent, void, unknown> {
-  const { artifactsPath, prompt, workspacePath, nodeModulesPath } = options;
+  const { artifactsPath, prompt, workspacePath, nodeModulesPath, missionId, runId } = options;
 
   // Determine working directory based on mode
   // Code-gen mode: /workspace (cloned project mounted here)
@@ -327,6 +328,7 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
     '-w', workingDir,
     defaultImage,
     'claude',
+    '--model', 'claude-haiku-4-5',
     '--verbose',
     '--print',
     '--output-format', 'stream-json',
@@ -348,7 +350,20 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
   // Capture stderr in parallel
   let stderrOutput = '';
   childProcess.stderr.on('data', (data) => {
-    stderrOutput += data.toString();
+    const chunk = data.toString();
+    stderrOutput += chunk;
+    // Capture to docker stderr log
+    missionStore.appendDockerStderr(missionId, runId, chunk).catch(() => {
+      // Ignore write errors to not disrupt streaming
+    });
+  });
+
+  // Capture raw stdout to docker stdout log
+  childProcess.stdout.on('data', (data) => {
+    const chunk = data.toString();
+    missionStore.appendDockerStdout(missionId, runId, chunk).catch(() => {
+      // Ignore write errors to not disrupt streaming
+    });
   });
 
   // Create readline interface to parse line-by-line
@@ -435,7 +450,7 @@ async function* startClaudeStreaming(options: ClaudeSandboxOptions): AsyncGenera
         await rm(tempDir, { recursive: true, force: true });
       } catch (error) {
         // Clean up temp directory even on error
-        await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+        await rm(tempDir, { recursive: true, force: true }).catch(() => { });
         // Non-fatal - files in artifacts are already accessible
       }
     } catch (error) {

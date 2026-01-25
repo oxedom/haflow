@@ -394,4 +394,61 @@ describe('mission-store service', () => {
       expect(tail).toBe('A'.repeat(50));
     });
   });
+
+  describe('appendDockerStdout', () => {
+    let missionStore: Awaited<ReturnType<typeof getMissionStore>>;
+
+    beforeEach(async () => {
+      missionStore = await getMissionStore();
+      await missionStore.init();
+    });
+
+    it('should create docker stdout log file', async () => {
+      const created = await missionStore.createMission('Test', 'feature', 'test');
+      const run = await missionStore.createRun(created.mission_id, 'cleanup');
+
+      await missionStore.appendDockerStdout(created.mission_id, run.run_id, 'raw stdout line 1\n');
+
+      const testDir = getTestDir();
+      const logPath = join(testDir, 'missions', created.mission_id, 'logs', `${run.run_id}-docker-stdout.log`);
+      expect(existsSync(logPath)).toBe(true);
+      const content = await readFile(logPath, 'utf-8');
+      expect(content).toBe('raw stdout line 1\n');
+    });
+
+    it('should append to existing docker stdout log', async () => {
+      const created = await missionStore.createMission('Test', 'feature', 'test');
+      const run = await missionStore.createRun(created.mission_id, 'cleanup');
+
+      await missionStore.appendDockerStdout(created.mission_id, run.run_id, 'line 1\n');
+      await missionStore.appendDockerStdout(created.mission_id, run.run_id, 'line 2\n');
+
+      const testDir = getTestDir();
+      const logPath = join(testDir, 'missions', created.mission_id, 'logs', `${run.run_id}-docker-stdout.log`);
+      const content = await readFile(logPath, 'utf-8');
+      expect(content).toBe('line 1\nline 2\n');
+    });
+  });
+
+  describe('appendDockerStderr', () => {
+    let missionStore: Awaited<ReturnType<typeof getMissionStore>>;
+
+    beforeEach(async () => {
+      missionStore = await getMissionStore();
+      await missionStore.init();
+    });
+
+    it('should create docker stderr log file', async () => {
+      const created = await missionStore.createMission('Test', 'feature', 'test');
+      const run = await missionStore.createRun(created.mission_id, 'cleanup');
+
+      await missionStore.appendDockerStderr(created.mission_id, run.run_id, 'error output\n');
+
+      const testDir = getTestDir();
+      const logPath = join(testDir, 'missions', created.mission_id, 'logs', `${run.run_id}-docker-stderr.log`);
+      expect(existsSync(logPath)).toBe(true);
+      const content = await readFile(logPath, 'utf-8');
+      expect(content).toBe('error output\n');
+    });
+  });
 });

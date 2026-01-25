@@ -36,17 +36,8 @@ A new step type `code-review` that:
 
 **Human-Gate** (existing):
 
-- Simple approve/reject for artifacts (markdown files)
-- Read-only review of text content
-
-**Code-Review** (new):
-
-- Interactive review of code changes in cloned project
-- Git operations (status, diff)
-- Run any CLI commands (test, lint, build, etc.)
-- Approve or request changes with feedback
-
-## UI Mockup (Conceptual)
+- Simple approve/reject for artifacts (markdown files)- Shows git status with list of changed files
+- Has "View Diff" button per file (or full diff view)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

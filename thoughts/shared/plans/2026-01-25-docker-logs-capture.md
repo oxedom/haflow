@@ -86,11 +86,11 @@ Export both functions in the module exports.
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] TypeScript compiles: `pnpm --filter @haflow/backend build`
-- [ ] Existing tests pass: `pnpm --filter @haflow/backend test`
+- [x] TypeScript compiles: `pnpm --filter @haflow/backend build`
+- [x] Existing tests pass: `pnpm --filter @haflow/backend test`
 
 #### Manual Verification:
-- [ ] N/A for this phase (functions not yet called)
+- [x] N/A for this phase (functions not yet called)
 
 ---
 
@@ -147,8 +147,8 @@ childProcess.stdout.on('data', (data) => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] TypeScript compiles: `pnpm --filter @haflow/backend build`
-- [ ] Existing tests pass: `pnpm --filter @haflow/backend test`
+- [x] TypeScript compiles: `pnpm --filter @haflow/backend build`
+- [x] Existing tests pass: `pnpm --filter @haflow/backend test`
 
 #### Manual Verification:
 - [ ] Run a mission step via the UI
@@ -216,11 +216,11 @@ describe('appendDockerStderr', () => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] All tests pass: `pnpm --filter @haflow/backend test`
-- [ ] New tests specifically pass: `pnpm --filter @haflow/backend vitest run tests/unit/services/mission-store.test.ts`
+- [x] All tests pass: `pnpm --filter @haflow/backend test`
+- [x] New tests specifically pass: `pnpm --filter @haflow/backend vitest run tests/unit/services/mission-store.test.ts`
 
 #### Manual Verification:
-- [ ] Review test output to confirm new tests ran
+- [x] Review test output to confirm new tests ran
 
 ---
 

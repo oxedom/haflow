@@ -119,6 +119,23 @@ missionRoutes.post('/:missionId/mark-completed', async (req, res, next) => {
   }
 });
 
+// DELETE /api/missions/:missionId - Delete mission
+missionRoutes.delete('/:missionId', async (req, res, next) => {
+  try {
+    const { missionId } = req.params;
+
+    const meta = await missionStore.getMeta(missionId);
+    if (!meta) {
+      return sendError(res, `Mission not found: ${missionId}`, 404);
+    }
+
+    await missionStore.deleteMission(missionId);
+    sendSuccess(res, null);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/missions/:missionId/git-status - Get git status of cloned project
 missionRoutes.get('/:missionId/git-status', async (req, res, next) => {
   try {
