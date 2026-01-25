@@ -107,8 +107,8 @@ missionRoutes.delete('/:missionId', async (req, res, next) => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] TypeScript compiles: `pnpm --filter @haflow/backend build`
-- [ ] Backend tests pass: `pnpm --filter @haflow/backend test`
+- [x] TypeScript compiles: `pnpm --filter @haflow/backend build`
+- [x] Backend tests pass: `pnpm --filter @haflow/backend test`
 
 #### Manual Verification:
 - [ ] Start backend: `pnpm --filter @haflow/backend dev`
