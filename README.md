@@ -2,7 +2,7 @@
 
 ![Haflow](haflow-readme.jpg)
 
-**A web-based control panel for AI agents in your local development cycle.**
+**A local fullstack webapp control panel for orchestrating containers (Claude Code coding agents images) in your local development cycle. Served via React App**
 
 Launch missions, monitor agent progress in real-time, and approve outputs at human gates—all from a browser UI. Agent steps run in isolated Docker containers.
 
