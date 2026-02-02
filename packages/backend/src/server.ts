@@ -3,6 +3,7 @@ import cors from 'cors';
 import { missionRoutes, workflowRoutes } from './routes/missions.js';
 import { transcriptionRoutes } from './routes/transcription.js';
 import { systemRoutes } from './routes/system.js';
+import { userPreferencesRoutes } from './routes/user-preferences.js';
 
 export function createServer(): Express {
   const app = express();
@@ -17,6 +18,7 @@ export function createServer(): Express {
   app.use('/api/workflows', workflowRoutes);
   app.use('/api/transcribe', transcriptionRoutes);
   app.use('/api/system', systemRoutes);
+  app.use('/api/user', userPreferencesRoutes);
 
   // Error handler
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
