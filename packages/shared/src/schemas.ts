@@ -111,3 +111,36 @@ export const TranscriptionResponseSchema = z.object({
 export const TranscriptionStatusSchema = z.object({
   available: z.boolean(),
 });
+
+// Audio Notification Preference Schemas
+export const AudioProfileSchema = z.object({
+  sound: z.string().min(1, 'Sound ID is required'),
+  enabled: z.boolean(),
+});
+
+export const AudioNotificationPreferencesSchema = z.object({
+  audioNotifications: z.object({
+    enabled: z.boolean().default(false),
+    volume: z.number().min(0).max(100).default(50),
+    profiles: z.object({
+      highPriority: AudioProfileSchema.default({
+        sound: 'alert-urgent.wav',
+        enabled: true,
+      }),
+      standardPriority: AudioProfileSchema.default({
+        sound: 'alert-standard.wav',
+        enabled: true,
+      }),
+      lowPriority: AudioProfileSchema.default({
+        sound: 'alert-low.wav',
+        enabled: false,
+      }),
+    }),
+  }),
+  visualNotifications: z.object({
+    enabled: z.boolean().default(true),
+  }),
+});
+
+// User preferences request
+export const UserAudioPreferencesRequestSchema = AudioNotificationPreferencesSchema;

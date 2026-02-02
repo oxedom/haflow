@@ -14,6 +14,9 @@ import {
   SaveArtifactRequestSchema,
   TranscriptionResponseSchema,
   TranscriptionStatusSchema,
+  AudioProfileSchema,
+  AudioNotificationPreferencesSchema,
+  UserAudioPreferencesRequestSchema,
 } from './schemas.js';
 
 // Infer types from schemas
@@ -38,3 +41,8 @@ export interface ApiResponse<T> {
   data: T | null;
   error: string | null;
 }
+
+// Audio notification preference types
+export type AudioProfile = z.infer<typeof AudioProfileSchema>;
+export type AudioNotificationPreferences = z.infer<typeof AudioNotificationPreferencesSchema>;
+export type UserAudioPreferencesRequest = z.infer<typeof UserAudioPreferencesRequestSchema>;
