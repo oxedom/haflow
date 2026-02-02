@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { MissionDetail as MissionDetailType, MissionStatus, StepRun, StepType } from '@haflow/shared'
-import { Check, ChevronDown, ChevronUp, ArrowRight, Play } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, ArrowRight, Play, Trash2 } from 'lucide-react'
 import * as Diff from 'diff'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -17,6 +17,7 @@ interface MissionDetailProps {
   onSaveArtifact: (filename: string, content: string) => void
   onContinue: () => void
   onMarkCompleted: () => void
+  onDelete?: () => void
 }
 
 const statusConfig: Record<MissionStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' }> = {
@@ -218,7 +219,13 @@ function DiffViewer({ original, modified }: DiffViewerProps) {
   )
 }
 
-export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompleted }: MissionDetailProps) {
+export function MissionDetail({
+  mission,
+  onSaveArtifact,
+  onContinue,
+  onMarkCompleted,
+  onDelete,
+}: MissionDetailProps) {
   const [viewMode, setViewMode] = useState<'editor' | 'diff' | 'preview'>('editor')
   const [editorContent, setEditorContent] = useState('')
   const [originalContent, setOriginalContent] = useState('')
@@ -272,13 +279,27 @@ export function MissionDetail({ mission, onSaveArtifact, onContinue, onMarkCompl
     <div className="flex-1 flex flex-col h-screen bg-muted/30 pt-14 md:pt-0">
       {/* Header */}
       <div data-testid="mission-detail-header" className="bg-background border-b px-4 md:px-6 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <h2 data-testid="mission-title" className="text-lg md:text-xl font-semibold truncate">
-            Mission: {mission.title}
-          </h2>
-          <Badge data-testid="mission-status-badge" variant={statusInfo.variant} className="w-fit">
-            {statusInfo.label}
-          </Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <h2 data-testid="mission-title" className="text-lg md:text-xl font-semibold truncate">
+              Mission: {mission.title}
+            </h2>
+            <Badge data-testid="mission-status-badge" variant={statusInfo.variant} className="w-fit">
+              {statusInfo.label}
+            </Badge>
+          </div>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 w-fit"
+              data-testid="delete-mission-detail-btn"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          )}
         </div>
       </div>
 

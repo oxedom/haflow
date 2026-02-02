@@ -152,4 +152,21 @@ export const api = {
     if (!res.data.success) throw new Error(res.data.error || 'Failed to get git status');
     return res.data.data!;
   },
+
+  deleteMission: async (missionId: string): Promise<void> => {
+    const res = await client.delete<ApiResponse<void>>(`/missions/${missionId}`);
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to delete mission');
+  },
+
+  bulkDeleteMissions: async (
+    missionIds: string[],
+    reason?: string
+  ): Promise<{ deleted: number; failed: number; failedIds?: string[] }> => {
+    const res = await client.post<ApiResponse<{ deleted: number; failed: number; failedIds?: string[] }>>(
+      '/missions/bulk-delete',
+      { ids: missionIds, reason }
+    );
+    if (!res.data.success) throw new Error(res.data.error || 'Failed to delete missions');
+    return res.data.data!;
+  },
 };

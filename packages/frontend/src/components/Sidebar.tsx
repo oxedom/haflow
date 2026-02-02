@@ -1,5 +1,5 @@
 import type { MissionListItem, MissionStatus } from '@haflow/shared'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -11,6 +11,7 @@ interface SidebarProps {
   selectedMissionId: string | null
   onSelectMission: (id: string) => void
   onNewMission: () => void
+  onDeleteMission?: (id: string) => void
   isOpen: boolean
   onClose: () => void
 }
@@ -46,7 +47,15 @@ function StatusBadge({ status, testId }: { status: MissionStatus; testId?: strin
   )
 }
 
-export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMission, isOpen, onClose }: SidebarProps) {
+export function Sidebar({
+  missions,
+  selectedMissionId,
+  onSelectMission,
+  onNewMission,
+  onDeleteMission,
+  isOpen,
+  onClose
+}: SidebarProps) {
   return (
     <>
       {/* Mobile overlay */}
@@ -109,32 +118,53 @@ export function Sidebar({ missions, selectedMissionId, onSelectMission, onNewMis
           </div>
           <div data-testid="mission-list" className="space-y-1 px-2 pb-4">
             {missions.map((mission) => (
-              <button
+              <div
                 key={mission.mission_id}
                 data-testid={`mission-item-${mission.mission_id}`}
-                onClick={() => onSelectMission(mission.mission_id)}
                 className={cn(
-                  'w-full text-left p-3 rounded-md transition-colors',
+                  'group rounded-md transition-colors',
                   selectedMissionId === mission.mission_id
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                    ? 'bg-sidebar-accent'
                     : 'hover:bg-sidebar-accent/50'
                 )}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium truncate pr-2">
-                    {mission.title}
-                  </span>
-                  <StatusBadge status={mission.status} testId={`mission-status-${mission.mission_id}`} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground capitalize">
-                    {mission.type}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatTimeAgo(mission.updated_at)}
-                  </span>
-                </div>
-              </button>
+                <button
+                  onClick={() => onSelectMission(mission.mission_id)}
+                  className="w-full text-left p-3"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium truncate pr-2">
+                      {mission.title}
+                    </span>
+                    <StatusBadge status={mission.status} testId={`mission-status-${mission.mission_id}`} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground capitalize">
+                      {mission.type}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTimeAgo(mission.updated_at)}
+                    </span>
+                  </div>
+                </button>
+                {onDeleteMission && (
+                  <div className="px-3 pb-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDeleteMission(mission.mission_id)
+                      }}
+                      className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                      data-testid={`delete-mission-btn-${mission.mission_id}`}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </ScrollArea>
