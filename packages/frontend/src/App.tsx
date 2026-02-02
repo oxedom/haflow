@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { MissionDetail as MissionDetailView } from '@/components/MissionDetail'
 import { NewMissionModal } from '@/components/NewMissionModal'
 import { ChatVoice } from '@/components/ChatVoice'
+import { ConfirmDeletionDialog } from '@/components/ConfirmDeletionDialog'
 import { api } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,6 +34,9 @@ function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showVoiceChat, setShowVoiceChat] = useState(false)
   const [isCleanupDialogOpen, setIsCleanupDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [missionToDelete, setMissionToDelete] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Query: Fetch missions list with polling
   const { data: missions = [], isLoading: isLoadingMissions } = useQuery({
@@ -121,6 +125,25 @@ function AppContent() {
     },
   })
 
+  // Mutation: Delete mission
+  const deleteMissionMutation = useMutation({
+    mutationFn: async (missionId: string) => {
+      return api.deleteMission(missionId)
+    },
+    onSuccess: () => {
+      setIsDeleteDialogOpen(false)
+      setMissionToDelete(null)
+      setDeleteError(null)
+      queryClient.invalidateQueries({ queryKey: ['missions'] })
+      if (selectedMissionId === missionToDelete) {
+        setSelectedMissionId(null)
+      }
+    },
+    onError: (error) => {
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete mission')
+    },
+  })
+
   // Handlers
   const handleSelectMission = (id: string) => {
     setSelectedMissionId(id)
@@ -151,6 +174,22 @@ function AppContent() {
 
   const handleMarkCompleted = async () => {
     await markCompletedMutation.mutateAsync()
+  }
+
+  const handleDeleteMission = (missionId: string) => {
+    setMissionToDelete(missionId)
+    setIsDeleteDialogOpen(true)
+    setDeleteError(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!missionToDelete) return
+    await deleteMissionMutation.mutateAsync(missionToDelete)
+  }
+
+  const getMissionTitle = (missionId: string): string => {
+    const mission = missions.find(m => m.mission_id === missionId)
+    return mission?.title || 'Unknown Mission'
   }
 
   if (isLoadingMissions) {
@@ -193,6 +232,7 @@ function AppContent() {
         selectedMissionId={selectedMissionId}
         onSelectMission={handleSelectMission}
         onNewMission={handleNewMission}
+        onDeleteMission={handleDeleteMission}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
@@ -237,6 +277,7 @@ function AppContent() {
               onSaveArtifact={handleSaveArtifact}
               onContinue={handleContinue}
               onMarkCompleted={handleMarkCompleted}
+              onDelete={() => selectedMissionId && handleDeleteMission(selectedMissionId)}
             />
           ) : (
             <div className="h-full flex items-center justify-center">
@@ -282,6 +323,22 @@ function AppContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Mission Confirm Dialog */}
+      <ConfirmDeletionDialog
+        isOpen={isDeleteDialogOpen}
+        title="Delete Mission"
+        description={`Delete "${getMissionTitle(missionToDelete || '')}"?`}
+        itemCount={1}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setIsDeleteDialogOpen(false)
+          setMissionToDelete(null)
+          setDeleteError(null)
+        }}
+        isPending={deleteMissionMutation.isPending}
+        error={deleteError}
+      />
     </div>
   )
 }

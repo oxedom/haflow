@@ -138,6 +138,53 @@ missionRoutes.delete('/:missionId', async (req, res, next) => {
   }
 });
 
+// POST /api/missions/bulk-delete - Delete multiple missions
+missionRoutes.post('/bulk-delete', async (req, res, next) => {
+  try {
+    const { ids, reason } = req.body;
+
+    // Validate input
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return sendError(res, 'ids must be a non-empty array', 400);
+    }
+
+    if (ids.length > 10000) {
+      return sendError(res, 'Maximum 10000 missions can be deleted at once', 400);
+    }
+
+    const deleted: string[] = [];
+    const failed: string[] = [];
+    const errors: string[] = [];
+
+    // Delete each mission
+    for (const missionId of ids) {
+      try {
+        const meta = await missionStore.getMeta(missionId);
+        if (!meta) {
+          failed.push(missionId);
+          errors.push(`Mission not found: ${missionId}`);
+          continue;
+        }
+
+        await missionStore.deleteMission(missionId);
+        deleted.push(missionId);
+      } catch (err) {
+        failed.push(missionId);
+        errors.push(`Failed to delete ${missionId}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    sendSuccess(res, {
+      deleted: deleted.length,
+      failed: failed.length,
+      failedIds: failed.length > 0 ? failed : undefined,
+      message: `Deleted ${deleted.length} of ${ids.length} missions${reason ? ` (Reason: ${reason})` : ''}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/missions/:missionId/git-status - Get git status of cloned project
 missionRoutes.get('/:missionId/git-status', async (req, res, next) => {
   try {
